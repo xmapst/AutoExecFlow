@@ -1,0 +1,234 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "description": "列出当前所有任务ID",
+                "tags": [
+                    "Exec"
+                ],
+                "summary": "List",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "执行命名或脚本",
+                "tags": [
+                    "Exec"
+                ],
+                "summary": "执行",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "异步",
+                        "name": "ansync",
+                        "in": "path"
+                    },
+                    {
+                        "description": "scripts",
+                        "name": "scripts",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.PostStruct"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/version": {
+            "get": {
+                "description": "当前服务器版本",
+                "tags": [
+                    "Info"
+                ],
+                "summary": "Version",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Info"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/{id}": {
+            "get": {
+                "description": "查询执行情况",
+                "tags": [
+                    "Exec"
+                ],
+                "summary": "查询",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.Info": {
+            "type": "object",
+            "properties": {
+                "buildTime": {
+                    "type": "string"
+                },
+                "git": {
+                    "type": "object",
+                    "properties": {
+                        "branch": {
+                            "type": "string"
+                        },
+                        "commit": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "go": {
+                    "type": "object",
+                    "properties": {
+                        "arch": {
+                            "type": "string"
+                        },
+                        "os": {
+                            "type": "string"
+                        },
+                        "version": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "email": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.JSONResult": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "data": {},
+                "message": {
+                    "type": "string",
+                    "example": "消息"
+                }
+            }
+        },
+        "handlers.PostStruct": {
+            "type": "object",
+            "required": [
+                "command_content",
+                "command_type"
+            ],
+            "properties": {
+                "command_content": {
+                    "type": "string",
+                    "example": "ping baidu.com"
+                },
+                "command_type": {
+                    "type": "string",
+                    "example": "cmd"
+                },
+                "depends_on": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        ""
+                    ]
+                },
+                "env_vars": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "env1=value1",
+                        "env2=value2"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "example": "script.ps1"
+                },
+                "time_out": {
+                    "type": "string",
+                    "example": "3m"
+                }
+            }
+        }
+    }
+}

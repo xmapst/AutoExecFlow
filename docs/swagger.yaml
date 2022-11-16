@@ -1,0 +1,154 @@
+definitions:
+  handlers.Info:
+    properties:
+      buildTime:
+        type: string
+      git:
+        properties:
+          branch:
+            type: string
+          commit:
+            type: string
+        type: object
+      go:
+        properties:
+          arch:
+            type: string
+          os:
+            type: string
+          version:
+            type: string
+        type: object
+      user:
+        properties:
+          email:
+            type: string
+          name:
+            type: string
+        type: object
+      version:
+        type: string
+    type: object
+  handlers.JSONResult:
+    properties:
+      code:
+        example: 0
+        type: integer
+      data: {}
+      message:
+        example: 消息
+        type: string
+    type: object
+  handlers.PostStruct:
+    properties:
+      command_content:
+        example: ping baidu.com
+        type: string
+      command_type:
+        example: cmd
+        type: string
+      depends_on:
+        example:
+        - ""
+        items:
+          type: string
+        type: array
+      env_vars:
+        example:
+        - env1=value1
+        - env2=value2
+        items:
+          type: string
+        type: array
+      name:
+        example: script.ps1
+        type: string
+      time_out:
+        example: 3m
+        type: string
+    required:
+    - command_content
+    - command_type
+    type: object
+info:
+  contact: {}
+paths:
+  /:
+    get:
+      description: 列出当前所有任务ID
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+      summary: List
+      tags:
+      - Exec
+    post:
+      description: 执行命名或脚本
+      parameters:
+      - description: 异步
+        in: path
+        name: ansync
+        type: boolean
+      - description: scripts
+        in: body
+        name: scripts
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/handlers.PostStruct'
+          type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+      summary: 执行
+      tags:
+      - Exec
+  /{id}:
+    get:
+      description: 查询执行情况
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+      summary: 查询
+      tags:
+      - Exec
+  /version:
+    get:
+      description: 当前服务器版本
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Info'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.JSONResult'
+      summary: Version
+      tags:
+      - Info
+swagger: "2.0"
