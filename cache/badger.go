@@ -53,12 +53,13 @@ type TaskState struct {
 }
 
 type TaskStepState struct {
-	Step    int    `json:"step"`
-	Name    string `json:"name"`
-	State   int    `json:"state"`
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Times   *Times `json:"times"`
+	Step      int      `json:"step"`
+	Name      string   `json:"name"`
+	State     int      `json:"state"`
+	Code      int      `json:"code"`
+	Message   string   `json:"message"`
+	DependsOn []string `json:"depends_on"`
+	Times     *Times   `json:"times"`
 }
 
 type Times struct {

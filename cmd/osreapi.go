@@ -78,6 +78,9 @@ func (p *program) init() error {
 	if config.App.KeyExpire < config.App.ExecTimeOut {
 		return fmt.Errorf("the expiration time cannot be less than the execution timeout time")
 	}
+	if config.App.KeyExpire == config.App.ExecTimeOut || (config.App.KeyExpire/config.App.ExecTimeOut) < 2 {
+		config.App.KeyExpire = config.App.ExecTimeOut * 2
+	}
 	// clear old script
 	utils.ClearOldScript(config.App.ScriptDir)
 	// 创建临时内存数据库

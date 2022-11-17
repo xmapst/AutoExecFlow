@@ -57,34 +57,45 @@ curl -XGET http://localhost:2376/?sort=ttl
   "code": 0,
   "message": "成功",
   "data": {
-    "running": 0,
+    "running": 1,
     "tasks": [
       {
-        "id": "a55c705f-d279-48cd-b1cb-803a345f8cd9",
+        "id": "ad2fc4c8-05fc-4aab-9f28-5ceea65d0982",
         "state": "已结束",
-        "code": 0,
-        "count": 3,
-        "message": "所有步骤执行成功",
+        "code": 510,
+        "count": 4,
+        "message": "执行失败: [步骤: 0, 名称: step0; 步骤: 2, 名称: step2]",
         "times": {
-          "begin": "2022-11-16T21:59:49+08:00",
-          "end": "2022-11-16T22:00:21+08:00",
-          "ttl": "47h59m46.135436s"
+          "begin": "2022-11-17T17:17:58+08:00",
+          "end": "2022-11-17T17:17:58+08:00",
+          "ttl": "47h53m30.619752642s"
         }
       },
       {
-        "id": "fa2a19d3-08ea-4243-a680-d60bc5144935",
+        "id": "ed95e570-ce58-4f97-a5ae-abd7694b8dbc",
         "state": "已结束",
         "code": 0,
-        "count": 3,
+        "count": 4,
         "message": "所有步骤执行成功",
         "times": {
-          "begin": "2022-11-16T21:59:58+08:00",
-          "end": "2022-11-16T22:00:28+08:00",
-          "ttl": "47h59m53.135415s"
+          "begin": "2022-11-17T17:20:29+08:00",
+          "end": "2022-11-17T17:21:30+08:00",
+          "ttl": "47h57m2.619748142s"
+        }
+      },
+      {
+        "id": "aece7b89-3081-4294-ac78-0a9b0987a493",
+        "state": "执行中",
+        "code": 0,
+        "count": 4,
+        "message": "当前正在执行: [步骤: 0, 名称: step0; 步骤: 2, 名称: step2]",
+        "times": {
+          "begin": "2022-11-17T17:24:25+08:00",
+          "ttl": "47h59m57.619748942s"
         }
       }
     ],
-    "total": 2
+    "total": 3
   }
 }
 ```
@@ -224,38 +235,50 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
-      "name": "a55c705f-d279-48cd-b1cb-803a345f8cd9-0",
+      "name": "step0",
       "state": "已结束",
       "code": 0,
-      "message": " % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 0 0 0 0 0 0 0 --:--:-- 0:00:01 --:--:-- 0 0 25397 0 0 0 0 0 0 --:--:-- 0:00:01 --:--:-- 0 HTTP/2 200 server: marco/2.18 date: Wed, 16 Nov 2022 13:59:50 GMT content-type: text/html content-length: 25397 vary: Accept-Encoding x-source: C/304 cache-control: max-age=600 etag: \"42a8f17ee1c7d81:0\" last-modified: Wed, 14 Sep 2022 02:27:11 GMT accept-ranges: bytes x-powered-by: ASP.NET x-request-id: 47d7fce68d12361ef87300a853827a2a; b17cedd08dea0b74b2bcdc2a1b400453 age: 397 via: T.3.N, V.mix-zj-sad2-012, T.164.H, M.cmn-gd-szx-169 ",
+      "message": "PING baidu.com (110.242.68.66) 56(84) bytes of data. 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=1 ttl=42 time=58.0 ms 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=2 ttl=42 time=39.4 ms 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=3 ttl=42 time=39.5 ms 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=4 ttl=42 time=54.0 ms --- baidu.com ping statistics --- 4 packets transmitted, 4 received, 0% packet loss, time 3104ms rtt min/avg/max/mdev = 39.439/47.747/58.032/8.401 ms ",
       "times": {
-        "begin": "2022-11-16T21:59:49+08:00",
-        "end": "2022-11-16T21:59:50+08:00",
-        "ttl": "47h58m49.436157s"
+        "begin": "2022-11-17T17:20:29+08:00",
+        "end": "2022-11-17T17:20:33+08:00",
+        "ttl": "47h58m40.860920739s"
       }
     },
     {
       "step": 1,
-      "name": "a55c705f-d279-48cd-b1cb-803a345f8cd9-1",
+      "name": "step1",
       "state": "已结束",
       "code": 0,
-      "message": "",
+      "message": " % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 100 2443 100 2443 0 0 14716 0 --:--:-- --:--:-- --:--:-- 14806 <!DOCTYPE html> <!--STATUS OK--><html> <head><meta http-equiv=content-type content=text/html;charset=utf-8><meta http-equiv=X-UA-Compatible content=IE=Edge><meta content=always name=referrer><link rel=stylesheet type=text/css href=https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/bdorz/baidu.min.css><title>百度一下，你就知道</title></head> <body link=#0000cc> <div id=wrapper> <div id=head> <div class=head_wrapper> <div class=s_form> <div class=s_form_wrapper> <div id=lg> <img hidefocus=true src=//www.baidu.com/img/bd_logo1.png width=270 height=129> </div> <form id=form name=f action=//www.baidu.com/s class=fm> <input type=hidden name=bdorz_come value=1> <input type=hidden name=ie value=utf-8> <input type=hidden name=f value=8> <input type=hidden name=rsv_bp value=1> <input type=hidden name=rsv_idx value=1> <input type=hidden name=tn value=baidu><span class=\"bg s_ipt_wr\"><input id=kw name=wd class=s_ipt value maxlength=255 autocomplete=off autofocus=autofocus></span><span class=\"bg s_btn_wr\"><input type=submit id=su value=百度一下 class=\"bg s_btn\" autofocus></span> </form> </div> </div> <div id=u1> <a href=http://news.baidu.com name=tj_trnews class=mnav>新闻</a> <a href=https://www.hao123.com name=tj_trhao123 class=mnav>hao123</a> <a href=http://map.baidu.com name=tj_trmap class=mnav>地图</a> <a href=http://v.baidu.com name=tj_trvideo class=mnav>视频</a> <a href=http://tieba.baidu.com name=tj_trtieba class=mnav>贴吧</a> <noscript> <a href=http://www.baidu.com/bdorz/login.gif?login&amp;tpl=mn&amp;u=http%3A%2F%2Fwww.baidu.com%2f%3fbdorz_come%3d1 name=tj_login class=lb>登录</a> </noscript> <script>document.write('<a href=\"http://www.baidu.com/bdorz/login.gif?login&tpl=mn&u='+ encodeURIComponent(window.location.href+ (window.location.search === \"\" ? \"?\" : \"&\")+ \"bdorz_come=1\")+ '\" name=\"tj_login\" class=\"lb\">登录</a>'); </script> <a href=//www.baidu.com/more/ name=tj_briicon class=bri style=\"display: block;\">更多产品</a> </div> </div> </div> <div id=ftCon> <div id=ftConw> <p id=lh> <a href=http://home.baidu.com>关于百度</a> <a href=http://ir.baidu.com>About Baidu</a> </p> <p id=cp>&copy;2017&nbsp;Baidu&nbsp;<a href=http://www.baidu.com/duty/>使用百度前必读</a>&nbsp; <a href=http://jianyi.baidu.com/ class=cp-feedback>意见反馈</a>&nbsp;京ICP证030173号&nbsp; <img src=//www.baidu.com/img/gs.gif> </p> </div> </div> </div> </body> </html> ",
       "times": {
-        "begin": "2022-11-16T21:59:50+08:00",
-        "end": "2022-11-16T22:00:20+08:00",
-        "ttl": "47h59m19.436153s"
+        "begin": "2022-11-17T17:20:33+08:00",
+        "end": "2022-11-17T17:20:33+08:00",
+        "ttl": "47h58m40.860905239s"
       }
     },
     {
       "step": 2,
-      "name": "a55c705f-d279-48cd-b1cb-803a345f8cd9-2",
+      "name": "step2",
       "state": "已结束",
       "code": 0,
-      "message": " % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 277 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Accept-Ranges: bytes Cache-Control: private, no-cache, no-store, proxy-revalidate, no-transform Connection: keep-alive Content-Length: 277 Content-Type: text/html Date: Wed, 16 Nov 2022 14:00:21 GMT Etag: \"575e1f6f-115\" Last-Modified: Mon, 13 Jun 2016 02:50:23 GMT Pragma: no-cache Server: bfe/1.0.8.18 ",
+      "message": "",
       "times": {
-        "begin": "2022-11-16T22:00:20+08:00",
-        "end": "2022-11-16T22:00:21+08:00",
-        "ttl": "47h59m20.436134s"
+        "begin": "2022-11-17T17:20:29+08:00",
+        "end": "2022-11-17T17:21:29+08:00",
+        "ttl": "47h59m36.860904239s"
+      }
+    },
+    {
+      "step": 3,
+      "name": "step3",
+      "state": "已结束",
+      "code": 0,
+      "message": " % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 100 2443 100 2443 0 0 14716 0 --:--:-- --:--:-- --:--:-- 14806 <!DOCTYPE html> <!--STATUS OK--><html> <head><meta http-equiv=content-type content=text/html;charset=utf-8><meta http-equiv=X-UA-Compatible content=IE=Edge><meta content=always name=referrer><link rel=stylesheet type=text/css href=https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/bdorz/baidu.min.css><title>百度一下，你就知道</title></head> <body link=#0000cc> <div id=wrapper> <div id=head> <div class=head_wrapper> <div class=s_form> <div class=s_form_wrapper> <div id=lg> <img hidefocus=true src=//www.baidu.com/img/bd_logo1.png width=270 height=129> </div> <form id=form name=f action=//www.baidu.com/s class=fm> <input type=hidden name=bdorz_come value=1> <input type=hidden name=ie value=utf-8> <input type=hidden name=f value=8> <input type=hidden name=rsv_bp value=1> <input type=hidden name=rsv_idx value=1> <input type=hidden name=tn value=baidu><span class=\"bg s_ipt_wr\"><input id=kw name=wd class=s_ipt value maxlength=255 autocomplete=off autofocus=autofocus></span><span class=\"bg s_btn_wr\"><input type=submit id=su value=百度一下 class=\"bg s_btn\" autofocus></span> </form> </div> </div> <div id=u1> <a href=http://news.baidu.com name=tj_trnews class=mnav>新闻</a> <a href=https://www.hao123.com name=tj_trhao123 class=mnav>hao123</a> <a href=http://map.baidu.com name=tj_trmap class=mnav>地图</a> <a href=http://v.baidu.com name=tj_trvideo class=mnav>视频</a> <a href=http://tieba.baidu.com name=tj_trtieba class=mnav>贴吧</a> <noscript> <a href=http://www.baidu.com/bdorz/login.gif?login&amp;tpl=mn&amp;u=http%3A%2F%2Fwww.baidu.com%2f%3fbdorz_come%3d1 name=tj_login class=lb>登录</a> </noscript> <script>document.write('<a href=\"http://www.baidu.com/bdorz/login.gif?login&tpl=mn&u='+ encodeURIComponent(window.location.href+ (window.location.search === \"\" ? \"?\" : \"&\")+ \"bdorz_come=1\")+ '\" name=\"tj_login\" class=\"lb\">登录</a>'); </script> <a href=//www.baidu.com/more/ name=tj_briicon class=bri style=\"display: block;\">更多产品</a> </div> </div> </div> <div id=ftCon> <div id=ftConw> <p id=lh> <a href=http://home.baidu.com>关于百度</a> <a href=http://ir.baidu.com>About Baidu</a> </p> <p id=cp>&copy;2017&nbsp;Baidu&nbsp;<a href=http://www.baidu.com/duty/>使用百度前必读</a>&nbsp; <a href=http://jianyi.baidu.com/ class=cp-feedback>意见反馈</a>&nbsp;京ICP证030173号&nbsp; <img src=//www.baidu.com/img/gs.gif> </p> </div> </div> </div> </body> </html> ",
+      "times": {
+        "begin": "2022-11-17T17:21:29+08:00",
+        "end": "2022-11-17T17:21:30+08:00",
+        "ttl": "47h59m37.860857739s"
       }
     }
   ]
@@ -266,52 +289,54 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
 ```json
 {
   "code": 1001,
-  "message": "步骤: 1, 名称: eb766bf4-88e4-4449-ad12-bafdbf75c78e-1,步骤: 3, 名称: eb766bf4-88e4-4449-ad12-bafdbf75c78e-3, 执行中",
+  "message": "执行中: [步骤: 2, 名称: step2]",
   "data": [
     {
       "step": 0,
-      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-0",
+      "name": "step0",
       "state": "已结束",
       "code": 0,
-      "message": " C:\\Windows\\system32>curl -I http://www.q1.com % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 25397 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Server: marco/2.18 Date: Thu, 17 Nov 2022 01:42:20 GMT Content-Type: text/html Content-Length: 25397 Connection: keep-alive Vary: Accept-Encoding X-Source: C/200 Cache-Control: max-age=600 ETag: \"42a8f17ee1c7d81:0\" Last-Modified: Wed, 14 Sep 2022 02:27:11 GMT Accept-Ranges: bytes X-Powered-By: ASP.NET X-Request-Id: 6cfd420f5bc829dc11bd04645ce29a57; e494a33dbc770066f42498c27878a744 Age: 261 Via: T.164.N, V.mix-hz-fdi-165, T.15.H, M.ctn-fj-foc-015 ",
+      "message": "PING baidu.com (110.242.68.66) 56(84) bytes of data. 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=1 ttl=42 time=58.0 ms 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=2 ttl=42 time=39.4 ms 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=3 ttl=42 time=39.5 ms 64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=4 ttl=42 time=54.0 ms --- baidu.com ping statistics --- 4 packets transmitted, 4 received, 0% packet loss, time 3104ms rtt min/avg/max/mdev = 39.439/47.747/58.032/8.401 ms ",
       "times": {
-        "begin": "2022-11-17T09:42:19+08:00",
-        "end": "2022-11-17T09:42:20+08:00",
-        "ttl": "47h59m51.3247184s"
+        "begin": "2022-11-17T17:20:29+08:00",
+        "end": "2022-11-17T17:20:33+08:00",
+        "ttl": "47h59m33.939310868s"
       }
     },
     {
       "step": 1,
-      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-1",
-      "state": "执行中",
+      "name": "step1",
+      "state": "已结束",
       "code": 0,
-      "message": "",
+      "message": " % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 100 2443 100 2443 0 0 14716 0 --:--:-- --:--:-- --:--:-- 14806 <!DOCTYPE html> <!--STATUS OK--><html> <head><meta http-equiv=content-type content=text/html;charset=utf-8><meta http-equiv=X-UA-Compatible content=IE=Edge><meta content=always name=referrer><link rel=stylesheet type=text/css href=https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/bdorz/baidu.min.css><title>百度一下，你就知道</title></head> <body link=#0000cc> <div id=wrapper> <div id=head> <div class=head_wrapper> <div class=s_form> <div class=s_form_wrapper> <div id=lg> <img hidefocus=true src=//www.baidu.com/img/bd_logo1.png width=270 height=129> </div> <form id=form name=f action=//www.baidu.com/s class=fm> <input type=hidden name=bdorz_come value=1> <input type=hidden name=ie value=utf-8> <input type=hidden name=f value=8> <input type=hidden name=rsv_bp value=1> <input type=hidden name=rsv_idx value=1> <input type=hidden name=tn value=baidu><span class=\"bg s_ipt_wr\"><input id=kw name=wd class=s_ipt value maxlength=255 autocomplete=off autofocus=autofocus></span><span class=\"bg s_btn_wr\"><input type=submit id=su value=百度一下 class=\"bg s_btn\" autofocus></span> </form> </div> </div> <div id=u1> <a href=http://news.baidu.com name=tj_trnews class=mnav>新闻</a> <a href=https://www.hao123.com name=tj_trhao123 class=mnav>hao123</a> <a href=http://map.baidu.com name=tj_trmap class=mnav>地图</a> <a href=http://v.baidu.com name=tj_trvideo class=mnav>视频</a> <a href=http://tieba.baidu.com name=tj_trtieba class=mnav>贴吧</a> <noscript> <a href=http://www.baidu.com/bdorz/login.gif?login&amp;tpl=mn&amp;u=http%3A%2F%2Fwww.baidu.com%2f%3fbdorz_come%3d1 name=tj_login class=lb>登录</a> </noscript> <script>document.write('<a href=\"http://www.baidu.com/bdorz/login.gif?login&tpl=mn&u='+ encodeURIComponent(window.location.href+ (window.location.search === \"\" ? \"?\" : \"&\")+ \"bdorz_come=1\")+ '\" name=\"tj_login\" class=\"lb\">登录</a>'); </script> <a href=//www.baidu.com/more/ name=tj_briicon class=bri style=\"display: block;\">更多产品</a> </div> </div> </div> <div id=ftCon> <div id=ftConw> <p id=lh> <a href=http://home.baidu.com>关于百度</a> <a href=http://ir.baidu.com>About Baidu</a> </p> <p id=cp>&copy;2017&nbsp;Baidu&nbsp;<a href=http://www.baidu.com/duty/>使用百度前必读</a>&nbsp; <a href=http://jianyi.baidu.com/ class=cp-feedback>意见反馈</a>&nbsp;京ICP证030173号&nbsp; <img src=//www.baidu.com/img/gs.gif> </p> </div> </div> </div> </body> </html> ",
       "times": {
-        "begin": "2022-11-17T09:42:19+08:00",
-        "ttl": "47h59m50.3247184s"
+        "begin": "2022-11-17T17:20:33+08:00",
+        "end": "2022-11-17T17:20:33+08:00",
+        "ttl": "47h59m33.939252768s"
       }
     },
     {
       "step": 2,
-      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-2",
-      "state": "已结束",
-      "code": 0,
-      "message": " C:\\Windows\\system32>curl -I http://baidu.com % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 81 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Date: Thu, 17 Nov 2022 01:42:20 GMT Server: Apache Last-Modified: Tue, 12 Jan 2010 13:48:00 GMT ETag: \"51-47cf7e6ee8400\" Accept-Ranges: bytes Content-Length: 81 Cache-Control: max-age=86400 Expires: Fri, 18 Nov 2022 01:42:20 GMT Connection: Keep-Alive Content-Type: text/html ",
-      "times": {
-        "begin": "2022-11-17T09:42:19+08:00",
-        "end": "2022-11-17T09:42:20+08:00",
-        "ttl": "47h59m51.3245453s"
-      }
-    },
-    {
-      "step": 3,
-      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-3",
+      "name": "step2",
       "state": "执行中",
       "code": 0,
       "message": "",
       "times": {
-        "begin": "2022-11-17T09:42:19+08:00",
-        "ttl": "47h59m50.3245453s"
+        "begin": "2022-11-17T17:20:29+08:00",
+        "ttl": "47h59m29.939247268s"
+      }
+    },
+    {
+      "step": 3,
+      "name": "step3",
+      "state": "等待执行",
+      "code": 0,
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "depends_on": [
+        "step2"
+      ],
+      "times": {
+        "ttl": "47h59m29.939244168s"
       }
     }
   ]
@@ -321,54 +346,56 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
 ```json
 {
   "code": 1002,
-  "message": "步骤: 2, 名称: 35225177-e524-439c-8416-50d4455657fd-2, 退出码: 52, 执行失败",
+  "message": "执行失败: [步骤: 0, 名称: step0, 退出码: 255; 步骤: 2, 名称: step2, 退出码: 255]",
   "data": [
     {
       "step": 0,
-      "name": "35225177-e524-439c-8416-50d4455657fd-0",
+      "name": "step0",
       "state": "已结束",
-      "code": 0,
-      "message": " C:\\Windows\\system32>curl -I http://www.q1.com % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 25397 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Server: marco/2.18 Date: Thu, 17 Nov 2022 01:42:52 GMT Content-Type: text/html Content-Length: 25397 Connection: keep-alive Vary: Accept-Encoding X-Source: C/200 Cache-Control: max-age=600 ETag: \"42a8f17ee1c7d81:0\" Last-Modified: Wed, 14 Sep 2022 02:27:11 GMT Accept-Ranges: bytes X-Powered-By: ASP.NET X-Request-Id: 6cfd420f5bc829dc11bd04645ce29a57; 8d3b503bd4676a143f49e9c358bac337 Age: 293 Via: T.164.N, V.mix-hz-fdi-165, T.15.H, M.ctn-fj-foc-005 ",
+      "code": 255,
+      "message": "wrong script type",
       "times": {
-        "begin": "2022-11-17T09:42:52+08:00",
-        "end": "2022-11-17T09:42:52+08:00",
-        "ttl": "47h57m52.6698884s"
+        "begin": "2022-11-17T17:17:58+08:00",
+        "end": "2022-11-17T17:17:58+08:00",
+        "ttl": "47h59m47.964165525s"
       }
     },
     {
       "step": 1,
-      "name": "35225177-e524-439c-8416-50d4455657fd-1",
-      "state": "已结束",
+      "name": "step1",
+      "state": "等待执行",
       "code": 0,
-      "message": "",
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "depends_on": [
+        "step0"
+      ],
       "times": {
-        "begin": "2022-11-17T09:42:52+08:00",
-        "end": "2022-11-17T09:43:23+08:00",
-        "ttl": "47h58m23.6698884s"
+        "ttl": "47h59m47.964161225s"
       }
     },
     {
       "step": 2,
-      "name": "35225177-e524-439c-8416-50d4455657fd-2",
+      "name": "step2",
       "state": "已结束",
-      "code": 52,
-      "message": " C:\\Windows\\system32>curl -I http://baidu.com %!T(MISSING)otal %!R(MISSING)eceived %!X(MISSING)ferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 curl: (52) Empty reply from server exit status 52",
+      "code": 255,
+      "message": "wrong script type",
       "times": {
-        "begin": "2022-11-17T09:42:52+08:00",
-        "end": "2022-11-17T09:42:52+08:00",
-        "ttl": "47h57m52.6698884s"
+        "begin": "2022-11-17T17:17:58+08:00",
+        "end": "2022-11-17T17:17:58+08:00",
+        "ttl": "47h59m47.964158825s"
       }
     },
     {
       "step": 3,
-      "name": "35225177-e524-439c-8416-50d4455657fd-3",
-      "state": "已结束",
+      "name": "step3",
+      "state": "等待执行",
       "code": 0,
-      "message": "",
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "depends_on": [
+        "step2"
+      ],
       "times": {
-        "begin": "2022-11-17T09:42:52+08:00",
-        "end": "2022-11-17T09:43:23+08:00",
-        "ttl": "47h58m23.6698884s"
+        "ttl": "47h59m47.964156425s"
       }
     }
   ]

@@ -11,12 +11,13 @@ import (
 )
 
 type ResStatus struct {
-	Step    int    `json:"step"`
-	Name    string `json:"name,omitempty"`
-	State   string `json:"state"`
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Times   *Times `json:"times,omitempty"`
+	Step      int      `json:"step"`
+	Name      string   `json:"name,omitempty"`
+	State     string   `json:"state"`
+	Code      int      `json:"code"`
+	Message   string   `json:"message"`
+	DependsOn []string `json:"depends_on,omitempty"`
+	Times     *Times   `json:"times,omitempty"`
 }
 
 // Get
@@ -50,11 +51,12 @@ func Get(c *gin.Context) {
 	var res []ResStatus
 	for _, v := range tasksStepStates {
 		res = append(res, ResStatus{
-			Step:    v.Step,
-			Name:    v.Name,
-			State:   cache.StateCNMap[v.State],
-			Code:    v.Code,
-			Message: v.Message,
+			Step:      v.Step,
+			Name:      v.Name,
+			State:     cache.StateCNMap[v.State],
+			Code:      v.Code,
+			Message:   v.Message,
+			DependsOn: v.DependsOn,
 			Times: &Times{
 				Begin: timeStr(v.Times.Begin),
 				End:   timeStr(v.Times.End),
@@ -66,21 +68,27 @@ func Get(c *gin.Context) {
 	switch taskState.State {
 	// 运行结束
 	case cache.Stop:
+		var code int
+		var message []string
 		for _, v := range tasksStepStates {
+			code += v.Code
 			if v.Code != 0 {
-				var message = fmt.Sprintf("步骤: %d, 退出码: %d", v.Step, v.Code)
+				var msg = fmt.Sprintf("步骤: %d, 退出码: %d", v.Step, v.Code)
 				if v.Name != "" {
-					message = fmt.Sprintf("步骤: %d, 名称: %s, 退出码: %d", v.Step, v.Name, v.Code)
+					msg = fmt.Sprintf("步骤: %d, 名称: %s, 退出码: %d", v.Step, v.Name, v.Code)
 				}
 				if taskState.VMInstanceID != "" {
-					message = fmt.Sprintf("实例ID: %s, %s", taskState.VMInstanceID, message)
+					msg += fmt.Sprintf(", 实例ID: %s, %s", taskState.VMInstanceID, message)
 				}
 				if taskState.HardWareID != "" {
-					message = fmt.Sprintf("硬件ID: %s, %s", taskState.HardWareID, message)
+					msg += fmt.Sprintf(", 硬件ID: %s, %s", taskState.HardWareID, message)
 				}
-				render.SetRes(res, fmt.Errorf(message), utils.CodeExecErr)
-				return
+				message = append(message, msg)
 			}
+		}
+		if code != 0 {
+			render.SetRes(res, fmt.Errorf("执行失败: [%s]", strings.Join(message, "; ")), utils.CodeExecErr)
+			return
 		}
 		render.SetJson(res)
 	// 运行中, 排队中
@@ -96,7 +104,7 @@ func Get(c *gin.Context) {
 			}
 			msgSlice = append(msgSlice, msg)
 		}
-		render.SetRes(res, fmt.Errorf(strings.Join(msgSlice, ",")), utils.CodeRunning)
+		render.SetRes(res, fmt.Errorf("执行中: [%s]", strings.Join(msgSlice, "; ")), utils.CodeRunning)
 	case cache.Pending:
 		render.SetError(utils.CodeRunning, nil)
 	}

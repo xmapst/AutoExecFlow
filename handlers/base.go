@@ -34,7 +34,9 @@ func NewRes(data interface{}, err error, code int) *JSONResult {
 		Message: func() string {
 			result := NewInfo(err)
 			if codeMsg != "" && result != "" {
-				result += ", " + codeMsg
+				if !strings.HasPrefix(result, codeMsg) {
+					result += ". " + codeMsg
+				}
 			} else if codeMsg != "" {
 				result = codeMsg
 			}

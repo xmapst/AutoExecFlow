@@ -90,12 +90,12 @@ func List(c *gin.Context) {
 			res.Code = code
 			switch {
 			case taskState.State == cache.Stop:
-				res.Message = fmt.Sprintf("执行失败: %s", strings.Join(errorStateMsg, ","))
+				res.Message = fmt.Sprintf("执行失败: [%s]", strings.Join(errorStateMsg, "; "))
 				if res.Code == 0 {
 					res.Message = "所有步骤执行成功"
 				}
 			case taskState.State == cache.Running:
-				res.Message = fmt.Sprintf("当前正在执行: %s", strings.Join(runningStateMsg, ","))
+				res.Message = fmt.Sprintf("当前正在执行: [%s]", strings.Join(runningStateMsg, "; "))
 			default:
 				res.Message = res.State
 			}

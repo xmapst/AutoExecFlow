@@ -61,15 +61,18 @@ func worker(i interface{}) interface{} {
 
 	// 创建一个有向无环图，图中的每个顶点都是一个作业
 	for step, task := range e.Tasks {
+		// 设置缓存中初始状态
+		e.initStepCache(step, task)
 		s := step
 		t := task
-		runner.AddVertex(task.Name, func() error {
+		fn := func() error {
 			return e.execStep(s, t)
-		})
+		}
+		runner.AddVertex(task.Name, fn)
 	}
 	// 根据在 depends_on 属性中配置的值创建顶点边
 	for k, task := range e.Tasks {
-		// 第一条忽略
+		// 忽略第一个步骤, 防止找不到顶点
 		if k == 0 {
 			continue
 		}
@@ -95,6 +98,23 @@ func worker(i interface{}) interface{} {
 	// 运行结束
 	e.State.State = cache.Stop
 	return nil
+}
+
+func (e *ExecTask) initStepCache(step int, task *cache.Task) {
+	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
+	var state = &cache.TaskStepState{
+		Step:    step,
+		Name:    task.Name,
+		State:   cache.Pending,
+		Message: "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+		Times: &cache.Times{
+			TTL: e.State.Times.TTL,
+		},
+	}
+	if step != 0 {
+		state.DependsOn = task.DependsOn
+	}
+	cache.SetTaskStep(key, state, state.Times.TTL)
 }
 
 func (e *ExecTask) newCmd(step int, task *cache.Task) *Cmd {
@@ -138,6 +158,7 @@ func (e *ExecTask) execStep(step int, task *cache.Task) error {
 	if err := cmd.Create(); err != nil {
 		cmd.Log.Error(err)
 		state.Message = err.Error()
+		state.Code = 255
 		return execErr
 	}
 	state.Code, state.Message = cmd.Run()
