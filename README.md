@@ -24,7 +24,6 @@ Commands:
 
   run
     Run server
-
 ```
 
 ## 服用方式
@@ -93,99 +92,99 @@ curl -XGET http://localhost:2376/?sort=ttl
 顺序执行:
 ```shell
 curl -XPOST http://localhost:2376 -d '[
-    {
-        "command_type":"cmd",
-        "command_content":"curl -I https://%envhost%",
-        "env_vars":[
-            "envhost=www.q1.com",
-            "env2=value2"
-        ]
-    },
-    {
-        "command_type":"powershell",
-        "command_content":"sleep 30",
-        "env_vars":[
-            "env1=value1",
-            "env2=value2"
-        ]
-    },
-    {
-        "command_type":"cmd",
-        "command_content":"curl -I https://%envhost%",
-        "env_vars":[
-            "envhost=baidu.com"
-        ]
-    }
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=www.q1.com",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"powershell",
+    "command_content":"sleep 30",
+    "env_vars":[
+      "env1=value1",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=baidu.com"
+    ]
+  }
 ]'
 ```
 并行执行
 ```shell
 curl -XPOST http://localhost:2376/?ansync=true -d '[
-    {
-        "command_type":"cmd",
-        "command_content":"curl -I https://%envhost%",
-        "env_vars":[
-            "envhost=www.q1.com",
-            "env2=value2"
-        ]
-    },
-    {
-        "command_type":"powershell",
-        "command_content":"sleep 30",
-        "env_vars":[
-            "env1=value1",
-            "env2=value2"
-        ]
-    },
-    {
-        "command_type":"cmd",
-        "command_content":"curl -I https://%envhost%",
-        "env_vars":[
-            "envhost=baidu.com"
-        ]
-    }
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=www.q1.com",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"powershell",
+    "command_content":"sleep 30",
+    "env_vars":[
+      "env1=value1",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=baidu.com"
+    ]
+  }
 ]'
 ```
 
 自定义编排执行
 ```shell
 curl -XPOST http://localhost:2376/?ansync=true -d '[
-    {
-        "name": "step0",
-        "command_type": "cmd",
-        "command_content": "ping baidu.com",
-        "env_vars": [
-            "env1=a",
-            "env2=b",
-            "env3=c"
-        ]
-    },
-    {
-        "name": "step1",
-        "command_type": "cmd",
-        "command_content": "curl https://www.baidu.com",
-        "env_vars": [
-            "env1=a",
-            "env2=b",
-            "env3=c"
-        ],
-        "depends_on": [
-            "step0"
-        ]
-    },
-    {
-        "name": "step2",
-        "command_type": "cmd",
-        "command_content": "set",
-        "env_vars": [
-            "env1=a",
-            "env2=b",
-            "env3=c"
-        ],
-        "depends_on": [
-            "step0"
-        ]
-    }
+  {
+    "name": "step0",
+    "command_type": "cmd",
+    "command_content": "ping baidu.com",
+    "env_vars": [
+      "env1=a",
+      "env2=b",
+      "env3=c"
+    ]
+  },
+  {
+    "name": "step1",
+    "command_type": "cmd",
+    "command_content": "curl https://www.baidu.com",
+    "env_vars": [
+      "env1=a",
+      "env2=b",
+      "env3=c"
+    ],
+    "depends_on": [
+      "step0"
+    ]
+  },
+  {
+    "name": "step2",
+    "command_type": "cmd",
+    "command_content": "set",
+    "env_vars": [
+      "env1=a",
+      "env2=b",
+      "env3=c"
+    ],
+    "depends_on": [
+      "step0"
+    ]
+  }
 ]'
 ```
 
@@ -194,9 +193,11 @@ curl -XPOST http://localhost:2376/?ansync=true -d '[
 ```json
 {
   "code": 0,
+  "message": "成功",
   "data":{
-    "id": "87a25e00-5c35-453c-93c8-36109a24a104",
-    "count": 3
+    "count": 4,
+    "id": "7f478334-1f44-4580-8aa9-9772b84e4bf6",
+    "timestamp": 1668649373430555500
   }
 }
 ```
@@ -204,14 +205,14 @@ curl -XPOST http://localhost:2376/?ansync=true -d '[
 ```json
 {
   "code": 400,
-  "message": "xxxxx"
+  "message": "[0]: Key: 'PostStruct.CommandType' Error:Field validation for 'CommandType' failed on the 'required' tag"
 }
 ```
 
 ### 查询结果  
 请求:  
 ```shell
-curl http://localhost:2376/87a25e00-5c35-453c-93c8-36109a24a104
+curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
 ```
 
 返回内容:  
@@ -260,30 +261,115 @@ curl http://localhost:2376/87a25e00-5c35-453c-93c8-36109a24a104
   ]
 }
 ```
-参数不全:
-```json
-{
-  "code": 400,
-  "message": "缺少id参数"
-}
-```
+
 执行中:
 ```json
 {
   "code": 1001,
-  "message": "执行中"
+  "message": "步骤: 1, 名称: eb766bf4-88e4-4449-ad12-bafdbf75c78e-1,步骤: 3, 名称: eb766bf4-88e4-4449-ad12-bafdbf75c78e-3, 执行中",
+  "data": [
+    {
+      "step": 0,
+      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-0",
+      "state": "已结束",
+      "code": 0,
+      "message": " C:\\Windows\\system32>curl -I http://www.q1.com % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 25397 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Server: marco/2.18 Date: Thu, 17 Nov 2022 01:42:20 GMT Content-Type: text/html Content-Length: 25397 Connection: keep-alive Vary: Accept-Encoding X-Source: C/200 Cache-Control: max-age=600 ETag: \"42a8f17ee1c7d81:0\" Last-Modified: Wed, 14 Sep 2022 02:27:11 GMT Accept-Ranges: bytes X-Powered-By: ASP.NET X-Request-Id: 6cfd420f5bc829dc11bd04645ce29a57; e494a33dbc770066f42498c27878a744 Age: 261 Via: T.164.N, V.mix-hz-fdi-165, T.15.H, M.ctn-fj-foc-015 ",
+      "times": {
+        "begin": "2022-11-17T09:42:19+08:00",
+        "end": "2022-11-17T09:42:20+08:00",
+        "ttl": "47h59m51.3247184s"
+      }
+    },
+    {
+      "step": 1,
+      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-1",
+      "state": "执行中",
+      "code": 0,
+      "message": "",
+      "times": {
+        "begin": "2022-11-17T09:42:19+08:00",
+        "ttl": "47h59m50.3247184s"
+      }
+    },
+    {
+      "step": 2,
+      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-2",
+      "state": "已结束",
+      "code": 0,
+      "message": " C:\\Windows\\system32>curl -I http://baidu.com % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 81 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Date: Thu, 17 Nov 2022 01:42:20 GMT Server: Apache Last-Modified: Tue, 12 Jan 2010 13:48:00 GMT ETag: \"51-47cf7e6ee8400\" Accept-Ranges: bytes Content-Length: 81 Cache-Control: max-age=86400 Expires: Fri, 18 Nov 2022 01:42:20 GMT Connection: Keep-Alive Content-Type: text/html ",
+      "times": {
+        "begin": "2022-11-17T09:42:19+08:00",
+        "end": "2022-11-17T09:42:20+08:00",
+        "ttl": "47h59m51.3245453s"
+      }
+    },
+    {
+      "step": 3,
+      "name": "eb766bf4-88e4-4449-ad12-bafdbf75c78e-3",
+      "state": "执行中",
+      "code": 0,
+      "message": "",
+      "times": {
+        "begin": "2022-11-17T09:42:19+08:00",
+        "ttl": "47h59m50.3245453s"
+      }
+    }
+  ]
 }
 ```
 执行失败:
 ```json
 {
   "code": 1002,
-  "message": "1, 执行失败",
+  "message": "步骤: 2, 名称: 35225177-e524-439c-8416-50d4455657fd-2, 退出码: 52, 执行失败",
   "data": [
     {
-      "code": 100,
-      "message": "exit 100 exit status 100",
-      "step": 1
+      "step": 0,
+      "name": "35225177-e524-439c-8416-50d4455657fd-0",
+      "state": "已结束",
+      "code": 0,
+      "message": " C:\\Windows\\system32>curl -I http://www.q1.com % Total % Received % Xferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 25397 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 HTTP/1.1 200 OK Server: marco/2.18 Date: Thu, 17 Nov 2022 01:42:52 GMT Content-Type: text/html Content-Length: 25397 Connection: keep-alive Vary: Accept-Encoding X-Source: C/200 Cache-Control: max-age=600 ETag: \"42a8f17ee1c7d81:0\" Last-Modified: Wed, 14 Sep 2022 02:27:11 GMT Accept-Ranges: bytes X-Powered-By: ASP.NET X-Request-Id: 6cfd420f5bc829dc11bd04645ce29a57; 8d3b503bd4676a143f49e9c358bac337 Age: 293 Via: T.164.N, V.mix-hz-fdi-165, T.15.H, M.ctn-fj-foc-005 ",
+      "times": {
+        "begin": "2022-11-17T09:42:52+08:00",
+        "end": "2022-11-17T09:42:52+08:00",
+        "ttl": "47h57m52.6698884s"
+      }
+    },
+    {
+      "step": 1,
+      "name": "35225177-e524-439c-8416-50d4455657fd-1",
+      "state": "已结束",
+      "code": 0,
+      "message": "",
+      "times": {
+        "begin": "2022-11-17T09:42:52+08:00",
+        "end": "2022-11-17T09:43:23+08:00",
+        "ttl": "47h58m23.6698884s"
+      }
+    },
+    {
+      "step": 2,
+      "name": "35225177-e524-439c-8416-50d4455657fd-2",
+      "state": "已结束",
+      "code": 52,
+      "message": " C:\\Windows\\system32>curl -I http://baidu.com %!T(MISSING)otal %!R(MISSING)eceived %!X(MISSING)ferd Average Speed Time Time Time Current Dload Upload Total Spent Left Speed 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 0 0 0 0 0 0 0 0 --:--:-- --:--:-- --:--:-- 0 curl: (52) Empty reply from server exit status 52",
+      "times": {
+        "begin": "2022-11-17T09:42:52+08:00",
+        "end": "2022-11-17T09:42:52+08:00",
+        "ttl": "47h57m52.6698884s"
+      }
+    },
+    {
+      "step": 3,
+      "name": "35225177-e524-439c-8416-50d4455657fd-3",
+      "state": "已结束",
+      "code": 0,
+      "message": "",
+      "times": {
+        "begin": "2022-11-17T09:42:52+08:00",
+        "end": "2022-11-17T09:43:23+08:00",
+        "ttl": "47h58m23.6698884s"
+      }
     }
   ]
 }
@@ -302,9 +388,3 @@ curl http://localhost:2376/87a25e00-5c35-453c-93c8-36109a24a104
    - 1001: 执行中
    - 1002: 执行失败
    - 1003: 未找到数据/已销毁
-   
-   
-   
-   
-   
-   
