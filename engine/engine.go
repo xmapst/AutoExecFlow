@@ -148,9 +148,9 @@ func (e *ExecTask) execStep(step int, task *cache.Task) error {
 			TTL:   e.State.Times.TTL,
 		},
 	}
-    if step != 0 {
-        state.DependsOn = task.DependsOn
-    }
+	if step != 0 {
+		state.DependsOn = task.DependsOn
+	}
 	cache.SetTaskStep(key, state, state.Times.TTL)
 	var cmd = e.newCmd(step, task)
 	defer func() {
