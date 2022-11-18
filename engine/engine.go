@@ -103,13 +103,11 @@ func (e *ExecTask) initStepCache(step int64, task *cache.Task) {
 		Step:    step,
 		Name:    task.Name,
 		State:   cache.Pending,
+        DependsOn: task.DependsOn,
 		Message: "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
 		Times: &cache.Times{
 			TTL: e.State.Times.TTL,
 		},
-	}
-	if step != 0 {
-		state.DependsOn = task.DependsOn
 	}
 	cache.SetTaskStep(key, state, state.Times.TTL)
 }
@@ -138,16 +136,14 @@ func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 func (e *ExecTask) execStep(step int64, task *cache.Task) error {
 	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
 	var state = &cache.TaskStepState{
-		Step:  step,
-		Name:  task.Name,
-		State: cache.Running,
+		Step:      step,
+		Name:      task.Name,
+		State:     cache.Running,
+		DependsOn: task.DependsOn,
 		Times: &cache.Times{
 			Begin: time.Now().UnixNano(),
 			TTL:   e.State.Times.TTL,
 		},
-	}
-	if step != 0 {
-		state.DependsOn = task.DependsOn
 	}
 	cache.SetTaskStep(key, state, state.Times.TTL)
 	var cmd = e.newCmd(step, task)

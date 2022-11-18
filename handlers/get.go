@@ -118,5 +118,9 @@ func Get(c *gin.Context) {
 		render.SetRes(res, fmt.Errorf("执行中: [%s]", strings.Join(msgSlice, "; ")), utils.CodeRunning)
 	case cache.Pending:
 		render.SetError(utils.CodeRunning, nil)
+	case cache.SystemError:
+		render.SetRes(res, fmt.Errorf(taskState.Message), utils.CodeExecErr)
+	default:
+		render.SetError(utils.CodeErrNoData, errors.New("id不存在"))
 	}
 }
