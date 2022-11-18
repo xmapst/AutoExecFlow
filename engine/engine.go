@@ -100,11 +100,11 @@ func worker(i interface{}) interface{} {
 func (e *ExecTask) initStepCache(step int64, task *cache.Task) {
 	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
 	var state = &cache.TaskStepState{
-		Step:    step,
-		Name:    task.Name,
-		State:   cache.Pending,
-        DependsOn: task.DependsOn,
-		Message: "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+		Step:      step,
+		Name:      task.Name,
+		State:     cache.Pending,
+		DependsOn: task.DependsOn,
+		Message:   "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
 		Times: &cache.Times{
 			TTL: e.State.Times.TTL,
 		},

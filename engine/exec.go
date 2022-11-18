@@ -14,7 +14,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"time"
 )
 
@@ -123,8 +122,7 @@ func (c *Cmd) output(stdout io.ReadCloser) {
 		if line == nil {
 			continue
 		}
-		if runtime.GOOS == "windows" {
-			// windows 输出转码
+		if c.isGBK(line) {
 			line = c.gbkToUtf8(line)
 		}
 		cache.SetTaskStepOutput(c.TaskID, c.Step, num, &cache.TaskStepOutput{
@@ -144,4 +142,29 @@ func (c *Cmd) gbkToUtf8(s []byte) []byte {
 		return s
 	}
 	return b
+}
+
+func (c *Cmd) isGBK(data []byte) bool {
+	length := len(data)
+	var i int = 0
+	for i < length {
+		if data[i] <= 0x7f {
+			//编码0~127,只有一个字节的编码，兼容ASCII码
+			i++
+			continue
+		} else {
+			//大于127的使用双字节编码，落在gbk编码范围内的字符
+			if data[i] >= 0x81 &&
+				data[i] <= 0xfe &&
+				data[i+1] >= 0x40 &&
+				data[i+1] <= 0xfe &&
+				data[i+1] != 0xf7 {
+				i += 2
+				continue
+			} else {
+				return false
+			}
+		}
+	}
+	return true
 }
