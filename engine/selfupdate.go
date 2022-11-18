@@ -31,9 +31,8 @@ func LoadSelfUpdateData() {
 		return
 	}
 	taskState := &cache.TaskState{
-		State:     cache.Stop,
-		StepCount: 1,
-		// 设置时间
+		State: cache.Stop,
+		Count: 1,
 		Times: &cache.Times{
 			Begin: time.Now().UnixNano(),
 			End:   time.Now().UnixNano(),

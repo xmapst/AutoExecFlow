@@ -20,21 +20,28 @@ type Config struct {
 	WebTimeout     time.Duration
 	ServiceName    string
 	SelfUpdateData string
-	TempDir        string
+	RootDir        string
 	ScriptDir      string
 	LogDir         string
+	WorkSpace      string
+}
+
+func init() {
+	executable, err := os.Executable()
+	if err != nil {
+		logrus.Fatalln(err)
+	}
+	App.ServiceName = strings.TrimSuffix(filepath.Base(executable), ".exe")
+	App.SelfUpdateData = filepath.Join(filepath.Dir(executable), App.ServiceName+".dat")
 }
 
 func (c *Config) Load() error {
-	executable, err := os.Executable()
-	if err != nil {
-		logrus.Errorln(err)
-		return err
-	}
-	c.ServiceName = strings.TrimSuffix(filepath.Base(executable), ".exe")
-	c.SelfUpdateData = filepath.Join(filepath.Dir(executable), c.ServiceName+".dat")
-	c.TempDir = filepath.Join(os.TempDir(), c.ServiceName)
-	c.ScriptDir = filepath.Join(c.TempDir, "scripts")
-	c.LogDir = filepath.Join(c.TempDir, "logs")
+	_ = os.MkdirAll(c.RootDir, 0777)
+	c.ScriptDir = filepath.Join(c.RootDir, "scripts")
+	_ = os.MkdirAll(c.ScriptDir, 0777)
+	c.LogDir = filepath.Join(c.RootDir, "logs")
+	_ = os.MkdirAll(c.LogDir, 0777)
+	c.WorkSpace = filepath.Join(c.RootDir, "workspace")
+	_ = os.MkdirAll(c.WorkSpace, 0777)
 	return nil
 }

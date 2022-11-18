@@ -52,49 +52,45 @@ func (c *Cmd) selfCmd() bool {
 	return c.exec != nil
 }
 
-func (c *Cmd) Run() (exitCode int, content string) {
-	var outputCh, errChan = make(chan string), make(chan error)
+func (c *Cmd) Run() (code int64, msg string) {
+	var done, errCh = make(chan bool), make(chan error)
+	code = 255
 	defer c.clear()
 	if !c.initCmd() {
-		return 255, "command type not found"
+		msg = "command type not found"
+		return
 	}
 	defer c.cancelFunc()
 	c.exec.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	//cmd.Dir, _ = os.UserHomeDir()
-	go c.combinedOutput(outputCh, errChan)
+	c.exec.Dir = c.workSpace
+	go c.run(done, errCh)
 	select {
 	// execute timeout signal
 	case <-c.context.Done():
+		msg = "exec time out"
 		// If you use cmd.Process.Kill() directly, only the child process is killed,
 		//but the grandchild process is not killed
 		//err := cmd.Process.Kill()
 		if c.exec.Process != nil {
-			_ = syscall.Kill(-c.exec.Process.Pid, syscall.SIGKILL)
+			err := syscall.Kill(-c.exec.Process.Pid, syscall.SIGKILL)
+			if err != nil {
+				msg = fmt.Sprintf("%s %s", msg, err.Error())
+			}
 		}
-		return 255, "exec time out"
+		return
 	// execution result output
-	case output := <-outputCh:
-		code := 0
+	case <-done:
+		code = 0
 		if c.exec.ProcessState != nil {
-			code = c.exec.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+			code = int64(c.exec.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())
 		}
-		return code, output
+		return
 	// Execute exception output
-	case err := <-errChan:
-		code := 255
+	case err := <-errCh:
 		if c.exec.ProcessState != nil {
-			code = c.exec.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+			code = int64(c.exec.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())
 		}
-		return code, err.Error()
-	}
-}
-
-func (c *Cmd) combinedOutput(outputCh chan string, errCh chan error) {
-	output, err := c.exec.CombinedOutput()
-	if err != nil {
-		errCh <- fmt.Errorf(string(output) + err.Error())
+		msg = err.Error()
 		return
 	}
-	go c.printOutput(output)
-	outputCh <- string(output)
 }

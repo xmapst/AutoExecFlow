@@ -9,6 +9,7 @@ import (
 	info "github.com/xmapst/osreapi"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
+	_ "github.com/xmapst/osreapi/config"
 	"github.com/xmapst/osreapi/engine"
 	"github.com/xmapst/osreapi/handlers"
 	"github.com/xmapst/osreapi/utils"
@@ -16,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -31,6 +33,10 @@ func init() {
 		"debug",
 		"Enable debug messages",
 	).Default("false").BoolVar(&config.App.Debug)
+	kingpin.Flag(
+		"root",
+		"Working root directory",
+	).Default(filepath.Join(os.TempDir(), config.App.ServiceName)).StringVar(&config.App.RootDir)
 	kingpin.Flag(
 		"key_expire",
 		`Set the database key expire time. Example: "key_expire=1h"`,

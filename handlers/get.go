@@ -11,11 +11,11 @@ import (
 )
 
 type ResStatus struct {
-	Step      int      `json:"step"`
+	Step      int64    `json:"step"`
 	Name      string   `json:"name,omitempty"`
 	State     string   `json:"state"`
-	Code      int      `json:"code"`
-	Message   string   `json:"message"`
+	Code      int64    `json:"code"`
+	Message   []string `json:"message"`
 	DependsOn []string `json:"depends_on,omitempty"`
 	Times     *Times   `json:"times,omitempty"`
 }
@@ -50,25 +50,36 @@ func Get(c *gin.Context) {
 	tasksStepStates := cache.GetAllTaskStepState(id)
 	var res []ResStatus
 	for _, v := range tasksStepStates {
-		res = append(res, ResStatus{
+		var output []string
+		outputs := cache.GetAllTaskStepOutput(id, v.Step)
+		for _, o := range outputs {
+			output = append(output, o.Content)
+		}
+		_res := ResStatus{
 			Step:      v.Step,
 			Name:      v.Name,
 			State:     cache.StateCNMap[v.State],
 			Code:      v.Code,
-			Message:   v.Message,
 			DependsOn: v.DependsOn,
 			Times: &Times{
 				Begin: timeStr(v.Times.Begin),
 				End:   timeStr(v.Times.End),
 				TTL:   v.Times.TTL.String(),
 			},
-		})
+		}
+		if v.Message != "" {
+			_res.Message = append(_res.Message, v.Message)
+		}
+		if output != nil {
+			_res.Message = append(_res.Message, output...)
+		}
+		res = append(res, _res)
 	}
 
 	switch taskState.State {
 	// 运行结束
 	case cache.Stop:
-		var code int
+		var code int64
 		var message []string
 		for _, v := range tasksStepStates {
 			code += v.Code

@@ -13,8 +13,8 @@ type ListRes struct {
 	ID      string `json:"id"`
 	URL     string `json:"url"`
 	State   string `json:"state"`
-	Code    int    `json:"code"`
-	Count   int    `json:"count"`
+	Code    int64  `json:"code"`
+	Count   int64  `json:"count"`
 	Message string `json:"message"`
 	Times   *Times `json:"times"`
 }
@@ -55,51 +55,54 @@ func List(c *gin.Context) {
 		return
 	}
 	var resSlice []ListRes
-	for _, taskState := range tasksStates {
+	for _, v := range tasksStates {
 		res := ListRes{
-			ID:    taskState.ID,
-			URL:   fmt.Sprintf("http://%s/%s", c.Request.Host, taskState.ID),
-			State: cache.StateCNMap[taskState.State],
-			Count: taskState.Count,
+			ID:    v.ID,
+			URL:   fmt.Sprintf("http://%s/%s", c.Request.Host, v.ID),
+			State: cache.StateCNMap[v.State],
+			Count: v.Count,
 			Times: &Times{
-				Begin: timeStr(taskState.Times.Begin),
-				End:   timeStr(taskState.Times.End),
+				Begin: timeStr(v.Times.Begin),
+				End:   timeStr(v.Times.End),
 			},
 		}
-		if taskState.Times.TTL > 0 {
-			res.Times.TTL = taskState.Times.TTL.String()
+		if v.Times.TTL > 0 {
+			res.Times.TTL = v.Times.TTL.String()
 		}
-		if taskState.State == cache.SystemError {
+		if v.State == cache.SystemError {
 			res.Code = 255
-			res.Message = "系统错误"
+			res.Message = v.Message
 		} else {
-			tasksStepStates := cache.GetAllTaskStepState(taskState.ID)
+			tasksStepStates := cache.GetAllTaskStepState(v.ID)
 			var runningStateMsg, errorStateMsg []string
-			var code int
-			for _, v := range tasksStepStates {
-				var state = fmt.Sprintf("步骤: %d, 名称: %s", v.Step, v.Name)
-				if v.Name == "" {
-					state = fmt.Sprintf("步骤: %d", v.Step)
+			var code int64
+			for _, vv := range tasksStepStates {
+				var state = fmt.Sprintf("步骤: %d, 名称: %s", vv.Step, vv.Name)
+				if vv.Name == "" {
+					state = fmt.Sprintf("步骤: %d", vv.Step)
 				}
-				if v.State == cache.Running {
+				if vv.State == cache.Running {
 					runningStateMsg = append(runningStateMsg, state)
 				}
-				if v.State == cache.Stop && v.Code != 0 {
+				if vv.State == cache.Stop && vv.Code != 0 {
 					errorStateMsg = append(errorStateMsg, state)
 				}
-				code += v.Code
+				code += vv.Code
 			}
 			res.Code = code
 			switch {
-			case taskState.State == cache.Stop:
+			case v.State == cache.Stop:
 				res.Message = fmt.Sprintf("执行失败: [%s]", strings.Join(errorStateMsg, "; "))
 				if res.Code == 0 {
 					res.Message = "所有步骤执行成功"
 				}
-			case taskState.State == cache.Running:
+			case v.State == cache.Running:
 				res.Message = fmt.Sprintf("当前正在执行: [%s]", strings.Join(runningStateMsg, "; "))
 			default:
 				res.Message = res.State
+				if v.Message != "" {
+					res.Message = v.Message
+				}
 			}
 		}
 		resSlice = append(resSlice, res)

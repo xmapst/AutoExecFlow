@@ -16,9 +16,10 @@ const (
 	Running
 	Pending
 
-	TaskPrefix  = "task"
-	StepPrefix  = "step"
-	SystemError = -255
+	taskPrefix   = "task"
+	stepPrefix   = "step"
+	outputPrefix = "output"
+	SystemError  = -255
 )
 
 var StateENMap = map[int]string{
@@ -46,17 +47,18 @@ type Task struct {
 
 type TaskState struct {
 	State        int    `json:"state"`
-	StepCount    int    `json:"step_count"`
+	Count        int64  `json:"count"`
 	HardWareID   string `json:"hard_ware_id"`
 	VMInstanceID string `json:"vm_instance_id"`
+	Message      string `json:"message"`
 	Times        *Times `json:"times,omitempty"`
 }
 
 type TaskStepState struct {
-	Step      int      `json:"step"`
+	Step      int64    `json:"step"`
 	Name      string   `json:"name"`
 	State     int      `json:"state"`
-	Code      int      `json:"code"`
+	Code      int64    `json:"code"`
 	Message   string   `json:"message"`
 	DependsOn []string `json:"depends_on"`
 	Times     *Times   `json:"times"`
@@ -66,6 +68,11 @@ type Times struct {
 	Begin int64         `json:"begin,omitempty"`
 	End   int64         `json:"end,omitempty"`
 	TTL   time.Duration `json:"ttl,omitempty"`
+}
+
+type TaskStepOutput struct {
+	Line    int64  `json:"line"`
+	Content string `json:"content"`
 }
 
 var (
@@ -94,7 +101,7 @@ func Close() {
 }
 
 func GetAllTaskState() (res map[string]TaskState, err error) {
-	prefix := fmt.Sprintf("%s:", TaskPrefix)
+	prefix := fmt.Sprintf("%s:", taskPrefix)
 	res = make(map[string]TaskState)
 	_ = db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -124,10 +131,11 @@ func GetAllTaskState() (res map[string]TaskState, err error) {
 }
 
 type ListData struct {
-	ID    string `json:"id,omitempty"`
-	State int    `json:"state,omitempty"`
-	Count int    `json:"step_count,omitempty"`
-	Times *Times `json:"times,omitempty"`
+	ID      string `json:"id,omitempty"`
+	State   int    `json:"state,omitempty"`
+	Count   int64  `json:"count,omitempty"`
+	Message string `json:"message,omitempty"`
+	Times   *Times `json:"times,omitempty"`
 }
 
 type ListByStartTimes []*ListData
@@ -144,10 +152,11 @@ func GetAllByBeginTime() (res ListByStartTimes) {
 	}
 	for k, v := range _res {
 		res = append(res, &ListData{
-			ID:    k,
-			State: v.State,
-			Times: v.Times,
-			Count: v.StepCount,
+			ID:      k,
+			State:   v.State,
+			Times:   v.Times,
+			Count:   v.Count,
+			Message: v.Message,
 		})
 	}
 	// sort by StartTimes
@@ -169,10 +178,11 @@ func GetAllByEndTime() (res ListByCompletedTimes) {
 	}
 	for k, v := range _res {
 		res = append(res, &ListData{
-			ID:    k,
-			State: v.State,
-			Times: v.Times,
-			Count: v.StepCount,
+			ID:      k,
+			State:   v.State,
+			Times:   v.Times,
+			Count:   v.Count,
+			Message: v.Message,
 		})
 	}
 	// sort by CompletedTimes
@@ -194,10 +204,11 @@ func GetAllByTTLTime() (res ListByExpiredTimes) {
 	}
 	for k, v := range _res {
 		res = append(res, &ListData{
-			ID:    k,
-			State: v.State,
-			Times: v.Times,
-			Count: v.StepCount,
+			ID:      k,
+			State:   v.State,
+			Times:   v.Times,
+			Count:   v.Count,
+			Message: v.Message,
 		})
 	}
 	// sort by ExpiredTimes
@@ -211,8 +222,14 @@ func (e TaskStepStates) Len() int           { return len(e) }
 func (e TaskStepStates) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
 func (e TaskStepStates) Less(i, j int) bool { return e[i].Step < e[j].Step }
 
+type TaskStepOutputs []*TaskStepOutput
+
+func (e TaskStepOutputs) Len() int           { return len(e) }
+func (e TaskStepOutputs) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
+func (e TaskStepOutputs) Less(i, j int) bool { return e[i].Line < e[j].Line }
+
 func GetTaskState(id string) (value *TaskState, found bool) {
-	key := fmt.Sprintf("%s:%s", TaskPrefix, id)
+	key := fmt.Sprintf("%s:%s", taskPrefix, id)
 	var err error
 	var item *badger.Item
 	err = db.View(func(txn *badger.Txn) error {
@@ -280,17 +297,17 @@ func Set(key string, val interface{}, ttl time.Duration) {
 }
 
 func SetTask(key string, val interface{}, ttl time.Duration) {
-	key = fmt.Sprintf("%s:%s", TaskPrefix, key)
+	key = fmt.Sprintf("%s:%s", taskPrefix, key)
 	Set(key, val, ttl)
 }
 
 func SetTaskStep(key string, val interface{}, ttl time.Duration) {
-	key = fmt.Sprintf("%s:%s", StepPrefix, key)
+	key = fmt.Sprintf("%s:%s", stepPrefix, key)
 	Set(key, val, ttl)
 }
 
 func GetAllTaskStepState(taskID string) TaskStepStates {
-	prefix := fmt.Sprintf("%s:%s:", StepPrefix, taskID)
+	prefix := fmt.Sprintf("%s:%s:", stepPrefix, taskID)
 	var taskStepStates TaskStepStates
 	_ = db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -317,4 +334,37 @@ func GetAllTaskStepState(taskID string) TaskStepStates {
 	})
 	sort.Sort(taskStepStates)
 	return taskStepStates
+}
+
+func SetTaskStepOutput(task string, step, line int64, val interface{}, ttl time.Duration) {
+	key := fmt.Sprintf("%s:%s:%d:%d", outputPrefix, task, step, line)
+	Set(key, val, ttl)
+}
+
+func GetAllTaskStepOutput(task string, step int64) TaskStepOutputs {
+	prefix := fmt.Sprintf("%s:%s:%d:", outputPrefix, task, step)
+	var taskStepOutputs TaskStepOutputs
+	_ = db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		for it.Seek([]byte(prefix)); it.ValidForPrefix([]byte(prefix)); it.Next() {
+			item := it.Item()
+			err := item.Value(func(v []byte) error {
+				var taskStepOutput = new(TaskStepOutput)
+				err := json.Unmarshal(v, taskStepOutput)
+				if err != nil {
+					logrus.Errorln(err)
+					return err
+				}
+				taskStepOutputs = append(taskStepOutputs, taskStepOutput)
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	sort.Sort(taskStepOutputs)
+	return taskStepOutputs
 }

@@ -30,7 +30,7 @@ func Process(taskID, hardWareID, vmInstanceID string, tasks []*cache.Task) {
 	// 临时存储
 	var state = &cache.TaskState{
 		State:        cache.Pending,
-		StepCount:    len(tasks),
+		Count:        int64(len(tasks)),
 		HardWareID:   hardWareID,
 		VMInstanceID: vmInstanceID,
 		Times: &cache.Times{
@@ -61,21 +61,17 @@ func worker(i interface{}) interface{} {
 
 	// 创建一个有向无环图，图中的每个顶点都是一个作业
 	for step, task := range e.Tasks {
-		// 设置缓存中初始状态
-		e.initStepCache(step, task)
-		s := step
+		s := int64(step)
 		t := task
+		// 设置缓存中初始状态
+		e.initStepCache(s, t)
 		fn := func() error {
 			return e.execStep(s, t)
 		}
 		runner.AddVertex(task.Name, fn)
 	}
 	// 根据在 depends_on 属性中配置的值创建顶点边
-	for k, task := range e.Tasks {
-		// 忽略第一个步骤, 防止找不到顶点
-		if k == 0 {
-			continue
-		}
+	for _, task := range e.Tasks {
 		for _, dep := range task.DependsOn {
 			runner.AddEdge(dep, task.Name)
 		}
@@ -91,6 +87,7 @@ func worker(i interface{}) interface{} {
 		if err != execErr {
 			logrus.Errorln(err)
 			e.State.State = cache.SystemError
+			e.State.Message = err.Error()
 			return nil
 		}
 	}
@@ -100,7 +97,7 @@ func worker(i interface{}) interface{} {
 	return nil
 }
 
-func (e *ExecTask) initStepCache(step int, task *cache.Task) {
+func (e *ExecTask) initStepCache(step int64, task *cache.Task) {
 	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
 	var state = &cache.TaskStepState{
 		Step:    step,
@@ -117,7 +114,7 @@ func (e *ExecTask) initStepCache(step int, task *cache.Task) {
 	cache.SetTaskStep(key, state, state.Times.TTL)
 }
 
-func (e *ExecTask) newCmd(step int, task *cache.Task) *Cmd {
+func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 	log := logrus.WithFields(logrus.Fields{
 		"step":    step,
 		"task_id": e.TaskID,
@@ -134,10 +131,11 @@ func (e *ExecTask) newCmd(step int, task *cache.Task) *Cmd {
 		Content:         task.CommandContent,
 		ExternalEnvVars: task.EnvVars,
 		Timeout:         task.Timeout,
+		TTL:             e.State.Times.TTL,
 	}
 }
 
-func (e *ExecTask) execStep(step int, task *cache.Task) error {
+func (e *ExecTask) execStep(step int64, task *cache.Task) error {
 	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
 	var state = &cache.TaskStepState{
 		Step:  step,
