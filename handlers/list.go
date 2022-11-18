@@ -55,10 +55,14 @@ func List(c *gin.Context) {
 		return
 	}
 	var resSlice []ListRes
+	var scheme = "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
 	for _, v := range tasksStates {
 		res := ListRes{
 			ID:    v.ID,
-			URL:   fmt.Sprintf("http://%s/%s", c.Request.Host, v.ID),
+			URL:   fmt.Sprintf("%s://%s/%s", scheme, c.Request.Host, v.ID),
 			State: cache.StateCNMap[v.State],
 			Count: v.Count,
 			Times: &Times{

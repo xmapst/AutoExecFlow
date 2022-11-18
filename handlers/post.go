@@ -74,10 +74,13 @@ func Post(c *gin.Context) {
 	}
 	// 加入池中异步处理
 	go engine.Process(taskID, hardWareID, vmInstanceID, tasks)
-
+	var scheme = "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
 	render.SetJson(map[string]interface{}{
 		"id":        taskID,
-		"url":       fmt.Sprintf("http://%s/%s", c.Request.Host, taskID),
+		"url":       fmt.Sprintf("%s://%s/%s", scheme, c.Request.Host, taskID),
 		"timestamp": time.Now().UnixNano(),
 		"count":     len(req),
 	})
