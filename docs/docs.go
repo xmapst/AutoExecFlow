@@ -144,42 +144,54 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "git": {
-                    "type": "object",
-                    "properties": {
-                        "branch": {
-                            "type": "string"
-                        },
-                        "commit": {
-                            "type": "string"
-                        }
-                    }
+                    "$ref": "#/definitions/handlers.InfoGit"
                 },
                 "go": {
-                    "type": "object",
-                    "properties": {
-                        "arch": {
-                            "type": "string"
-                        },
-                        "os": {
-                            "type": "string"
-                        },
-                        "version": {
-                            "type": "string"
-                        }
-                    }
+                    "$ref": "#/definitions/handlers.InfoGO"
                 },
                 "user": {
-                    "type": "object",
-                    "properties": {
-                        "email": {
-                            "type": "string"
-                        },
-                        "name": {
-                            "type": "string"
-                        }
-                    }
+                    "$ref": "#/definitions/handlers.InfoUser"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.InfoGO": {
+            "type": "object",
+            "properties": {
+                "arch": {
+                    "type": "string"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.InfoGit": {
+            "type": "object",
+            "properties": {
+                "branch": {
+                    "type": "string"
+                },
+                "commit": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.InfoUser": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

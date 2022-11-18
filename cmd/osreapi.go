@@ -10,7 +10,7 @@ import (
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
 	"github.com/xmapst/osreapi/engine"
-	"github.com/xmapst/osreapi/routers"
+	"github.com/xmapst/osreapi/handlers"
 	"github.com/xmapst/osreapi/utils"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"net/http"
@@ -108,7 +108,7 @@ func (p *program) Start(service.Service) error {
 		WriteTimeout: config.App.WebTimeout,
 		ReadTimeout:  config.App.WebTimeout,
 		IdleTimeout:  config.App.WebTimeout,
-		Handler:      routers.Router(),
+		Handler:      handlers.Router(),
 	}
 	go p.listenAndServe()
 	return nil

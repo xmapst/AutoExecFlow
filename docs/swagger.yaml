@@ -4,29 +4,37 @@ definitions:
       buildTime:
         type: string
       git:
-        properties:
-          branch:
-            type: string
-          commit:
-            type: string
-        type: object
+        $ref: '#/definitions/handlers.InfoGit'
       go:
-        properties:
-          arch:
-            type: string
-          os:
-            type: string
-          version:
-            type: string
-        type: object
+        $ref: '#/definitions/handlers.InfoGO'
       user:
-        properties:
-          email:
-            type: string
-          name:
-            type: string
-        type: object
+        $ref: '#/definitions/handlers.InfoUser'
       version:
+        type: string
+    type: object
+  handlers.InfoGO:
+    properties:
+      arch:
+        type: string
+      os:
+        type: string
+      version:
+        type: string
+    type: object
+  handlers.InfoGit:
+    properties:
+      branch:
+        type: string
+      commit:
+        type: string
+      url:
+        type: string
+    type: object
+  handlers.InfoUser:
+    properties:
+      email:
+        type: string
+      name:
         type: string
     type: object
   handlers.JSONResult:

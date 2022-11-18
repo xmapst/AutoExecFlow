@@ -78,7 +78,7 @@ func Init() {
 	opt := badger.DefaultOptions("").
 		WithInMemory(true).
 		WithLogger(logrus.StandardLogger()).
-		WithLoggingLevel(badger.INFO)
+		WithLoggingLevel(badger.ERROR)
 	db, err = badger.Open(opt)
 	if err != nil {
 		logrus.Fatalln(err)

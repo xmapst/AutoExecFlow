@@ -77,6 +77,7 @@ func Post(c *gin.Context) {
 
 	render.SetJson(map[string]interface{}{
 		"id":        taskID,
+		"url":       fmt.Sprintf("http://%s/%s", c.Request.Host, taskID),
 		"timestamp": time.Now().UnixNano(),
 		"count":     len(req),
 	})

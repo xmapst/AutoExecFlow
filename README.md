@@ -26,6 +26,28 @@ Commands:
     Run server
 ```
 
+## Router
+```text
+[GIN-debug] GET    /debug/pprof/             --> github.com/gin-gonic/gin.WrapF.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/cmdline      --> github.com/gin-gonic/gin.WrapF.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/profile      --> github.com/gin-gonic/gin.WrapF.func1 (4 handlers)
+[GIN-debug] POST   /debug/pprof/symbol       --> github.com/gin-gonic/gin.WrapF.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/symbol       --> github.com/gin-gonic/gin.WrapF.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/trace        --> github.com/gin-gonic/gin.WrapF.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/allocs       --> github.com/gin-gonic/gin.WrapH.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/block        --> github.com/gin-gonic/gin.WrapH.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/goroutine    --> github.com/gin-gonic/gin.WrapH.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/heap         --> github.com/gin-gonic/gin.WrapH.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/mutex        --> github.com/gin-gonic/gin.WrapH.func1 (4 handlers)
+[GIN-debug] GET    /debug/pprof/threadcreate --> github.com/gin-gonic/gin.WrapH.func1 (4 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (4 handlers)
+[GIN-debug] GET    /version                  --> github.com/xmapst/osreapi/handlers.Version (4 handlers)
+[GIN-debug] GET    /healthyz                 --> github.com/xmapst/osreapi/handlers.Router.func2 (4 handlers)
+[GIN-debug] GET    /                         --> github.com/xmapst/osreapi/handlers.List (4 handlers)
+[GIN-debug] GET    /:id                      --> github.com/xmapst/osreapi/handlers.Get (4 handlers)
+[GIN-debug] POST   /                         --> github.com/xmapst/osreapi/handlers.Post (4 handlers)
+```
+
 ## 服用方式
 以windows服务形式部署运行
 ### 用管理模式打开powershell执行
@@ -61,6 +83,7 @@ curl -XGET http://localhost:2376/?sort=ttl
     "tasks": [
       {
         "id": "ad2fc4c8-05fc-4aab-9f28-5ceea65d0982",
+        "url": "http://localhost:2376/ad2fc4c8-05fc-4aab-9f28-5ceea65d0982",
         "state": "已结束",
         "code": 510,
         "count": 4,
@@ -73,6 +96,7 @@ curl -XGET http://localhost:2376/?sort=ttl
       },
       {
         "id": "ed95e570-ce58-4f97-a5ae-abd7694b8dbc",
+        "url": "http://localhost:2376/ed95e570-ce58-4f97-a5ae-abd7694b8dbc",
         "state": "已结束",
         "code": 0,
         "count": 4,
@@ -85,6 +109,7 @@ curl -XGET http://localhost:2376/?sort=ttl
       },
       {
         "id": "aece7b89-3081-4294-ac78-0a9b0987a493",
+        "url": "http://localhost:2376/aece7b89-3081-4294-ac78-0a9b0987a493",
         "state": "执行中",
         "code": 0,
         "count": 4,
@@ -208,6 +233,7 @@ curl -XPOST http://localhost:2376/?ansync=true -d '[
   "data":{
     "count": 4,
     "id": "7f478334-1f44-4580-8aa9-9772b84e4bf6",
+    "url": "http://localhost:2376/7f478334-1f44-4580-8aa9-9772b84e4bf6",
     "timestamp": 1668649373430555500
   }
 }

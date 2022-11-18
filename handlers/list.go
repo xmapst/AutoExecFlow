@@ -11,6 +11,7 @@ import (
 
 type ListRes struct {
 	ID      string `json:"id"`
+	URL     string `json:"url"`
 	State   string `json:"state"`
 	Code    int    `json:"code"`
 	Count   int    `json:"count"`
@@ -57,6 +58,7 @@ func List(c *gin.Context) {
 	for _, taskState := range tasksStates {
 		res := ListRes{
 			ID:    taskState.ID,
+			URL:   fmt.Sprintf("http://%s/%s", c.Request.Host, taskState.ID),
 			State: cache.StateCNMap[taskState.State],
 			Count: taskState.Count,
 			Times: &Times{

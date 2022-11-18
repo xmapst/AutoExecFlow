@@ -8,22 +8,28 @@ import (
 )
 
 type Info struct {
+	Version   string   `json:",omitempty"`
+	Go        InfoGO   `json:",omitempty"`
+	Git       InfoGit  `json:",omitempty"`
+	User      InfoUser `json:",omitempty"`
+	BuildTime string   `json:",omitempty"`
+}
+
+type InfoGO struct {
 	Version string `json:",omitempty"`
-	Go      struct {
-		Version string `json:",omitempty"`
-		OS      string `json:",omitempty"`
-		Arch    string `json:",omitempty"`
-	} `json:",omitempty"`
-	Git struct {
-		Url    string `json:",omitempty"`
-		Branch string `json:",omitempty"`
-		Commit string `json:",omitempty"`
-	} `json:",omitempty"`
-	User struct {
-		Name  string `json:",omitempty"`
-		Email string `json:",omitempty"`
-	} `json:",omitempty"`
-	BuildTime string `json:",omitempty"`
+	OS      string `json:",omitempty"`
+	Arch    string `json:",omitempty"`
+}
+
+type InfoGit struct {
+	Url    string `json:",omitempty"`
+	Branch string `json:",omitempty"`
+	Commit string `json:",omitempty"`
+}
+
+type InfoUser struct {
+	Name  string `json:",omitempty"`
+	Email string `json:",omitempty"`
 }
 
 // Version
@@ -36,42 +42,20 @@ type Info struct {
 func Version(c *gin.Context) {
 	c.JSON(http.StatusOK, Info{
 		Version: info.Version,
-		Go: struct {
-			Version string `json:",omitempty"`
-			OS      string `json:",omitempty"`
-			Arch    string `json:",omitempty"`
-		}(struct {
-			Version string
-			OS      string
-			Arch    string
-		}{
+		Go: InfoGO{
 			Version: runtime.Version(),
 			OS:      runtime.GOOS,
 			Arch:    runtime.GOARCH,
-		}),
-		Git: struct {
-			Url    string `json:",omitempty"`
-			Branch string `json:",omitempty"`
-			Commit string `json:",omitempty"`
-		}(struct {
-			Url    string
-			Branch string
-			Commit string
-		}{
+		},
+		Git: InfoGit{
 			Url:    info.GitUrl,
 			Branch: info.GitBranch,
 			Commit: info.GitCommit,
-		}),
-		User: struct {
-			Name  string `json:",omitempty"`
-			Email string `json:",omitempty"`
-		}(struct {
-			Name  string
-			Email string
-		}{
+		},
+		User: InfoUser{
 			Name:  info.UserName,
 			Email: info.UserEmail,
-		}),
+		},
 		BuildTime: info.BuildTime,
 	})
 }

@@ -1,4 +1,4 @@
-package routers
+package handlers
 
 import (
 	"errors"
@@ -12,8 +12,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/xmapst/osreapi/config"
 	_ "github.com/xmapst/osreapi/docs"
-	"github.com/xmapst/osreapi/handlers"
+	"github.com/xmapst/osreapi/engine"
 	"math"
+	"net/http"
 	"time"
 )
 
@@ -37,10 +38,18 @@ func Router() *gin.Engine {
 		// swagger doc
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
-	router.GET("/version", handlers.Version)
-	router.GET("/", handlers.List)
-	router.GET("/:id", handlers.Get)
-	router.POST("/", handlers.Post)
+	router.GET("/version", Version)
+	router.GET("/healthyz", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"Server": c.Request.Host,
+			"Client": c.ClientIP(),
+			"State":  "Running",
+			"Task":   engine.Pool.QueueLength(),
+		})
+	})
+	router.GET("/", List)
+	router.GET("/:id", Get)
+	router.POST("/", Post)
 	return router
 }
 
@@ -107,6 +116,7 @@ func logger() gin.HandlerFunc {
 		clientIP := c.ClientIP()
 		clientUserAgent := c.Request.UserAgent()
 		referer := c.Request.Referer()
+		host := c.Request.Host
 		dataLength := c.Writer.Size()
 		if dataLength < 0 {
 			dataLength = 0
@@ -115,7 +125,7 @@ func logger() gin.HandlerFunc {
 			logrus.Error(c.Errors.ByType(gin.ErrorTypePrivate).String())
 		} else {
 			// client_ip mode path statue_code latency dataLength referer userAgent
-			logrus.Infof("%s %s %s %d %d %d %s %s", clientIP, c.Request.Method, path, statusCode, latency, dataLength, referer, clientUserAgent)
+			logrus.Infof("%s %s %s %d %d %d %s %s %s", clientIP, c.Request.Method, path, statusCode, latency, dataLength, host, referer, clientUserAgent)
 		}
 	}
 }
