@@ -306,7 +306,7 @@ func SetTaskStep(task string, step int64, val interface{}, ttl time.Duration) {
 	Set(key, val, ttl)
 }
 
-func GetAllTaskStep(task string) TaskStepStates {
+func GetTaskAllStep(task string) TaskStepStates {
 	prefix := fmt.Sprintf("%s:%s:", stepPrefix, task)
 	var taskStepStates TaskStepStates
 	_ = db.View(func(txn *badger.Txn) error {
@@ -369,7 +369,7 @@ func SetTaskStepOutput(task string, step, line int64, val interface{}, ttl time.
 	Set(key, val, ttl)
 }
 
-func GetAllTaskStepOutput(task string, step int64) TaskStepOutputs {
+func GetTaskStepAllOutput(task string, step int64) TaskStepOutputs {
 	prefix := fmt.Sprintf("%s:%s:%d:", outputPrefix, task, step)
 	var taskStepOutputs TaskStepOutputs
 	_ = db.View(func(txn *badger.Txn) error {

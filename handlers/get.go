@@ -4,11 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/utils"
+	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type ResStatus struct {
@@ -46,7 +49,7 @@ func GetTask(c *gin.Context) {
 	c.Request.Header.Set(xTaskState, state)
 	c.Writer.Header().Set(xTaskState, state)
 	c.Set(xTaskState, state)
-	tasksStepStates := cache.GetAllTaskStep(id)
+	tasksStepStates := cache.GetTaskAllStep(id)
 	var res []ResStatus
 	var scheme = "http"
 	if c.Request.TLS != nil {
@@ -119,6 +122,12 @@ func GetTask(c *gin.Context) {
 	}
 }
 
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
 // GetStep
 // @Summary 查询步骤
 // @description 查询步骤执行情况
@@ -151,14 +160,44 @@ func GetStep(c *gin.Context) {
 		return
 	}
 
-	outputs := cache.GetAllTaskStepOutput(id, step)
-	if taskStepState == nil {
-		render.SetError(utils.CodeErrNoData, errors.New("步骤不存在"))
+	var ws *websocket.Conn
+	if websocket.IsWebSocketUpgrade(c.Request) {
+		ws, err = upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			return
+		}
+	}
+	var latest = -1
+	fn := func(latest *int) []string {
+		outputs := cache.GetTaskStepAllOutput(id, step)
+		var res []string
+		for k, v := range outputs {
+			if k <= *latest {
+				continue
+			}
+			res = append(res, v.Content)
+		}
+		*latest = len(outputs) - 1
+		return res
+	}
+	if ws == nil {
+		c.Writer.Header().Set("Content-Type", "application/json")
+		render.SetJson(fn(&latest))
 		return
 	}
-	var res []string
-	for _, v := range outputs {
-		res = append(res, v.Content)
+	tick := time.NewTicker(1 * time.Second)
+	defer tick.Stop()
+	for range tick.C {
+		if ws == nil {
+			return
+		}
+		res := fn(&latest)
+		for _, v := range res {
+			err = ws.WriteMessage(websocket.TextMessage, []byte(v))
+			if err != nil {
+				logrus.Errorln(err)
+				break
+			}
+		}
 	}
-	render.SetJson(res)
 }
