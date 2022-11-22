@@ -135,7 +135,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/{id}/{step}": {
+        "/{id}/{step}/console": {
             "get": {
                 "description": "查询步骤执行情况",
                 "tags": [

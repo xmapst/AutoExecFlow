@@ -144,7 +144,7 @@ paths:
       summary: 查询任务
       tags:
       - Exec
-  /{id}/{step}:
+  /{id}/{step}/console:
     get:
       description: 查询步骤执行情况
       parameters:

@@ -84,7 +84,7 @@ func GetTask(c *gin.Context) {
 		}
 		_res := ResStatus{
 			Step:      v.Step,
-			URL:       fmt.Sprintf("%s://%s/%s/%d", scheme, c.Request.Host, id, v.Step),
+			URL:       fmt.Sprintf("%s://%s/%s/%d/console", scheme, c.Request.Host, id, v.Step),
 			Name:      v.Name,
 			State:     cache.StateCNMap[v.State],
 			Code:      v.Code,
@@ -127,7 +127,7 @@ func GetTask(c *gin.Context) {
 // @Param step path string true "step"
 // @Success 200 {object} JSONResult
 // @Failure 500 {object} JSONResult
-// @Router /{id}/{step} [get]
+// @Router /{id}/{step}/console [get]
 func GetStep(c *gin.Context) {
 	render := Gin{Context: c}
 	id := c.Param("id")
