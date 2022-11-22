@@ -97,6 +97,7 @@ func (p PostStructSlice) fixName(taskID string) {
 func (p PostStructSlice) fixSync() {
 	for k := range p {
 		if k == 0 {
+			p[k].DependsOn = nil
 			continue
 		}
 		p[k].DependsOn = []string{p[k-1].Name}
