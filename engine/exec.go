@@ -27,7 +27,7 @@ type Cmd struct {
 	ExternalEnvVars []string
 	Timeout         time.Duration
 	TTL             time.Duration
-	workSpace       string
+	Workspace       string
 	absFilePath     string
 	exec            *exec.Cmd
 	context         context.Context
@@ -46,11 +46,6 @@ func (c *Cmd) Create() error {
 	if err != nil {
 		return err
 	}
-	c.workSpace = filepath.Join(config.App.WorkSpace, c.TaskID)
-	err = os.MkdirAll(c.workSpace, 0777)
-	if err != nil && err != os.ErrExist {
-		return err
-	}
 	return nil
 }
 
@@ -66,7 +61,6 @@ func (c *Cmd) clear() {
 	// clear tmp script
 	c.Log.Infof("cleanup script %s", filepath.Base(c.absFilePath))
 	_ = os.Remove(c.absFilePath)
-	_ = os.RemoveAll(c.workSpace)
 }
 
 func (c *Cmd) initCmd() bool {

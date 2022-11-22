@@ -100,7 +100,7 @@ func Close() {
 	}
 }
 
-func GetAllTaskState() (res map[string]TaskState, err error) {
+func getAllTask() (res map[string]TaskState, err error) {
 	prefix := fmt.Sprintf("%s:", taskPrefix)
 	res = make(map[string]TaskState)
 	_ = db.View(func(txn *badger.Txn) error {
@@ -145,7 +145,7 @@ func (l ListByStartTimes) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
 func (l ListByStartTimes) Less(i, j int) bool { return l[i].Times.Begin < l[j].Times.Begin }
 
 func GetAllByBeginTime() (res ListByStartTimes) {
-	_res, err := GetAllTaskState()
+	_res, err := getAllTask()
 	if err != nil {
 		logrus.Error(err)
 		return nil
@@ -171,7 +171,7 @@ func (l ListByCompletedTimes) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
 func (l ListByCompletedTimes) Less(i, j int) bool { return l[i].Times.End < l[j].Times.End }
 
 func GetAllByEndTime() (res ListByCompletedTimes) {
-	_res, err := GetAllTaskState()
+	_res, err := getAllTask()
 	if err != nil {
 		logrus.Error(err)
 		return nil
@@ -197,7 +197,7 @@ func (l ListByExpiredTimes) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
 func (l ListByExpiredTimes) Less(i, j int) bool { return l[i].Times.TTL < l[j].Times.TTL }
 
 func GetAllByTTLTime() (res ListByExpiredTimes) {
-	_res, err := GetAllTaskState()
+	_res, err := getAllTask()
 	if err != nil {
 		logrus.Error(err)
 		return nil
@@ -228,8 +228,8 @@ func (e TaskStepOutputs) Len() int           { return len(e) }
 func (e TaskStepOutputs) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
 func (e TaskStepOutputs) Less(i, j int) bool { return e[i].Line < e[j].Line }
 
-func GetTaskState(id string) (value *TaskState, found bool) {
-	key := fmt.Sprintf("%s:%s", taskPrefix, id)
+func GetTask(task string) (value *TaskState, found bool) {
+	key := fmt.Sprintf("%s:%s", taskPrefix, task)
 	var err error
 	var item *badger.Item
 	err = db.View(func(txn *badger.Txn) error {
@@ -296,18 +296,18 @@ func Set(key string, val interface{}, ttl time.Duration) {
 	}
 }
 
-func SetTask(key string, val interface{}, ttl time.Duration) {
-	key = fmt.Sprintf("%s:%s", taskPrefix, key)
+func SetTask(task string, val interface{}, ttl time.Duration) {
+	key := fmt.Sprintf("%s:%s", taskPrefix, task)
 	Set(key, val, ttl)
 }
 
-func SetTaskStep(key string, val interface{}, ttl time.Duration) {
-	key = fmt.Sprintf("%s:%s", stepPrefix, key)
+func SetTaskStep(task string, step int64, val interface{}, ttl time.Duration) {
+	key := fmt.Sprintf("%s:%s:%d", stepPrefix, task, step)
 	Set(key, val, ttl)
 }
 
-func GetAllTaskStepState(taskID string) TaskStepStates {
-	prefix := fmt.Sprintf("%s:%s:", stepPrefix, taskID)
+func GetAllTaskStep(task string) TaskStepStates {
+	prefix := fmt.Sprintf("%s:%s:", stepPrefix, task)
 	var taskStepStates TaskStepStates
 	_ = db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -336,6 +336,34 @@ func GetAllTaskStepState(taskID string) TaskStepStates {
 	return taskStepStates
 }
 
+func GetTaskStep(task string, step int64) (*TaskStepState, bool) {
+	key := fmt.Sprintf("%s:%s:%d", stepPrefix, task, step)
+	var err error
+	var item *badger.Item
+	err = db.View(func(txn *badger.Txn) error {
+		item, err = txn.Get([]byte(key))
+		return err
+	})
+
+	if err != nil {
+		if err != badger.ErrKeyNotFound {
+			logrus.Error(err)
+		}
+		return nil, false
+	}
+	var _value = new(TaskStepState)
+	var val []byte
+	val, err = getItemValue(item)
+	err = json.Unmarshal(val, _value)
+	if err != nil {
+		logrus.Error(err)
+		return nil, false
+	}
+	ttl := time.Unix(int64(item.ExpiresAt()), 0).Sub(time.Now())
+	_value.Times.TTL = ttl
+	return _value, true
+}
+
 func SetTaskStepOutput(task string, step, line int64, val interface{}, ttl time.Duration) {
 	key := fmt.Sprintf("%s:%s:%d:%d", outputPrefix, task, step, line)
 	Set(key, val, ttl)
@@ -349,7 +377,7 @@ func GetAllTaskStepOutput(task string, step int64) TaskStepOutputs {
 		defer it.Close()
 		for it.Seek([]byte(prefix)); it.ValidForPrefix([]byte(prefix)); it.Next() {
 			item := it.Item()
-			err := item.Value(func(v []byte) error {
+			_ = item.Value(func(v []byte) error {
 				var taskStepOutput = new(TaskStepOutput)
 				err := json.Unmarshal(v, taskStepOutput)
 				if err != nil {
@@ -359,9 +387,6 @@ func GetAllTaskStepOutput(task string, step int64) TaskStepOutputs {
 				taskStepOutputs = append(taskStepOutputs, taskStepOutput)
 				return nil
 			})
-			if err != nil {
-				return err
-			}
 		}
 		return nil
 	})

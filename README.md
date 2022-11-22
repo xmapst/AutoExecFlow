@@ -261,19 +261,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/0",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-0",
       "state": "已结束",
       "code": 0,
-      "message": [
-        "PING baidu.com (110.242.68.66) 56(84) bytes of data.",
-        "64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=1 ttl=42 time=39.6 ms",
-        "64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=2 ttl=42 time=39.5 ms",
-        "64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=3 ttl=42 time=39.5 ms",
-        "64 bytes from 110.242.68.66 (110.242.68.66): icmp_seq=4 ttl=42 time=39.5 ms",
-        "--- baidu.com ping statistics ---",
-        "4 packets transmitted, 4 received, 0% packet loss, time 3062ms",
-        "rtt min/avg/max/mdev = 39.454/39.489/39.563/0.043 ms"
-      ],
+      "message": "执行成功",
       "times": {
         "begin": "2022-11-18T16:20:53+08:00",
         "end": "2022-11-18T16:20:56+08:00",
@@ -282,12 +274,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 1,
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/1",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-1",
       "state": "已结束",
       "code": 0,
-      "message": [
-        "helloworld"
-      ],
+      "message": "执行成功",
       "depends_on": [
         "5a8fbc27-8b94-487a-adc4-174d76a16275-0"
       ],
@@ -299,21 +290,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 2,
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/2",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-2",
       "state": "已结束",
       "code": 0,
-      "message": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10"
-      ],
+      "message": "执行成功",
       "depends_on": [
         "5a8fbc27-8b94-487a-adc4-174d76a16275-1"
       ],
@@ -325,12 +306,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 3,
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/3",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-3",
       "state": "已结束",
       "code": 0,
-      "message": [
-        "helloworld"
-      ],
+      "message": "执行成功",
       "depends_on": [
         "5a8fbc27-8b94-487a-adc4-174d76a16275-2"
       ],
@@ -352,14 +332,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/0",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-0",
       "state": "执行中",
       "code": 0,
-      "message": [
-        "PING baidu.com (39.156.66.10) 56(84) bytes of data.",
-        "64 bytes from 39.156.66.10 (39.156.66.10): icmp_seq=1 ttl=41 time=41.9 ms",
-        "64 bytes from 39.156.66.10 (39.156.66.10): icmp_seq=2 ttl=41 time=41.5 ms"
-      ],
+      "message": "步骤: 0, 名称: a446f074-d37f-48f9-9fdb-f49211847b9e-0",
       "times": {
         "begin": "2022-11-18T16:15:56+08:00",
         "ttl": "47h59m57.433539558s"
@@ -367,12 +344,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 1,
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/1",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-1",
       "state": "等待执行",
       "code": 0,
-      "message": [
-        "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行"
-      ],
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "a446f074-d37f-48f9-9fdb-f49211847b9e-0"
       ],
@@ -382,12 +358,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 2,
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/2",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-2",
       "state": "等待执行",
       "code": 0,
-      "message": [
-        "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行"
-      ],
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "a446f074-d37f-48f9-9fdb-f49211847b9e-1"
       ],
@@ -397,12 +372,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 3,
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/3",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-3",
       "state": "等待执行",
       "code": 0,
-      "message": [
-        "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行"
-      ],
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "a446f074-d37f-48f9-9fdb-f49211847b9e-2"
       ],
@@ -421,19 +395,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/0",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-0",
       "state": "已结束",
       "code": 0,
-      "message": [
-        "PING baidu.com (39.156.66.10) 56(84) bytes of data.",
-        "64 bytes from 39.156.66.10 (39.156.66.10): icmp_seq=1 ttl=41 time=41.9 ms",
-        "64 bytes from 39.156.66.10 (39.156.66.10): icmp_seq=2 ttl=41 time=41.4 ms",
-        "64 bytes from 39.156.66.10 (39.156.66.10): icmp_seq=3 ttl=41 time=41.2 ms",
-        "64 bytes from 39.156.66.10 (39.156.66.10): icmp_seq=4 ttl=41 time=41.3 ms",
-        "--- baidu.com ping statistics ---",
-        "4 packets transmitted, 4 received, 0% packet loss, time 3057ms",
-        "rtt min/avg/max/mdev = 41.215/41.447/41.947/0.293 ms"
-      ],
+      "message": "执行成功",
       "times": {
         "begin": "2022-11-18T16:14:23+08:00",
         "end": "2022-11-18T16:14:26+08:00",
@@ -442,12 +408,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 1,
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/1",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-1",
       "state": "已结束",
       "code": 0,
-      "message": [
-        "helloworld"
-      ],
+      "message": "执行成功",
       "depends_on": [
         "98ab2628-f94e-4a18-933c-d8cebcc3343c-0"
       ],
@@ -459,12 +424,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 2,
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/2",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-2",
       "state": "已结束",
       "code": 2,
-      "message": [
-        "exit status 2"
-      ],
+      "message": "步骤: 2, 名称: 98ab2628-f94e-4a18-933c-d8cebcc3343c-2, 退出码: 2",
       "depends_on": [
         "98ab2628-f94e-4a18-933c-d8cebcc3343c-1"
       ],
@@ -476,12 +440,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 3,
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/3",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-3",
       "state": "等待执行",
       "code": 0,
-      "message": [
-        "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行"
-      ],
+      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "98ab2628-f94e-4a18-933c-d8cebcc3343c-2"
       ],
@@ -492,11 +455,29 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   ]
 }
 ```
+步骤输出:
+```json
+{
+  "code": 0,
+  "message": "成功",
+  "data": [
+    "正在 Ping baidu.com [110.242.68.66] 具有 32 字节的数据:",
+    "来自 110.242.68.66 的回复: 字节=32 时间=45ms TTL=43",
+    "来自 110.242.68.66 的回复: 字节=32 时间=45ms TTL=43",
+    "来自 110.242.68.66 的回复: 字节=32 时间=45ms TTL=43",
+    "来自 110.242.68.66 的回复: 字节=32 时间=45ms TTL=43",
+    "110.242.68.66 的 Ping 统计信息:",
+    "数据包: 已发送 = 4，已接收 = 4，丢失 = 0 (0% 丢失)，",
+    "往返行程的估计时间(以毫秒为单位):",
+    "最短 = 45ms，最长 = 45ms，平均 = 45ms"
+  ]
+}
+```
 不存在:
 ```json
 {
   "code": 1003,
-  "message": "id不存在, 沒有数据"
+  "message": "任务不存在, 沒有数据"
 }
 ```
 

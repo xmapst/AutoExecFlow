@@ -62,7 +62,7 @@ func (c *Cmd) Run() (code int64, msg string) {
 	}
 	defer c.cancelFunc()
 	c.exec.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	c.exec.Dir = c.workSpace
+	c.exec.Dir = c.Workspace
 	go c.run(done, errCh)
 	select {
 	// execute timeout signal

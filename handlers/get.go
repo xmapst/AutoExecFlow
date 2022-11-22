@@ -4,74 +4,97 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/utils"
-	"net/http"
+	"strconv"
 	"strings"
 )
 
 type ResStatus struct {
 	Step      int64    `json:"step"`
+	URL       string   `json:"url,omitempty"`
 	Name      string   `json:"name,omitempty"`
 	State     string   `json:"state"`
 	Code      int64    `json:"code"`
-	Message   []string `json:"message"`
+	Message   string   `json:"message"`
 	DependsOn []string `json:"depends_on,omitempty"`
 	Times     *Times   `json:"times,omitempty"`
 }
 
-// Get
-// @Summary 查询
-// @description 查询执行情况
+// GetTask
+// @Summary 查询任务
+// @description 查询任务执行情况
 // @Tags Exec
 // @Param id path string true "id"
 // @Success 200 {object} JSONResult
 // @Failure 500 {object} JSONResult
 // @Router /{id} [get]
-func Get(c *gin.Context) {
+func GetTask(c *gin.Context) {
 	render := Gin{Context: c}
 	id := c.Param("id")
 	if id == "" {
-		c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"code":    http.StatusBadRequest,
-			"message": "缺少id参数",
-		})
+		render.SetError(utils.CodeErrNoData, errors.New("任务不存在"))
 		return
 	}
-	taskState, found := cache.GetTaskState(id)
+	taskState, found := cache.GetTask(id)
 	if !found {
-		render.SetError(utils.CodeErrNoData, errors.New("id不存在"))
+		render.SetError(utils.CodeErrNoData, errors.New("任务不存在"))
 		return
 	}
 	state := cache.StateENMap[taskState.State]
 	c.Request.Header.Set(xTaskState, state)
 	c.Writer.Header().Set(xTaskState, state)
 	c.Set(xTaskState, state)
-	tasksStepStates := cache.GetAllTaskStepState(id)
+	tasksStepStates := cache.GetAllTaskStep(id)
 	var res []ResStatus
+	var scheme = "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+	var code int64
+	var stopMsg, runMsg []string
 	for _, v := range tasksStepStates {
-		var output []string
-		outputs := cache.GetAllTaskStepOutput(id, v.Step)
-		for _, o := range outputs {
-			output = append(output, o.Content)
+		//var output []string
+		//outputs := cache.GetAllTaskStepOutput(id, v.Step)
+		//for _, o := range outputs {
+		//	output = append(output, o.Content)
+		//}
+		code += v.Code
+		msg := v.Message
+		if v.Code != 0 {
+			msg = fmt.Sprintf("步骤: %d, 退出码: %d", v.Step, v.Code)
+			if v.Name != "" {
+				msg = fmt.Sprintf("步骤: %d, 名称: %s, 退出码: %d", v.Step, v.Name, v.Code)
+			}
+			if taskState.VMInstanceID != "" {
+				msg += fmt.Sprintf(", 实例ID: %s", taskState.VMInstanceID)
+			}
+			if taskState.HardWareID != "" {
+				msg += fmt.Sprintf(", 硬件ID: %s", taskState.HardWareID)
+			}
+			stopMsg = append(stopMsg, msg)
+		}
+		if v.State == cache.Running {
+			msg = fmt.Sprintf("步骤: %d, 名称: %s", v.Step, v.Name)
+			if v.Name == "" {
+				msg = fmt.Sprintf("步骤: %d", v.Step)
+			}
+			runMsg = append(runMsg, msg)
 		}
 		_res := ResStatus{
 			Step:      v.Step,
+			URL:       fmt.Sprintf("%s://%s/%s/%d", scheme, c.Request.Host, id, v.Step),
 			Name:      v.Name,
 			State:     cache.StateCNMap[v.State],
 			Code:      v.Code,
 			DependsOn: v.DependsOn,
+			Message:   msg,
 			Times: &Times{
 				Begin: timeStr(v.Times.Begin),
 				End:   timeStr(v.Times.End),
 				TTL:   v.Times.TTL.String(),
 			},
-		}
-		if v.Message != "" {
-			_res.Message = append(_res.Message, v.Message)
-		}
-		if output != nil {
-			_res.Message = append(_res.Message, output...)
 		}
 		res = append(res, _res)
 	}
@@ -79,48 +102,63 @@ func Get(c *gin.Context) {
 	switch taskState.State {
 	// 运行结束
 	case cache.Stop:
-		var code int64
-		var message []string
-		for _, v := range tasksStepStates {
-			code += v.Code
-			if v.Code != 0 {
-				var msg = fmt.Sprintf("步骤: %d, 退出码: %d", v.Step, v.Code)
-				if v.Name != "" {
-					msg = fmt.Sprintf("步骤: %d, 名称: %s, 退出码: %d", v.Step, v.Name, v.Code)
-				}
-				if taskState.VMInstanceID != "" {
-					msg += fmt.Sprintf(", 实例ID: %s, %s", taskState.VMInstanceID, message)
-				}
-				if taskState.HardWareID != "" {
-					msg += fmt.Sprintf(", 硬件ID: %s, %s", taskState.HardWareID, message)
-				}
-				message = append(message, msg)
-			}
-		}
 		if code != 0 {
-			render.SetRes(res, fmt.Errorf("执行失败: [%s]", strings.Join(message, "; ")), utils.CodeExecErr)
+			render.SetRes(res, fmt.Errorf("执行失败: [%s]", strings.Join(stopMsg, "; ")), utils.CodeExecErr)
 			return
 		}
 		render.SetJson(res)
 	// 运行中, 排队中
 	case cache.Running:
-		var msgSlice []string
-		for _, v := range tasksStepStates {
-			if v.State != cache.Running {
-				continue
-			}
-			var msg = fmt.Sprintf("步骤: %d, 名称: %s", v.Step, v.Name)
-			if v.Name == "" {
-				msg = fmt.Sprintf("步骤: %d", v.Step)
-			}
-			msgSlice = append(msgSlice, msg)
-		}
-		render.SetRes(res, fmt.Errorf("执行中: [%s]", strings.Join(msgSlice, "; ")), utils.CodeRunning)
+		render.SetRes(res, fmt.Errorf("执行中: [%s]", strings.Join(runMsg, "; ")), utils.CodeRunning)
 	case cache.Pending:
 		render.SetError(utils.CodeRunning, nil)
 	case cache.SystemError:
 		render.SetRes(res, fmt.Errorf(taskState.Message), utils.CodeExecErr)
 	default:
-		render.SetError(utils.CodeErrNoData, errors.New("id不存在"))
+		render.SetError(utils.CodeErrNoData, errors.New("任务不存在"))
 	}
+}
+
+// GetStep
+// @Summary 查询步骤
+// @description 查询步骤执行情况
+// @Tags Exec
+// @Param id path string true "id"
+// @Param step path string true "step"
+// @Success 200 {object} JSONResult
+// @Failure 500 {object} JSONResult
+// @Router /{id}/{step} [get]
+func GetStep(c *gin.Context) {
+	render := Gin{Context: c}
+	id := c.Param("id")
+	if id == "" {
+		render.SetError(utils.CodeErrNoData, errors.New("任务不存在"))
+		return
+	}
+	step, err := strconv.ParseInt(c.Param("step"), 10, 64)
+	if err != nil {
+		logrus.Warnln(err)
+		render.SetError(utils.CodeErrNoData, errors.New("步骤不存在"))
+		return
+	}
+	taskStepState, found := cache.GetTaskStep(id, step)
+	if !found {
+		render.SetError(utils.CodeErrNoData, errors.New("步骤不存在"))
+		return
+	}
+	if taskStepState.State == cache.Pending {
+		render.SetJson([]string{taskStepState.Message})
+		return
+	}
+
+	outputs := cache.GetAllTaskStepOutput(id, step)
+	if taskStepState == nil {
+		render.SetError(utils.CodeErrNoData, errors.New("步骤不存在"))
+		return
+	}
+	var res []string
+	for _, v := range outputs {
+		res = append(res, v.Content)
+	}
+	render.SetJson(res)
 }

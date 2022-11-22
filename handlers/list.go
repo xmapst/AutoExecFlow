@@ -77,7 +77,7 @@ func List(c *gin.Context) {
 			res.Code = 255
 			res.Message = v.Message
 		} else {
-			tasksStepStates := cache.GetAllTaskStepState(v.ID)
+			tasksStepStates := cache.GetAllTaskStep(v.ID)
 			var runningStateMsg, errorStateMsg []string
 			var code int64
 			for _, vv := range tasksStepStates {

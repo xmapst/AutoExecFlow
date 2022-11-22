@@ -93,16 +93,55 @@
         },
         "/{id}": {
             "get": {
-                "description": "查询执行情况",
+                "description": "查询任务执行情况",
                 "tags": [
                     "Exec"
                 ],
-                "summary": "查询",
+                "summary": "查询任务",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "id",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JSONResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/{id}/{step}": {
+            "get": {
+                "description": "查询步骤执行情况",
+                "tags": [
+                    "Exec"
+                ],
+                "summary": "查询步骤",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "step",
+                        "name": "step",
                         "in": "path",
                         "required": true
                     }

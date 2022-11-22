@@ -2,19 +2,21 @@ package engine
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Jeffail/tunny"
 	"github.com/natessilva/dag"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
+	"os"
+	"path/filepath"
 	"time"
 )
 
 type ExecTask struct {
-	TaskID string
-	Tasks  []*cache.Task
-	State  *cache.TaskState
+	workspace string
+	TaskID    string
+	Tasks     []*cache.Task
+	State     *cache.TaskState
 }
 
 var (
@@ -41,9 +43,10 @@ func Process(taskID, hardWareID, vmInstanceID string, tasks []*cache.Task) {
 	// 插入数据
 	cache.SetTask(taskID, state, config.App.KeyExpire)
 	Pool.Process(&ExecTask{
-		TaskID: taskID,
-		Tasks:  tasks,
-		State:  state,
+		workspace: filepath.Join(config.App.WorkSpace, taskID),
+		TaskID:    taskID,
+		Tasks:     tasks,
+		State:     state,
 	})
 }
 
@@ -55,6 +58,23 @@ func worker(i interface{}) interface{} {
 	}
 	e.State.State = cache.Running
 	cache.SetTask(e.TaskID, e.State, e.State.Times.TTL)
+
+	defer func() {
+		// 清理工作目录
+		e.clear()
+		// 结束时间
+		e.State.Times.End = time.Now().UnixNano()
+		// 更新数据
+		cache.SetTask(e.TaskID, e.State, e.State.Times.TTL)
+	}()
+
+	err := e.init()
+	if err != nil {
+		logrus.Errorln(err)
+		e.State.State = cache.SystemError
+		e.State.Message = err.Error()
+		return nil
+	}
 
 	// 编排步骤
 	var runner = new(dag.Runner)
@@ -77,13 +97,7 @@ func worker(i interface{}) interface{} {
 		}
 	}
 
-	defer func() {
-		e.State.Times.End = time.Now().UnixNano()
-		// 更新数据
-		cache.SetTask(e.TaskID, e.State, e.State.Times.TTL)
-	}()
-
-	if err := runner.Run(); err != nil {
+	if err = runner.Run(); err != nil {
 		if err != execErr {
 			logrus.Errorln(err)
 			e.State.State = cache.SystemError
@@ -97,8 +111,20 @@ func worker(i interface{}) interface{} {
 	return nil
 }
 
+func (e *ExecTask) init() error {
+	err := os.MkdirAll(e.workspace, 0777)
+	if err != nil && err != os.ErrExist {
+		return err
+	}
+	return nil
+}
+
+func (e *ExecTask) clear() {
+	logrus.Infof("cleanup workspace %s", e.workspace)
+	_ = os.RemoveAll(e.workspace)
+}
+
 func (e *ExecTask) initStepCache(step int64, task *cache.Task) {
-	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
 	var state = &cache.TaskStepState{
 		Step:      step,
 		Name:      task.Name,
@@ -109,16 +135,17 @@ func (e *ExecTask) initStepCache(step int64, task *cache.Task) {
 			TTL: e.State.Times.TTL,
 		},
 	}
-	cache.SetTaskStep(key, state, state.Times.TTL)
+	cache.SetTaskStep(e.TaskID, step, state, state.Times.TTL)
 }
 
 func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 	log := logrus.WithFields(logrus.Fields{
-		"step":    step,
-		"task_id": e.TaskID,
-		"name":    task.Name,
-		"shell":   task.CommandType,
-		"envs":    task.EnvVars,
+		"step":      step,
+		"task_id":   e.TaskID,
+		"name":      task.Name,
+		"shell":     task.CommandType,
+		"workspace": e.workspace,
+		"envs":      task.EnvVars,
 	})
 	return &Cmd{
 		Log:             log,
@@ -127,6 +154,7 @@ func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 		Name:            task.Name,
 		Shell:           task.CommandType,
 		Content:         task.CommandContent,
+		Workspace:       e.workspace,
 		ExternalEnvVars: task.EnvVars,
 		Timeout:         task.Timeout,
 		TTL:             e.State.Times.TTL,
@@ -134,7 +162,6 @@ func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 }
 
 func (e *ExecTask) execStep(step int64, task *cache.Task) error {
-	var key = fmt.Sprintf("%s:%d_%s", e.TaskID, step, task.Name)
 	var state = &cache.TaskStepState{
 		Step:      step,
 		Name:      task.Name,
@@ -145,12 +172,12 @@ func (e *ExecTask) execStep(step int64, task *cache.Task) error {
 			TTL:   e.State.Times.TTL,
 		},
 	}
-	cache.SetTaskStep(key, state, state.Times.TTL)
+	cache.SetTaskStep(e.TaskID, step, state, state.Times.TTL)
 	var cmd = e.newCmd(step, task)
 	defer func() {
 		state.Times.End = time.Now().UnixNano()
 		state.State = cache.Stop
-		cache.SetTaskStep(key, state, state.Times.TTL)
+		cache.SetTaskStep(e.TaskID, step, state, state.Times.TTL)
 	}()
 	if err := cmd.Create(); err != nil {
 		cmd.Log.Error(err)
@@ -163,5 +190,6 @@ func (e *ExecTask) execStep(step int64, task *cache.Task) error {
 		cmd.Log.Errorf("exit code is not 0 but %d", state.Code)
 		return execErr
 	}
+	state.Message = "执行成功"
 	return nil
 }

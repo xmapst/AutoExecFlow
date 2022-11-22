@@ -49,7 +49,8 @@ func Router() *gin.Engine {
 	})
 	router.GET("/", List)
 	router.POST("/", Post)
-	router.GET("/:id", Get)
+	router.GET("/:id", GetTask)
+	router.GET("/:id/:step", GetStep)
 	return router
 }
 

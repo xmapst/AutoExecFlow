@@ -2,7 +2,6 @@ package engine
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
@@ -10,8 +9,6 @@ import (
 	"os"
 	"time"
 )
-
-var TmpData selfUpdate
 
 type selfUpdate struct {
 	TaskId string `json:"SelfUpdateTaskId"`
@@ -25,7 +22,8 @@ func LoadSelfUpdateData() {
 	if err != nil {
 		logrus.Fatalln(err)
 	}
-	err = json.Unmarshal(bs, &TmpData)
+	var self selfUpdate
+	err = json.Unmarshal(bs, &self)
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -39,7 +37,7 @@ func LoadSelfUpdateData() {
 			TTL:   config.App.KeyExpire,
 		},
 	}
-	cache.SetTask(TmpData.TaskId, taskState, taskState.Times.TTL)
+	cache.SetTask(self.TaskId, taskState, taskState.Times.TTL)
 	taskStepState := &cache.TaskStepState{
 		Step:    0,
 		Name:    "selfupdate",
@@ -52,8 +50,5 @@ func LoadSelfUpdateData() {
 			TTL:   config.App.KeyExpire,
 		},
 	}
-	cache.SetTaskStep(
-		fmt.Sprintf("%s:selfupdate", TmpData.TaskId),
-		taskStepState, taskStepState.Times.TTL,
-	)
+	cache.SetTaskStep(self.TaskId, 0, taskStepState, taskStepState.Times.TTL)
 }
