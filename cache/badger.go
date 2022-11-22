@@ -80,7 +80,7 @@ var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
-func Init() {
+func New() {
 	var err error
 	opt := badger.DefaultOptions("").
 		WithInMemory(true).

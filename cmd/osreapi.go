@@ -90,7 +90,7 @@ func (p *program) init() error {
 	// clear old script
 	utils.ClearOldScript(config.App.ScriptDir)
 	// 创建临时内存数据库
-	cache.Init()
+	cache.New()
 	// 创建池
 	engine.NewExecPool(config.App.PoolSize)
 	// 加载自更新数据
