@@ -1,4 +1,4 @@
-package engine
+package exec
 
 import (
 	"bufio"
@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
-	"github.com/xmapst/osreapi/config"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 	"io"
@@ -28,6 +27,7 @@ type Cmd struct {
 	Timeout         time.Duration
 	TTL             time.Duration
 	Workspace       string
+	ScriptDir       string
 	absFilePath     string
 	exec            *exec.Cmd
 	context         context.Context
@@ -35,7 +35,7 @@ type Cmd struct {
 }
 
 func (c *Cmd) Create() error {
-	c.absFilePath = filepath.Join(config.App.ScriptDir, c.Name)
+	c.absFilePath = filepath.Join(c.ScriptDir, c.Name)
 	suffix := c.scriptSuffix()
 	if suffix == "" {
 		return fmt.Errorf("wrong script type")

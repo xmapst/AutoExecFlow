@@ -3,10 +3,11 @@ package engine
 import (
 	"errors"
 	"github.com/Jeffail/tunny"
-	"github.com/natessilva/dag"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
+	"github.com/xmapst/osreapi/engine/dag"
+	"github.com/xmapst/osreapi/engine/exec"
 	"os"
 	"path/filepath"
 	"time"
@@ -77,7 +78,7 @@ func worker(i interface{}) interface{} {
 	}
 
 	// 编排步骤
-	var runner = new(dag.Runner)
+	var runner = dag.New()
 
 	// 创建一个有向无环图，图中的每个顶点都是一个作业
 	for step, task := range e.Tasks {
@@ -138,7 +139,7 @@ func (e *ExecTask) initStepCache(step int64, task *cache.Task) {
 	cache.SetTaskStep(e.TaskID, step, state, state.Times.TTL)
 }
 
-func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
+func (e *ExecTask) newCmd(step int64, task *cache.Task) *exec.Cmd {
 	log := logrus.WithFields(logrus.Fields{
 		"step":      step,
 		"task_id":   e.TaskID,
@@ -147,7 +148,7 @@ func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 		"workspace": e.workspace,
 		"envs":      task.EnvVars,
 	})
-	return &Cmd{
+	return &exec.Cmd{
 		Log:             log,
 		TaskID:          e.TaskID,
 		Step:            step,
@@ -155,6 +156,7 @@ func (e *ExecTask) newCmd(step int64, task *cache.Task) *Cmd {
 		Shell:           task.CommandType,
 		Content:         task.CommandContent,
 		Workspace:       e.workspace,
+		ScriptDir:       config.App.ScriptDir,
 		ExternalEnvVars: task.EnvVars,
 		Timeout:         task.Timeout,
 		TTL:             e.State.Times.TTL,

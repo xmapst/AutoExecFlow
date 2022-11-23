@@ -1,6 +1,6 @@
 //go:build windows
 
-package engine
+package exec
 
 import (
 	"github.com/sirupsen/logrus"
