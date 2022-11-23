@@ -167,17 +167,17 @@ func GetStep(c *gin.Context) {
 			return
 		}
 	}
-	var latest = -1
-	fn := func(latest *int) []string {
+	var latest int64 = -1
+	fn := func(latest *int64) []string {
 		outputs := cache.GetTaskStepAllOutput(id, step)
 		var res []string
 		for k, v := range outputs {
-			if k <= *latest {
+			if int64(k) <= *latest {
 				continue
 			}
 			res = append(res, v.Content)
 		}
-		*latest = len(outputs) - 1
+		*latest = int64(len(outputs)) - 1
 		return res
 	}
 	if ws == nil {
@@ -185,19 +185,27 @@ func GetStep(c *gin.Context) {
 		render.SetJson(fn(&latest))
 		return
 	}
-	tick := time.NewTicker(1 * time.Second)
-	defer tick.Stop()
-	for range tick.C {
+	defer func() {
+		if ws == nil {
+			return
+		}
+		_ = ws.WriteMessage(websocket.CloseMessage, nil)
+		_ = ws.Close()
+	}()
+	for {
 		if ws == nil {
 			return
 		}
 		res := fn(&latest)
-		for _, v := range res {
-			err = ws.WriteMessage(websocket.TextMessage, []byte(v))
+		if res != nil {
+			err = ws.WriteMessage(websocket.TextMessage, []byte(strings.Join(res, "\r\n")))
 			if err != nil {
 				logrus.Errorln(err)
-				break
 			}
 		}
+		if latest <= 0 || cache.GetTaskStepOutputDone(id, step)-2 == latest {
+			return
+		}
+		time.Sleep(time.Millisecond * 30)
 	}
 }

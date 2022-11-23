@@ -127,6 +127,7 @@ func (c *Cmd) output(stdout io.ReadCloser) {
 		c.Log.Println(string(line))
 		num += 1
 	}
+	cache.SetTaskStepOutputDone(c.TaskID, c.Step, num, c.TTL+c.Timeout)
 }
 
 func (c *Cmd) gbkToUtf8(s []byte) []byte {

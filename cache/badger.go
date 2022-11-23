@@ -5,8 +5,9 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
-    "os"
-    "sort"
+	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -83,7 +84,7 @@ var (
 )
 
 func New(path string) {
-    _ = os.RemoveAll(path)
+	_ = os.RemoveAll(path)
 	var err error
 	opt := badger.DefaultOptions(path).
 		//WithInMemory(true).
@@ -281,18 +282,21 @@ func Del(key string) {
 	}
 }
 
-func Set(key string, val interface{}, ttl time.Duration) {
+func SetJson(key string, val interface{}, ttl time.Duration) {
 	bsv, err := json.Marshal(val)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
-	bsk := []byte(key)
-	err = db.Update(func(txn *badger.Txn) error {
+	Set([]byte(key), bsv, ttl)
+}
+
+func Set(key []byte, val []byte, ttl time.Duration) {
+	err := db.Update(func(txn *badger.Txn) error {
 		if ttl != 0 {
-			return txn.SetEntry(badger.NewEntry(bsk, bsv).WithTTL(ttl))
+			return txn.SetEntry(badger.NewEntry(key, val).WithTTL(ttl))
 		}
-		return txn.Set(bsk, bsv)
+		return txn.Set(key, val)
 	})
 	if err != nil {
 		logrus.Error(err)
@@ -301,12 +305,12 @@ func Set(key string, val interface{}, ttl time.Duration) {
 
 func SetTask(task string, val interface{}, ttl time.Duration) {
 	key := fmt.Sprintf("%s:%s", taskPrefix, task)
-	Set(key, val, ttl)
+	SetJson(key, val, ttl)
 }
 
 func SetTaskStep(task string, step int64, val interface{}, ttl time.Duration) {
 	key := fmt.Sprintf("%s:%s:%d", stepPrefix, task, step)
-	Set(key, val, ttl)
+	SetJson(key, val, ttl)
 }
 
 func GetTaskAllStep(task string) TaskStepStates {
@@ -369,7 +373,39 @@ func GetTaskStep(task string, step int64) (*TaskStepState, bool) {
 
 func SetTaskStepOutput(task string, step, line int64, val interface{}, ttl time.Duration) {
 	key := fmt.Sprintf("%s:%s:%d:%d", outputPrefix, task, step, line)
-	Set(key, val, ttl)
+	SetJson(key, val, ttl)
+}
+
+func SetTaskStepOutputDone(task string, step, num int64, ttl time.Duration) {
+	key := fmt.Sprintf("%s:%s:%d_done", outputPrefix, task, step)
+	Set([]byte(key), []byte(strconv.FormatInt(num, 10)), ttl)
+}
+
+func GetTaskStepOutputDone(task string, step int64) int64 {
+	key := fmt.Sprintf("%s:%s:%d_done", outputPrefix, task, step)
+	var err error
+	var item *badger.Item
+	err = db.View(func(txn *badger.Txn) error {
+		item, err = txn.Get([]byte(key))
+		return err
+	})
+
+	if err != nil {
+		logrus.Errorln(err)
+		return -1
+	}
+	var val []byte
+	val, err = getItemValue(item)
+	if err != nil {
+		logrus.Errorln(err)
+		return -1
+	}
+	num, err := strconv.ParseInt(string(val), 10, 64)
+	if err != nil {
+		logrus.Errorln(err)
+		return -1
+	}
+	return num
 }
 
 func GetTaskStepAllOutput(task string, step int64) TaskStepOutputs {
