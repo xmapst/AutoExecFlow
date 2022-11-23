@@ -71,8 +71,9 @@ type Times struct {
 }
 
 type TaskStepOutput struct {
-	Line    int64  `json:"line"`
-	Content string `json:"content"`
+	Timestamp int64  `json:"timestamp"`
+	Line      int64  `json:"line"`
+	Content   string `json:"content"`
 }
 
 var (

@@ -120,8 +120,9 @@ func (c *Cmd) output(stdout io.ReadCloser) {
 			line = c.gbkToUtf8(line)
 		}
 		cache.SetTaskStepOutput(c.TaskID, c.Step, num, &cache.TaskStepOutput{
-			Line:    num,
-			Content: string(line),
+			Timestamp: time.Now().UnixNano(),
+			Line:      num,
+			Content:   string(line),
 		}, c.TTL+c.Timeout)
 		c.Log.Println(string(line))
 		num += 1
