@@ -24,6 +24,7 @@ type Config struct {
 	ScriptDir      string
 	LogDir         string
 	WorkSpace      string
+	DataDir        string
 }
 
 func init() {
@@ -36,12 +37,24 @@ func init() {
 }
 
 func (c *Config) Load() error {
-	_ = os.MkdirAll(c.RootDir, 0777)
-	c.ScriptDir = filepath.Join(c.RootDir, "scripts")
+    _ = os.MkdirAll(c.RootDir, 0777)
+    logrus.Infoln("root dir", c.RootDir)
+
+    c.ScriptDir = filepath.Join(c.RootDir, "scripts")
 	_ = os.MkdirAll(c.ScriptDir, 0777)
+    logrus.Infoln("scripts dir", c.ScriptDir)
+
 	c.LogDir = filepath.Join(c.RootDir, "logs")
 	_ = os.MkdirAll(c.LogDir, 0777)
-	c.WorkSpace = filepath.Join(c.RootDir, "workspace")
+    logrus.Infoln("logs dir", c.ScriptDir)
+
+    c.WorkSpace = filepath.Join(c.RootDir, "workspace")
 	_ = os.MkdirAll(c.WorkSpace, 0777)
-	return nil
+    logrus.Infoln("workspace dir", c.ScriptDir)
+
+    c.DataDir = filepath.Join(c.RootDir, "data")
+    _ = os.MkdirAll(c.RootDir, 0777)
+    logrus.Infoln("data dir", c.ScriptDir)
+
+    return nil
 }

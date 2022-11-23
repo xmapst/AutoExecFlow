@@ -5,7 +5,8 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
-	"sort"
+    "os"
+    "sort"
 	"strings"
 	"time"
 )
@@ -81,10 +82,11 @@ var (
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
-func New() {
+func New(path string) {
+    _ = os.RemoveAll(path)
 	var err error
-	opt := badger.DefaultOptions("").
-		WithInMemory(true).
+	opt := badger.DefaultOptions(path).
+		//WithInMemory(true).
 		WithLogger(logrus.StandardLogger()).
 		WithLoggingLevel(badger.ERROR)
 	db, err = badger.Open(opt)
