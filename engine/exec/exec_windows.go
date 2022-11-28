@@ -14,28 +14,27 @@ func (c *Cmd) selfScriptSuffix() string {
 		return ".bat"
 	case "powershell", "ps", "ps1":
 		return ".ps1"
+	default:
+		return ".bat"
 	}
-	return ""
 }
 
-func (c *Cmd) selfCmd() bool {
+func (c *Cmd) selfCmd() {
 	switch c.Shell {
 	case "cmd", "bat":
 		c.exec = exec.CommandContext(c.context, "cmd", "/C", c.absFilePath)
 	case "powershell", "ps", "ps1":
 		c.exec = exec.CommandContext(c.context, "powershell", "-NoLogo", "-NonInteractive", "-File", c.absFilePath)
+	default:
+		c.exec = exec.CommandContext(c.context, "cmd", "/C", c.absFilePath)
 	}
-	return c.exec != nil
 }
 
 func (c *Cmd) Run() (code int64, msg string) {
 	var done, errCh = make(chan bool), make(chan error)
 	code = 255
 	defer c.clear()
-	if !c.initCmd() {
-		msg = "command type not found"
-		return
-	}
+	c.initCmd()
 	defer c.cancelFunc()
 	c.exec.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	c.exec.Dir = c.Workspace

@@ -37,9 +37,6 @@ type Cmd struct {
 func (c *Cmd) Create() error {
 	c.absFilePath = filepath.Join(c.ScriptDir, c.Name)
 	suffix := c.scriptSuffix()
-	if suffix == "" {
-		return fmt.Errorf("wrong script type")
-	}
 	c.absFilePath = c.absFilePath + suffix
 	c.Log.Infof("create script %s", filepath.Base(c.absFilePath))
 	err := os.WriteFile(c.absFilePath, []byte(c.Content), 0777)
@@ -63,23 +60,21 @@ func (c *Cmd) clear() {
 	_ = os.Remove(c.absFilePath)
 }
 
-func (c *Cmd) initCmd() bool {
+func (c *Cmd) initCmd() {
 	c.context, c.cancelFunc = context.WithTimeout(context.Background(), c.Timeout)
-	if c.commonCmd() || c.selfCmd() {
-		c.injectionEnv()
-		return true
-	}
-	return false
+	c.commonCmd()
+	c.injectionEnv()
 }
 
-func (c *Cmd) commonCmd() bool {
+func (c *Cmd) commonCmd() {
 	switch c.Shell {
 	case "python", "python2", "py2", "py":
 		c.exec = exec.CommandContext(c.context, "python2", c.absFilePath)
 	case "python3", "py3":
 		c.exec = exec.CommandContext(c.context, "python3", c.absFilePath)
+	default:
+		c.selfCmd()
 	}
-	return c.exec != nil
 }
 
 func (c *Cmd) injectionEnv() {

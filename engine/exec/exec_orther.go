@@ -26,11 +26,12 @@ func (c *Cmd) selfScriptSuffix() string {
 		return ".tcsh"
 	case "zsh":
 		return ".zsh"
+	default:
+		return ".bash"
 	}
-	return ""
 }
 
-func (c *Cmd) selfCmd() bool {
+func (c *Cmd) selfCmd() {
 	switch c.Shell {
 	case "ash":
 		c.exec = exec.CommandContext(c.context, "ash", "-c", c.absFilePath)
@@ -48,18 +49,16 @@ func (c *Cmd) selfCmd() bool {
 		c.exec = exec.CommandContext(c.context, "tcsh", "-c", c.absFilePath)
 	case "zsh":
 		c.exec = exec.CommandContext(c.context, "zsh", "-c", c.absFilePath)
+	default:
+		c.exec = exec.CommandContext(c.context, "bash", "-c", c.absFilePath)
 	}
-	return c.exec != nil
 }
 
 func (c *Cmd) Run() (code int64, msg string) {
 	var done, errCh = make(chan bool), make(chan error)
 	code = 255
 	defer c.clear()
-	if !c.initCmd() {
-		msg = "command type not found"
-		return
-	}
+	c.initCmd()
 	defer c.cancelFunc()
 	c.exec.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	c.exec.Dir = c.Workspace
