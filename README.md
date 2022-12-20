@@ -261,7 +261,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
-      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/0",
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/0/console",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-0",
       "state": "已结束",
       "code": 0,
@@ -274,7 +274,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 1,
-      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/1",
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/1/console",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-1",
       "state": "已结束",
       "code": 0,
@@ -290,7 +290,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 2,
-      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/2",
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/2/console",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-2",
       "state": "已结束",
       "code": 0,
@@ -306,7 +306,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 3,
-      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/3",
+      "url": "http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9/3/console",
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-3",
       "state": "已结束",
       "code": 0,
@@ -332,7 +332,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
-      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/0",
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/0/console",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-0",
       "state": "执行中",
       "code": 0,
@@ -344,7 +344,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 1,
-      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/1",
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/1/console",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-1",
       "state": "等待执行",
       "code": 0,
@@ -358,7 +358,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 2,
-      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/2",
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/2/console",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-2",
       "state": "等待执行",
       "code": 0,
@@ -372,7 +372,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 3,
-      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/3",
+      "url": "http://localhost:2376/a446f074-d37f-48f9-9fdb-f49211847b9e/3/console",
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-3",
       "state": "等待执行",
       "code": 0,
@@ -395,7 +395,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   "data": [
     {
       "step": 0,
-      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/0",
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/0/console",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-0",
       "state": "已结束",
       "code": 0,
@@ -408,7 +408,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 1,
-      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/1",
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/1/console",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-1",
       "state": "已结束",
       "code": 0,
@@ -424,7 +424,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 2,
-      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/2",
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/2/console",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-2",
       "state": "已结束",
       "code": 2,
@@ -440,7 +440,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
     },
     {
       "step": 3,
-      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/3",
+      "url": "http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/3/console",
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-3",
       "state": "等待执行",
       "code": 0,
@@ -455,7 +455,11 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
   ]
 }
 ```
-步骤输出:
+步骤控制台输出:
+```shell
+curl http://localhost:2376/98ab2628-f94e-4a18-933c-d8cebcc3343c/3/console
+```
+
 ```json
 {
   "code": 0,
