@@ -18,12 +18,12 @@ type Gin struct {
 }
 
 type JSONResult struct {
-	Code    int         `json:"code" description:"返回码" example:"0000"`
+	Code    int64       `json:"code" description:"返回码" example:"0000"`
 	Message string      `json:"message,omitempty" description:"消息" example:"消息"`
 	Data    interface{} `json:"data,omitempty" description:"数据"`
 }
 
-func NewRes(data interface{}, err error, code int) *JSONResult {
+func NewRes(data interface{}, err error, code int64) *JSONResult {
 	if code == 200 {
 		code = 0
 	}
@@ -52,7 +52,7 @@ func NewInfo(err error) string {
 }
 
 // SetRes Response res
-func (g *Gin) SetRes(res interface{}, err error, code int) {
+func (g *Gin) SetRes(res interface{}, err error, code int64) {
 	g.JSON(http.StatusOK, NewRes(res, err, code))
 }
 
@@ -62,7 +62,7 @@ func (g *Gin) SetJson(res interface{}) {
 }
 
 // SetError Check Error
-func (g *Gin) SetError(code int, err error) {
+func (g *Gin) SetError(code int64, err error) {
 	g.SetRes(nil, err, code)
 	g.Abort()
 }

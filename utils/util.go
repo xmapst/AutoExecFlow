@@ -15,21 +15,23 @@ const (
 	CodeRunning
 	CodeExecErr
 	CodeErrNoData
+	CodePending
 	CodeSuccess = 0
 	CodeErrApp  = 500
 )
 
-var MsgFlags = map[int]string{
+var MsgFlags = map[int64]string{
 	CodeSuccess:   "成功",
 	CodeErrApp:    "内部错误",
 	CodeErrParam:  "参数错误",
 	CodeRunning:   "执行中",
 	CodeExecErr:   "执行失败",
 	CodeErrNoData: "沒有数据",
+	CodePending:   "等待执行",
 }
 
 // GetMsg get error information based on Code
-func GetMsg(code int) string {
+func GetMsg(code int64) string {
 	msg, ok := MsgFlags[code]
 	if ok {
 		return msg

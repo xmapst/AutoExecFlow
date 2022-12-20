@@ -156,7 +156,7 @@ func GetStep(c *gin.Context) {
 		return
 	}
 	if taskStepState.State == cache.Pending {
-		render.SetJson([]string{taskStepState.Message})
+		render.SetRes([]string{taskStepState.Message}, nil, utils.CodePending)
 		return
 	}
 
@@ -182,6 +182,14 @@ func GetStep(c *gin.Context) {
 	}
 	if ws == nil {
 		c.Writer.Header().Set("Content-Type", "application/json")
+		if taskStepState.Code != 0 {
+			render.SetRes(fn(&latest), fmt.Errorf("执行失败, 退出码: %d", taskStepState.Code), utils.CodeExecErr)
+			return
+		}
+		if taskStepState.State == cache.Running {
+			render.SetRes(fn(&latest), errors.New("执行中"), utils.CodeRunning)
+			return
+		}
 		render.SetJson(fn(&latest))
 		return
 	}
