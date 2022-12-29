@@ -44,8 +44,9 @@ Commands:
 [GIN-debug] GET    /version                  --> github.com/xmapst/osreapi/handlers.Version (4 handlers)
 [GIN-debug] GET    /healthyz                 --> github.com/xmapst/osreapi/handlers.Router.func2 (4 handlers)
 [GIN-debug] GET    /                         --> github.com/xmapst/osreapi/handlers.List (4 handlers)
-[GIN-debug] GET    /:id                      --> github.com/xmapst/osreapi/handlers.Get (4 handlers)
 [GIN-debug] POST   /                         --> github.com/xmapst/osreapi/handlers.Post (4 handlers)
+[GIN-debug] GET    /:id                      --> github.com/xmapst/osreapi/handlers.GetTask (4 handlers)
+[GIN-debug] GET    /:id/:step/console        --> github.com/xmapst/osreapi/handlers.GetStep (4 handlers)
 ```
 
 ## 服用方式
@@ -87,7 +88,7 @@ curl -XGET http://localhost:2376/?sort=ttl
         "state": "已结束",
         "code": 510,
         "count": 4,
-        "message": "执行失败: [步骤: 0, 名称: step0; 步骤: 2, 名称: step2]",
+        "msg": "执行失败: [步骤: 0, 名称: step0; 步骤: 2, 名称: step2]",
         "times": {
           "begin": "2022-11-17T17:17:58+08:00",
           "end": "2022-11-17T17:17:58+08:00",
@@ -100,7 +101,7 @@ curl -XGET http://localhost:2376/?sort=ttl
         "state": "已结束",
         "code": 0,
         "count": 4,
-        "message": "所有步骤执行成功",
+        "msg": "所有步骤执行成功",
         "times": {
           "begin": "2022-11-17T17:20:29+08:00",
           "end": "2022-11-17T17:21:30+08:00",
@@ -113,7 +114,7 @@ curl -XGET http://localhost:2376/?sort=ttl
         "state": "执行中",
         "code": 0,
         "count": 4,
-        "message": "当前正在执行: [步骤: 0, 名称: step0; 步骤: 2, 名称: step2]",
+        "msg": "当前正在执行: [步骤: 0, 名称: step0; 步骤: 2, 名称: step2]",
         "times": {
           "begin": "2022-11-17T17:24:25+08:00",
           "ttl": "47h59m57.619748942s"
@@ -265,7 +266,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-0",
       "state": "已结束",
       "code": 0,
-      "message": "执行成功",
+      "msg": "执行成功",
       "times": {
         "begin": "2022-11-18T16:20:53+08:00",
         "end": "2022-11-18T16:20:56+08:00",
@@ -278,7 +279,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-1",
       "state": "已结束",
       "code": 0,
-      "message": "执行成功",
+      "msg": "执行成功",
       "depends_on": [
         "5a8fbc27-8b94-487a-adc4-174d76a16275-0"
       ],
@@ -294,7 +295,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-2",
       "state": "已结束",
       "code": 0,
-      "message": "执行成功",
+      "msg": "执行成功",
       "depends_on": [
         "5a8fbc27-8b94-487a-adc4-174d76a16275-1"
       ],
@@ -310,7 +311,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "5a8fbc27-8b94-487a-adc4-174d76a16275-3",
       "state": "已结束",
       "code": 0,
-      "message": "执行成功",
+      "msg": "执行成功",
       "depends_on": [
         "5a8fbc27-8b94-487a-adc4-174d76a16275-2"
       ],
@@ -336,7 +337,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-0",
       "state": "执行中",
       "code": 0,
-      "message": "步骤: 0, 名称: a446f074-d37f-48f9-9fdb-f49211847b9e-0",
+      "msg": "步骤: 0, 名称: a446f074-d37f-48f9-9fdb-f49211847b9e-0",
       "times": {
         "begin": "2022-11-18T16:15:56+08:00",
         "ttl": "47h59m57.433539558s"
@@ -348,7 +349,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-1",
       "state": "等待执行",
       "code": 0,
-      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "msg": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "a446f074-d37f-48f9-9fdb-f49211847b9e-0"
       ],
@@ -362,7 +363,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-2",
       "state": "等待执行",
       "code": 0,
-      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "msg": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "a446f074-d37f-48f9-9fdb-f49211847b9e-1"
       ],
@@ -376,7 +377,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "a446f074-d37f-48f9-9fdb-f49211847b9e-3",
       "state": "等待执行",
       "code": 0,
-      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "msg": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "a446f074-d37f-48f9-9fdb-f49211847b9e-2"
       ],
@@ -399,7 +400,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-0",
       "state": "已结束",
       "code": 0,
-      "message": "执行成功",
+      "msg": "执行成功",
       "times": {
         "begin": "2022-11-18T16:14:23+08:00",
         "end": "2022-11-18T16:14:26+08:00",
@@ -412,7 +413,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-1",
       "state": "已结束",
       "code": 0,
-      "message": "执行成功",
+      "msg": "执行成功",
       "depends_on": [
         "98ab2628-f94e-4a18-933c-d8cebcc3343c-0"
       ],
@@ -428,7 +429,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-2",
       "state": "已结束",
       "code": 2,
-      "message": "步骤: 2, 名称: 98ab2628-f94e-4a18-933c-d8cebcc3343c-2, 退出码: 2",
+      "msg": "步骤: 2, 名称: 98ab2628-f94e-4a18-933c-d8cebcc3343c-2, 退出码: 2",
       "depends_on": [
         "98ab2628-f94e-4a18-933c-d8cebcc3343c-1"
       ],
@@ -444,7 +445,7 @@ curl http://localhost:2376/a55c705f-d279-48cd-b1cb-803a345f8cd9
       "name": "98ab2628-f94e-4a18-933c-d8cebcc3343c-3",
       "state": "等待执行",
       "code": 0,
-      "message": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
+      "msg": "如上一依赖步骤执行失败则一直保持待执行, 只有上一依赖步骤成功才会执行",
       "depends_on": [
         "98ab2628-f94e-4a18-933c-d8cebcc3343c-2"
       ],

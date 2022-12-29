@@ -20,7 +20,7 @@ type ResStatus struct {
 	Name      string   `json:"name,omitempty"`
 	State     string   `json:"state"`
 	Code      int64    `json:"code"`
-	Message   string   `json:"message"`
+	Message   string   `json:"msg"`
 	DependsOn []string `json:"depends_on,omitempty"`
 	Times     *Times   `json:"times,omitempty"`
 }
@@ -58,11 +58,6 @@ func GetTask(c *gin.Context) {
 	var code int64
 	var stopMsg, runMsg []string
 	for _, v := range tasksStepStates {
-		//var output []string
-		//outputs := cache.GetAllTaskStepOutput(id, v.Step)
-		//for _, o := range outputs {
-		//	output = append(output, o.Content)
-		//}
 		code += v.Code
 		msg := v.Message
 		if v.Code != 0 {
@@ -85,6 +80,13 @@ func GetTask(c *gin.Context) {
 			}
 			runMsg = append(runMsg, msg)
 		}
+		var output []string
+		if v.State == cache.Stop {
+			outputs := cache.GetTaskStepAllOutput(id, v.Step)
+			for _, o := range outputs {
+				output = append(output, o.Content)
+			}
+		}
 		_res := ResStatus{
 			Step:      v.Step,
 			URL:       fmt.Sprintf("%s://%s/%s/%d/console", scheme, c.Request.Host, id, v.Step),
@@ -92,7 +94,7 @@ func GetTask(c *gin.Context) {
 			State:     cache.StateCNMap[v.State],
 			Code:      v.Code,
 			DependsOn: v.DependsOn,
-			Message:   msg,
+			Message:   strings.Join(output, "\n"),
 			Times: &Times{
 				Begin: timeStr(v.Times.Begin),
 				End:   timeStr(v.Times.End),

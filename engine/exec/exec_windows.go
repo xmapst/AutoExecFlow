@@ -4,6 +4,7 @@ package exec
 
 import (
 	"fmt"
+	"golang.org/x/sys/windows"
 	"os/exec"
 	"syscall"
 )
@@ -38,7 +39,7 @@ func (c *Cmd) Run() (code int64, msg string) {
 	defer c.cancelFunc()
 	c.exec.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	c.exec.Dir = c.Workspace
-	go c.run(done, errCh)
+	go c.run(done, errCh, windows.GetACP())
 	select {
 	// 执行超时信号
 	case <-c.context.Done():

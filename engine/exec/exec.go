@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -39,6 +40,9 @@ func (c *Cmd) Create() error {
 	suffix := c.scriptSuffix()
 	c.absFilePath = c.absFilePath + suffix
 	c.Log.Infof("create script %s", filepath.Base(c.absFilePath))
+	if c.Shell == "cmd" || c.Shell == "powershell" {
+		c.Content = c.utf8ToGb2312(c.Content)
+	}
 	err := os.WriteFile(c.absFilePath, []byte(c.Content), 0777)
 	if err != nil {
 		return err
@@ -81,7 +85,7 @@ func (c *Cmd) injectionEnv() {
 	c.exec.Env = append(append(os.Environ(), c.ExternalEnvVars...), fmt.Sprintf("WRE_SELF_UPDATE_TASK_ID=%s", c.TaskID))
 }
 
-func (c *Cmd) run(done chan bool, errCh chan error) {
+func (c *Cmd) run(done chan bool, errCh chan error, acp uint32) {
 	c.exec.Stderr = c.exec.Stdout
 	stdout, err := c.exec.StdoutPipe()
 	if err != nil {
@@ -89,7 +93,7 @@ func (c *Cmd) run(done chan bool, errCh chan error) {
 		return
 	}
 	// 实时写入缓存及落盘
-	go c.output(stdout)
+	go c.output(stdout, acp)
 
 	err = c.exec.Run()
 	if err != nil {
@@ -99,7 +103,7 @@ func (c *Cmd) run(done chan bool, errCh chan error) {
 	done <- true
 }
 
-func (c *Cmd) output(stdout io.ReadCloser) {
+func (c *Cmd) output(stdout io.ReadCloser, acp uint32) {
 	reader := bufio.NewReader(stdout)
 	var num int64 = 1
 	for {
@@ -111,7 +115,7 @@ func (c *Cmd) output(stdout io.ReadCloser) {
 		if line == nil {
 			continue
 		}
-		if c.isGBK(line) {
+		if c.isGBK(line) || acp == 936 {
 			line = c.gbkToUtf8(line)
 		}
 		cache.SetTaskStepOutput(c.TaskID, c.Step, num, &cache.TaskStepOutput{
@@ -135,9 +139,19 @@ func (c *Cmd) gbkToUtf8(s []byte) []byte {
 	return b
 }
 
+func (c *Cmd) utf8ToGb2312(s string) string {
+	reader := transform.NewReader(strings.NewReader(s), simplifiedchinese.GBK.NewEncoder())
+	d, err := io.ReadAll(reader)
+	if err != nil {
+		return s
+	}
+
+	return string(d)
+}
+
 func (c *Cmd) isGBK(data []byte) bool {
 	length := len(data)
-	var i int = 0
+	var i = 0
 	for i < length {
 		if data[i] <= 0x7f {
 			//编码0~127,只有一个字节的编码，兼容ASCII码

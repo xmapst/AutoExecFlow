@@ -15,7 +15,7 @@ type ListRes struct {
 	State   string `json:"state"`
 	Code    int64  `json:"code"`
 	Count   int64  `json:"count"`
-	Message string `json:"message"`
+	Message string `json:"msg"`
 	Times   *Times `json:"times"`
 }
 
