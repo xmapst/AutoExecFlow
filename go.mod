@@ -18,7 +18,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3
-	github.com/swaggo/swag v1.8.9
+	github.com/swaggo/swag v1.8.10
 	golang.org/x/sys v0.4.0
 	golang.org/x/text v0.6.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
