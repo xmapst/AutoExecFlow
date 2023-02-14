@@ -22,7 +22,7 @@ require (
 	golang.org/x/sys v0.5.0
 	golang.org/x/text v0.6.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
