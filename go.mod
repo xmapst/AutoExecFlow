@@ -20,7 +20,7 @@ require (
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.10
 	golang.org/x/sys v0.5.0
-	golang.org/x/text v0.6.0
+	golang.org/x/text v0.7.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
