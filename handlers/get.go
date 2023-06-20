@@ -3,15 +3,16 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/utils"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type ResStatus struct {

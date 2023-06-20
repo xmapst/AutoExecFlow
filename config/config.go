@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 var App = new(Config)

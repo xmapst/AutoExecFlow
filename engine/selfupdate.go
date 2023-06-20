@@ -2,19 +2,20 @@ package engine
 
 import (
 	"encoding/json"
+	"os"
+	"time"
+
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
 	"github.com/xmapst/osreapi/utils"
-	"os"
-	"time"
 )
 
 type selfUpdate struct {
 	TaskId string `json:"SelfUpdateTaskId"`
 }
 
-func LoadSelfUpdateData() {
+func loadSelfUpdateData() {
 	if !utils.FileOrPathExist(config.App.SelfUpdateData) {
 		return
 	}

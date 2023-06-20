@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/engine"
-	"net/http"
-	"strings"
 )
 
 type ListRes struct {
@@ -114,6 +115,6 @@ func List(c *gin.Context) {
 	render.SetJson(map[string]interface{}{
 		"total":   len(resSlice),
 		"tasks":   resSlice,
-		"running": engine.Pool.QueueLength(),
+		"running": engine.QueueLength(),
 	})
 }

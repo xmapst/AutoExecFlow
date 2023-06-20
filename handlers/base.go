@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/xmapst/osreapi/utils"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/xmapst/osreapi/utils"
 )
 
 const (

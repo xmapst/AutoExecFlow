@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	info "github.com/xmapst/osreapi"
 	"net/http"
 	"runtime"
+
+	"github.com/gin-gonic/gin"
+	info "github.com/xmapst/osreapi"
 )
 
 type Info struct {

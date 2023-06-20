@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
 	"github.com/xmapst/osreapi/engine"
 	"github.com/xmapst/osreapi/utils"
-	"net/http"
-	"time"
 )
 
 type PostStruct struct {
@@ -73,7 +74,7 @@ func Post(c *gin.Context) {
 		})
 	}
 	// 加入池中异步处理
-	go engine.Process(taskID, hardWareID, vmInstanceID, tasks)
+	engine.Process(taskID, hardWareID, vmInstanceID, tasks)
 	var scheme = "http"
 	if c.Request.TLS != nil {
 		scheme = "https"

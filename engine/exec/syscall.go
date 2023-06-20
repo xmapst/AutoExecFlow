@@ -3,10 +3,11 @@
 package exec
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
 	"syscall"
 	"unsafe"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (

@@ -3,9 +3,13 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/juju/ratelimit"
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
@@ -13,16 +17,57 @@ import (
 	"github.com/xmapst/osreapi/config"
 	_ "github.com/xmapst/osreapi/docs"
 	"github.com/xmapst/osreapi/engine"
-	"math"
-	"net/http"
-	"time"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+type accessLog struct {
+	TimeStamp  string `json:"timestamp"`
+	ClientIP   string `json:"client_ip"`
+	Method     string `json:"method"`
+	Path       string `json:"path"`
+	Protocol   string `json:"protocol"`
+	StatusCode int    `json:"status"`
+	Latency    int64  `json:"duration"`
+	BodySize   int    `json:"body_size"`
+}
 
 func Router() *gin.Engine {
 	router := gin.New()
 	coreConf := cors.DefaultConfig()
 	coreConf.AllowAllOrigins = true
-	router.Use(gin.Recovery(), cors.New(coreConf), logger())
+	router.Use(
+		gin.Recovery(), cors.New(coreConf),
+		func(c *gin.Context) {
+			c.Header("Server", "Gin")
+			c.Header("X-Server", "Gin")
+			c.Header("X-Powered-By", "XMapst")
+			c.Header("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, value")
+			c.Header("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
+			c.Header("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+			c.Header("Pragma", "no-cache")
+			c.Next()
+		},
+		gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+			log := &accessLog{
+				TimeStamp:  param.TimeStamp.Format(time.RFC3339),
+				ClientIP:   param.ClientIP,
+				Method:     param.Method,
+				Path:       param.Path,
+				Protocol:   param.Request.Proto,
+				StatusCode: param.StatusCode,
+				Latency:    int64(param.Latency),
+				BodySize:   param.BodySize,
+			}
+			bs, err := json.Marshal(log)
+			if err != nil {
+				logrus.Error(err)
+				return ""
+			}
+			// your custom format
+			return string(bs) + "\n"
+		}),
+	)
 	lm := newRateLimiter(time.Minute, config.App.MaxRequests, func(ctx *gin.Context) (string, error) {
 		key := ctx.Request.Header.Get("X-API-KEY")
 		if key != "" {
@@ -44,7 +89,7 @@ func Router() *gin.Engine {
 			"Server": c.Request.Host,
 			"Client": c.ClientIP(),
 			"State":  "Running",
-			"Task":   engine.Pool.QueueLength(),
+			"Task":   engine.QueueLength(),
 		})
 	})
 	router.GET("/", List)
@@ -103,30 +148,5 @@ func newRateLimiter(interval time.Duration, capacity int64, keyGen RateKeyFunc) 
 		capacity,
 		keyGen,
 		limiters,
-	}
-}
-
-func logger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		path := c.Request.URL.Path
-		start := time.Now()
-		c.Next()
-		stop := time.Since(start)
-		latency := int(math.Ceil(float64(stop.Nanoseconds()) / 1000000.0))
-		statusCode := c.Writer.Status()
-		clientIP := c.ClientIP()
-		clientUserAgent := c.Request.UserAgent()
-		referer := c.Request.Referer()
-		host := c.Request.Host
-		dataLength := c.Writer.Size()
-		if dataLength < 0 {
-			dataLength = 0
-		}
-		if len(c.Errors) > 0 {
-			logrus.Error(c.Errors.ByType(gin.ErrorTypePrivate).String())
-		} else {
-			// client_ip mode path statue_code latency dataLength referer userAgent
-			logrus.Infof("%s %s %s %d %d %d %s %s %s", clientIP, c.Request.Method, path, statusCode, latency, dataLength, host, referer, clientUserAgent)
-		}
 	}
 }

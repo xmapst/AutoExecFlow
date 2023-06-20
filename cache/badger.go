@@ -2,14 +2,15 @@ package cache
 
 import (
 	"fmt"
-	"github.com/dgraph-io/badger/v3"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/sirupsen/logrus"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dgraph-io/badger/v3"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/sirupsen/logrus"
 )
 
 const (

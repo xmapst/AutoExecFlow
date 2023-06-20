@@ -3,6 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/kardianos/service"
 	"github.com/sirupsen/logrus"
@@ -14,13 +22,6 @@ import (
 	"github.com/xmapst/osreapi/handlers"
 	"github.com/xmapst/osreapi/utils"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"runtime"
-	"strings"
-	"time"
 )
 
 func init() {
@@ -87,14 +88,10 @@ func (p *program) init() error {
 	if config.App.KeyExpire == config.App.ExecTimeOut || (config.App.KeyExpire/config.App.ExecTimeOut) < 2 {
 		config.App.KeyExpire = config.App.ExecTimeOut * 2
 	}
-	// clear old script
-	utils.ClearOldScript(config.App.ScriptDir)
-	// 创建临时内存数据库
-	cache.New(config.App.DataDir)
-	// 创建池
-	engine.NewExecPool(config.App.PoolSize)
-	// 加载自更新数据
-	engine.LoadSelfUpdateData()
+
+	// 初始化执行引擎
+	engine.Init()
+
 	gin.SetMode(gin.ReleaseMode)
 	if config.App.Debug {
 		gin.SetMode(gin.DebugMode)

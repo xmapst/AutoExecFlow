@@ -4,9 +4,10 @@ package exec
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows"
 	"os/exec"
 	"syscall"
+
+	"golang.org/x/sys/windows"
 )
 
 func (c *Cmd) selfScriptSuffix() string {

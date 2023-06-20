@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"github.com/robfig/cron/v3"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"path/filepath"
+
+	"github.com/robfig/cron/v3"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func LogOutput(dir, name string) io.Writer {

@@ -2,15 +2,18 @@ package engine
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
+	"runtime"
+	"time"
+
 	"github.com/Jeffail/tunny"
 	"github.com/sirupsen/logrus"
 	"github.com/xmapst/osreapi/cache"
 	"github.com/xmapst/osreapi/config"
 	"github.com/xmapst/osreapi/engine/dag"
 	"github.com/xmapst/osreapi/engine/exec"
-	"os"
-	"path/filepath"
-	"time"
+	"github.com/xmapst/osreapi/utils"
 )
 
 type ExecTask struct {
@@ -21,12 +24,30 @@ type ExecTask struct {
 }
 
 var (
-	Pool    *tunny.Pool
-	execErr = errors.New("exec error")
+	// 默认worker数为cpu核心数的两倍
+	defaultSize = runtime.NumCPU() * 2
+	workerPool  = tunny.NewFunc(defaultSize, worker)
+	execErr     = errors.New("exec error")
 )
 
-func NewExecPool(size int) {
-	Pool = tunny.NewFunc(size, worker)
+func Init() {
+	// 调整工作池的大小
+	if config.App.PoolSize > defaultSize {
+		workerPool.SetSize(config.App.PoolSize)
+	}
+
+	// clear old script
+	utils.ClearOldScript(config.App.ScriptDir)
+
+	// 创建临时内存数据库
+	cache.New(config.App.DataDir)
+
+	// 加载自更新数据
+	loadSelfUpdateData()
+}
+
+func QueueLength() int64 {
+	return workerPool.QueueLength()
 }
 
 func Process(taskID, hardWareID, vmInstanceID string, tasks []*cache.Task) {
@@ -43,12 +64,17 @@ func Process(taskID, hardWareID, vmInstanceID string, tasks []*cache.Task) {
 	}
 	// 插入数据
 	cache.SetTask(taskID, state, config.App.KeyExpire)
-	Pool.Process(&ExecTask{
-		workspace: filepath.Join(config.App.WorkSpace, taskID),
-		TaskID:    taskID,
-		Tasks:     tasks,
-		State:     state,
-	})
+	// Funnel this work into our pool. This call is synchronous and will
+	// block until the job is completed.
+	go func() {
+		res := workerPool.Process(&ExecTask{
+			workspace: filepath.Join(config.App.WorkSpace, taskID),
+			TaskID:    taskID,
+			Tasks:     tasks,
+			State:     state,
+		})
+		logrus.Infoln(taskID, "执行结束", res)
+	}()
 }
 
 func worker(i interface{}) interface{} {
