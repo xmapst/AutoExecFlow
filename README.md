@@ -2,52 +2,68 @@
 
 ## Help
 ```text
-usage: remote_executor.exe [<flags>] <command> [<args> ...]
+usage: remote_executor-amd64 [<flags>] <command> [<args> ...]
+
 
 Flags:
-  -h, --help              Show context-sensitive help (also try --help-long and
-                          --help-man).
+  -h, --[no-]help         Show context-sensitive help (also try --help-long and --help-man).
       --addr=":2376"      host:port for execution.
-      --debug             Enable debug messages
-      --key_expire=48h    Set the database key expire time. Example:
-                          "key_expire=1h"
-      --exec_timeout=24h  Set the exec command expire time. Example:
-                          "exec_timeout=30m"
-      --timeout=30s       Timeout for calling etpoints on the engine
+      --[no-]debug        Enable debug messages
+      --root="$TEMP/remote_executor-amd64"  
+                          Working root directory
+      --key_expire=48h    Set the database key expire time. Example: "key_expire=1h"
+      --exec_timeout=24h  Set the exec command expire time. Example: "exec_timeout=30m"
+      --timeout=30s       Timeout for calling endpoints on the engine
+      --max-requests=0    Maximum number of concurrent requests. 0 to disable.
       --pool_size=30      Set the size of the execution work pool.
-      --version           Show application version.
+      --[no-]version      Show application version.
 
 Commands:
-  help [<command>...]
+help [<command>...]
     Show help.
 
-  run
+run
     Run server
 ```
 
 ## Router
 ```text
-[GIN-debug] GET    /debug/pprof/                  --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/cmdline           --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/profile           --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
-[GIN-debug] POST   /debug/pprof/symbol            --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/symbol            --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/trace             --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/allocs            --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/block             --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/goroutine         --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/heap              --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/mutex             --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/threadcreate      --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
-[GIN-debug] GET    /swagger/*any                  --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (5 handlers)
-[GIN-debug] GET    /metrics                       --> github.com/xmapst/osreapi/handlers.Router.func4 (5 handlers)
-[GIN-debug] GET    /version                       --> github.com/xmapst/osreapi/handlers.Version (5 handlers)
-[GIN-debug] GET    /healthyz                      --> github.com/xmapst/osreapi/handlers.Router.func5 (5 handlers)
-[GIN-debug] GET    /api/v1/task                   --> github.com/xmapst/osreapi/handlers.List (5 handlers)
-[GIN-debug] POST   /api/v1/task                   --> github.com/xmapst/osreapi/handlers.Post (5 handlers)
-[GIN-debug] GET    /api/v1/task/:id               --> github.com/xmapst/osreapi/handlers.GetTask (5 handlers)
-[GIN-debug] GET    /api/v1/task/:id/:step/console --> github.com/xmapst/osreapi/handlers.GetStep (5 handlers)
+[GIN-debug] GET    /debug/pprof/             --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/cmdline      --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/profile      --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
+[GIN-debug] POST   /debug/pprof/symbol       --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/symbol       --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/trace        --> github.com/gin-gonic/gin.WrapF.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/allocs       --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/block        --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/goroutine    --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/heap         --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/mutex        --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
+[GIN-debug] GET    /debug/pprof/threadcreate --> github.com/gin-gonic/gin.WrapH.func1 (5 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (5 handlers)
+[GIN-debug] GET    /version                  --> github.com/xmapst/osreapi/internal/handlers.version (5 handlers)
+[GIN-debug] GET    /healthyz                 --> github.com/xmapst/osreapi/internal/handlers.healthyz (5 handlers)
+[GIN-debug] GET    /metrics                  --> github.com/xmapst/osreapi/internal/handlers.metrics (5 handlers)
+[GIN-debug] GET    /heartbeat                --> github.com/xmapst/osreapi/internal/handlers.heartbeat (5 handlers)
+[GIN-debug] HEAD   /heartbeat                --> github.com/xmapst/osreapi/internal/handlers.heartbeat (5 handlers)
+[GIN-debug] GET    /api/v1/task              --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.List (6 handlers)
+[GIN-debug] POST   /api/v1/task              --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.Post (6 handlers)
+[GIN-debug] GET    /api/v1/task/:task        --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.Detail (6 handlers)
+[GIN-debug] PUT    /api/v1/task/:task        --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.Stop (6 handlers)
+[GIN-debug] PUT    /api/v1/task/:task/:step  --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.StopStep (6 handlers)
+[GIN-debug] GET    /api/v1/task/:task/:step/console --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.StepDetail (6 handlers)
+[GIN-debug] GET    /api/v1/pool              --> github.com/xmapst/osreapi/internal/handlers/api/v1/pool.Detail (6 handlers)
+[GIN-debug] POST   /api/v1/pool              --> github.com/xmapst/osreapi/internal/handlers/api/v1/pool.Post (6 handlers)
+[GIN-debug] GET    /api/v1/state             --> github.com/xmapst/osreapi/internal/handlers/api/v1/status.Detail (6 handlers)
 ```
+
+## 特性
+
+- [x] 支持Windows/Linux/Mac
+- [x] 动态调整工人数量
+- [x] 基于有向无环(DAG)编排执行
+- [x] 支持任务/步骤的强制终止
+- [x] Workspace隔离
 
 ## 服用方式
 以windows服务形式部署运行
