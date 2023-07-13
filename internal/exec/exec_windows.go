@@ -53,12 +53,18 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	select {
 	// 人工强制终止
 	case <-ctx.Done():
+		if c.exec != nil && c.exec.Process != nil {
+			_ = KillAll(c.exec.Process.Pid)
+		}
 		err = ErrManual
 	// 执行超时信号
 	case <-c.context.Done():
 		// 如果直接使用cmd.Process.Kill()并不能杀死主进程下的所有子进程
 		// _ = cmd.Process.Kill()
-		err = KillAll(c.exec.Process.Pid)
+		if c.exec != nil && c.exec.Process != nil {
+			err = KillAll(c.exec.Process.Pid)
+		}
+
 		if err == nil {
 			err = ErrTimeOut
 		}

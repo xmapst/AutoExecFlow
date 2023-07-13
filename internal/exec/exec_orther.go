@@ -73,6 +73,9 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	select {
 	// 人工强制终止
 	case <-ctx.Done():
+		if c.exec != nil && c.exec.Process != nil {
+			_ = syscall.Kill(-c.exec.Process.Pid, syscall.SIGKILL)
+		}
 		err = ErrManual
 	// 执行超时信号
 	case <-c.context.Done():
@@ -80,7 +83,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		// If you use cmd.Process.Kill() directly, only the child process is killed,
 		// but the grandchild process is not killed
 		// err := cmd.Process.Kill()
-		if c.exec.Process != nil {
+		if c.exec != nil && c.exec.Process != nil {
 			err = syscall.Kill(-c.exec.Process.Pid, syscall.SIGKILL)
 		}
 		if err == nil {
