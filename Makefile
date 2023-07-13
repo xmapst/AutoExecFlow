@@ -16,7 +16,16 @@ LDFLAGS := "-w -s \
 -X 'github.com/xmapst/osreapi.UserEmail=$(USER_EMAIL)' \
 "
 
-all: windows linux darwin freebsd netbsd openbsd
+all: vet fmt windows linux darwin freebsd netbsd openbsd
+
+fmt:
+	go fmt ./...
+
+vet:
+	go vet ./...
+
+swag:
+	swag init -g cmd/osreapi.go -o internal/docs
 
 windows:
 	go mod tidy

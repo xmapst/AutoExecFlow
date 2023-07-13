@@ -1,0 +1,134 @@
+### version
+GET http://localhost:2376/version
+Accept: application/json
+
+### metrics
+GET http://localhost:2376/metrics
+Accept: application/json
+
+### healthyz
+GET http://localhost:2376/healthyz
+Accept: application/json
+
+### task, sort by start time
+GET http://localhost:2376/api/v1/task
+Accept: application/json
+
+### task, sort by completion time
+GET http://localhost:2376/api/v1/task?sort=end
+Accept: application/json
+
+### task, sort by expiration time
+GET http://localhost:2376/api/v1/task?sort=ttl
+Accept: application/json
+
+### task, sequential execution
+POST http://localhost:2376/api/v1/task
+Content-Type: application/json
+
+[
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=www.q1.com",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"powershell",
+    "command_content":"sleep 30",
+    "env_vars":[
+      "env1=value1",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=baidu.com"
+    ]
+  }
+]
+
+### task, parallel execution
+POST http://localhost:2376/api/v1/task?ansync=true
+Content-Type: application/json
+
+[
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=www.q1.com",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"powershell",
+    "command_content":"echo 1111",
+    "env_vars":[
+      "env1=value1",
+      "env2=value2"
+    ]
+  },
+  {
+    "command_type":"cmd",
+    "command_content":"curl -I https://%envhost%",
+    "env_vars":[
+      "envhost=baidu.com"
+    ]
+  }
+]
+
+### orchestration execution
+POST http://localhost:2376/api/v1/task?ansync=true
+Content-Type: application/json
+
+[
+  {
+    "name": "step0",
+    "command_type": "cmd",
+    "command_content": "ping baidu.com -c 4",
+    "env_vars": [
+      "env1=a",
+      "env2=b",
+      "env3=c"
+    ]
+  },
+  {
+    "name": "step1",
+    "command_type": "cmd",
+    "command_content": "curl https://www.baidu.com",
+    "env_vars": [
+      "env1=a",
+      "env2=b",
+      "env3=c"
+    ],
+    "depends_on": [
+      "step1"
+    ]
+  },
+  {
+    "name": "step2",
+    "command_type": "cmd",
+    "command_content": "set",
+    "env_vars": [
+      "env1=a",
+      "env2=b",
+      "env3=c"
+    ],
+    "depends_on": [
+      "step0"
+    ]
+  }
+]
+
+### task detail
+GET http://localhost:2376/api/v1/task/cikc0rndh7cc38r1oth0
+Content-Type: application/json
+
+### task step console output
+GET http://localhost:2376/api/v1/task/cikc0rndh7cc38r1oth0/0/console
+Content-Type: application/json

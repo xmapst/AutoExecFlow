@@ -2,8 +2,9 @@ package windows_remote_executor
 
 import (
 	"fmt"
-	"github.com/common-nighthawk/go-figure"
 	"runtime"
+
+	"github.com/common-nighthawk/go-figure"
 )
 
 var (

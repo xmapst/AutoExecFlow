@@ -1,27 +1,15 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
 	"os"
-	"path"
 	"path/filepath"
-	"runtime"
-	"strings"
-	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/kardianos/service"
-	"github.com/sirupsen/logrus"
 	info "github.com/xmapst/osreapi"
-	"github.com/xmapst/osreapi/cache"
-	"github.com/xmapst/osreapi/config"
-	_ "github.com/xmapst/osreapi/config"
-	"github.com/xmapst/osreapi/engine"
-	"github.com/xmapst/osreapi/handlers"
-	"github.com/xmapst/osreapi/utils"
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/xmapst/osreapi/internal/config"
+	_ "github.com/xmapst/osreapi/internal/config"
+	"github.com/xmapst/osreapi/internal/engine"
 )
 
 func init() {
@@ -58,81 +46,17 @@ func init() {
 		"pool_size",
 		"Set the size of the execution work pool.",
 	).Default("30").IntVar(&config.App.PoolSize)
-	// log format init
-	logrus.SetReportCaller(true)
-	logrus.SetLevel(logrus.DebugLevel)
-	logrus.SetFormatter(&logrus.JSONFormatter{
-		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
-			file = fmt.Sprintf("%s:%d", path.Base(frame.File), frame.Line)
-			_f := strings.Split(frame.Function, ".")
-			function = _f[len(_f)-1]
-			return
-		},
-	})
 }
 
-type program struct {
-	svr *http.Server
-}
+// @title           OSReApi
+// @version         1.0
+// @description     This is a OS Remote Executor Api Server.
 
-func (p *program) init() error {
-	info.PrintHeadInfo()
-	logrus.SetOutput(os.Stdout)
-	if !config.App.Debug {
-		logrus.SetOutput(utils.LogOutput(config.App.LogDir, config.App.ServiceName))
-	}
+// @contact.name   osreapi
+// @contact.url    https://github.com/xmapst/osreapi/issues
 
-	if config.App.KeyExpire < config.App.ExecTimeOut {
-		return fmt.Errorf("the expiration time cannot be less than the execution timeout time")
-	}
-	if config.App.KeyExpire == config.App.ExecTimeOut || (config.App.KeyExpire/config.App.ExecTimeOut) < 2 {
-		config.App.KeyExpire = config.App.ExecTimeOut * 2
-	}
-
-	// 初始化执行引擎
-	engine.Init()
-
-	gin.SetMode(gin.ReleaseMode)
-	if config.App.Debug {
-		gin.SetMode(gin.DebugMode)
-	}
-	gin.DisableConsoleColor()
-	return nil
-}
-
-func (p *program) Start(service.Service) error {
-	err := p.init()
-	if err != nil {
-		logrus.Errorln(err)
-		return err
-	}
-	p.svr = &http.Server{
-		Addr:         config.App.ListenAddress,
-		WriteTimeout: config.App.WebTimeout,
-		ReadTimeout:  config.App.WebTimeout,
-		IdleTimeout:  config.App.WebTimeout,
-		Handler:      handlers.Router(),
-	}
-	go p.listenAndServe()
-	return nil
-}
-
-func (p *program) listenAndServe() {
-	logrus.Infof("listen address %s", p.svr.Addr)
-	if err := p.svr.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		logrus.Fatalln(err)
-	}
-}
-
-func (p *program) Stop(service.Service) error {
-	logrus.Info("shutdown server")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-	_ = p.svr.Shutdown(ctx)
-	cache.Close()
-	return nil
-}
-
+// @license.name  GPL-3.0
+// @license.url   https://github.com/xmapst/osreapi/blob/main/LICENSE
 func main() {
 	kingpin.Version(info.VersionInfo())
 	kingpin.HelpFlag.Short('h')
@@ -140,16 +64,13 @@ func main() {
 	kingpin.Parse()
 }
 
-func run(*kingpin.ParseContext) error {
-	err := config.App.Load()
-	if err != nil {
-		return err
-	}
+func run(*kingpin.ParseContext) (err error) {
+	info.PrintHeadInfo()
 	var svc service.Service
-	svc, err = service.New(&program{}, &service.Config{
+	svc, err = service.New(engine.New(), &service.Config{
 		Name:        config.App.ServiceName,
-		DisplayName: "Q1Autoops System Remote Executor",
-		Description: "Q1Autoops System Remote Executor",
+		DisplayName: "OSReApi",
+		Description: "OS Remote Executor Api",
 	})
 	if err != nil {
 		return err

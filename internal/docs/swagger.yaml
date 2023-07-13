@@ -1,0 +1,301 @@
+definitions:
+  base.Result:
+    properties:
+      code:
+        example: 255
+        type: integer
+      data: {}
+      message:
+        example: message
+        type: string
+    type: object
+  pool.Setting:
+    properties:
+      size:
+        example: 30
+        type: integer
+    required:
+    - size
+    type: object
+  task.Request:
+    properties:
+      command_content:
+        example: sleep 10
+        type: string
+      command_type:
+        example: powershell
+        type: string
+      depends_on:
+        example:
+        - ""
+        items:
+          type: string
+        type: array
+      env_vars:
+        example:
+        - env1=value1
+        - env2=value2
+        items:
+          type: string
+        type: array
+      name:
+        example: script.ps1
+        type: string
+      time_out:
+        example: 3m
+        type: string
+    required:
+    - command_content
+    - command_type
+    type: object
+info:
+  contact:
+    name: osreapi
+    url: https://github.com/xmapst/osreapi/issues
+  description: This is a OS Remote Executor Api Server.
+  license:
+    name: GPL-3.0
+    url: https://github.com/xmapst/osreapi/blob/main/LICENSE
+  title: OSReApi
+  version: "1.0"
+paths:
+  /api/v1/pool:
+    get:
+      consumes:
+      - application/json
+      description: detail pool
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: pool detail
+      tags:
+      - Pool
+    post:
+      consumes:
+      - application/json
+      description: post task step
+      parameters:
+      - description: pool setting
+        in: body
+        name: setting
+        required: true
+        schema:
+          $ref: '#/definitions/pool.Setting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: pool setting
+      tags:
+      - Pool
+  /api/v1/state:
+    get:
+      consumes:
+      - application/json
+      description: detail server state
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: server state detail
+      tags:
+      - State
+  /api/v1/task:
+    get:
+      consumes:
+      - application/json
+      description: get all task
+      parameters:
+      - default: st
+        description: sort param
+        enum:
+        - st
+        - et
+        - rt
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: task detail
+      tags:
+      - Task
+    post:
+      consumes:
+      - application/json
+      description: post task step
+      parameters:
+      - description: task name
+        in: query
+        name: name
+        type: string
+      - default: false
+        description: task asynchronously
+        in: query
+        name: ansync
+        type: boolean
+      - description: scripts
+        in: body
+        name: scripts
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/task.Request'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: post task
+      tags:
+      - Task
+  /api/v1/task/{task}:
+    get:
+      consumes:
+      - application/json
+      description: detail task
+      parameters:
+      - description: task id
+        in: path
+        name: task
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: task detail
+      tags:
+      - Task
+    put:
+      consumes:
+      - application/json
+      description: stop task
+      parameters:
+      - description: task id
+        in: path
+        name: task
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: task stop
+      tags:
+      - Task
+  /api/v1/task/{task}/{step}:
+    put:
+      consumes:
+      - application/json
+      description: stop task step
+      parameters:
+      - description: task id
+        in: path
+        name: task
+        required: true
+        type: string
+      - default: "0"
+        description: step id
+        in: path
+        name: step
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: task step stop
+      tags:
+      - Task
+  /api/v1/task/{task}/{step}/console:
+    get:
+      consumes:
+      - application/json
+      description: detail task step
+      parameters:
+      - description: task id
+        in: path
+        name: task
+        required: true
+        type: string
+      - default: "0"
+        description: step id
+        in: path
+        name: step
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: task step detail
+      tags:
+      - Task
+swagger: "2.0"
