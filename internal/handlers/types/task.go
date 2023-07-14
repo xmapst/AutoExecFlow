@@ -68,6 +68,14 @@ type Notify struct {
 type Steps []*Step
 
 func (s Steps) Check(id string, ansync bool) error {
+	for _, v := range s {
+		if v.CommandType == "" {
+			return errors.New("key: 'Step.CommandType' Error:Field validation for 'CommandType' failed on the 'required' tag")
+		}
+		if v.CommandContent == "" {
+			return errors.New("key: 'Step.CommandContent' Error:Field validation for 'CommandContent' failed on the 'required' tag")
+		}
+	}
 	s.parseDuration()
 	s.fixName(id)
 	if err := s.uniqNames(); err != nil {
