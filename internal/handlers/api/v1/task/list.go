@@ -87,9 +87,9 @@ func List(c *gin.Context) {
 			var runningStateMsg, errorStateMsg []string
 			var code int64
 			for _, vv := range tasksStepStates {
-				var state = fmt.Sprintf("Step: %d, Name: %s", vv.Step, vv.Name)
+				var state = fmt.Sprintf("Step: %d, Name: %s", vv.ID, vv.Name)
 				if vv.Name == "" {
-					state = fmt.Sprintf("Step: %d", vv.Step)
+					state = fmt.Sprintf("Step: %d", vv.ID)
 				}
 				if vv.State == cache.Running {
 					runningStateMsg = append(runningStateMsg, state)

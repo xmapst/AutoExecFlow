@@ -42,7 +42,7 @@ func loadSelfUpdateData() {
 	}
 	cache.SetTask(self.TaskId, taskState, taskState.Times.RT)
 	taskStepState := &cache.TaskStepState{
-		Step:    0,
+		ID:      0,
 		Name:    "selfupdate",
 		State:   cache.Stop,
 		Code:    0,
@@ -53,5 +53,5 @@ func loadSelfUpdateData() {
 			RT: config.App.KeyExpire,
 		},
 	}
-	cache.SetTaskStep(self.TaskId, 0, taskStepState, taskStepState.Times.RT)
+	cache.SetTaskStep(self.TaskId, taskStepState.ID, taskStepState, taskStepState.Times.RT)
 }

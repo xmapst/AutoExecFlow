@@ -137,7 +137,9 @@ func (p *Program) Stop(service.Service) error {
 		_ = p.listener.Close()
 	}
 	p.wg.Wait()
-
+	if config.App.Normal {
+		worker.StopWait()
+	}
 	cache.Close()
 	logx.CloseLogger()
 	return nil

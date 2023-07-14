@@ -13,6 +13,7 @@ var App = new(Config)
 
 type Config struct {
 	Debug          bool
+	Normal         bool
 	ListenAddress  string
 	MaxRequests    int64
 	PoolSize       int

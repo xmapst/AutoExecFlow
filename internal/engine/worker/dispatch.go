@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/xmapst/osreapi/internal/deque"
+	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/tunny"
 )
 
@@ -36,9 +37,11 @@ func Waiting() int64 {
 }
 
 func StopWait() {
+	logx.Info("Waiting for all tasks to complete")
 	for queue.Len() != 0 || pool.QueueLength() != 0 {
 		time.Sleep(500 * time.Millisecond)
 	}
+	logx.Info("All tasks completed, normal end")
 }
 
 func dispatch() {

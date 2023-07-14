@@ -44,6 +44,7 @@ type Task struct {
 }
 
 type TaskStep struct {
+	ID             int64
 	Name           string
 	CommandType    string
 	CommandContent string
@@ -61,7 +62,7 @@ type TaskState struct {
 }
 
 type TaskStepState struct {
-	Step      int64    `json:"step"`
+	ID        int64    `json:"id"`
 	Name      string   `json:"name"`
 	State     int      `json:"state"`
 	Code      int64    `json:"code"`
@@ -229,7 +230,7 @@ type TaskStepStates []*TaskStepState
 
 func (e TaskStepStates) Len() int           { return len(e) }
 func (e TaskStepStates) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
-func (e TaskStepStates) Less(i, j int) bool { return e[i].Step < e[j].Step }
+func (e TaskStepStates) Less(i, j int) bool { return e[i].ID < e[j].ID }
 
 type TaskStepOutputs []*TaskStepOutput
 

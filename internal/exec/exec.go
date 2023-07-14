@@ -52,15 +52,17 @@ func (c *Cmd) Create() error {
 		"step_name":  c.Name,
 		"step_shell": c.Shell,
 	}).GetSubLoggerWithOption(zap.AddCallerSkip(-1))
+	if err := os.MkdirAll(c.ScriptDir, os.ModePerm); err != nil {
+		c.log.Errorln(err)
+		return err
+	}
 	c.absFilePath = filepath.Join(c.ScriptDir, c.Name)
-	suffix := c.scriptSuffix()
-	c.absFilePath = c.absFilePath + suffix
+	c.absFilePath = c.absFilePath + c.scriptSuffix()
 	c.log.Infof("create script %s", filepath.Base(c.absFilePath))
 	if c.Shell == "cmd" || c.Shell == "powershell" {
 		c.Content = c.utf8ToGb2312(c.Content)
 	}
-	err := os.WriteFile(c.absFilePath, []byte(c.Content), 0777)
-	if err != nil {
+	if err := os.WriteFile(c.absFilePath, []byte(c.Content), os.ModePerm); err != nil {
 		c.log.Errorln(err)
 		return err
 	}

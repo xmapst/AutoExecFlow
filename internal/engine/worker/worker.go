@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/xmapst/osreapi/internal/cache"
@@ -16,10 +17,11 @@ import (
 
 type Task struct {
 	log       logx.Logger
-	workspace string
 	ID        string
 	State     *cache.TaskState
 	Steps     []*cache.TaskStep
+	ScriptDir string
+	Workspace string
 }
 
 func Submit(task cache.Task) {
@@ -37,15 +39,18 @@ func Submit(task cache.Task) {
 	cache.SetTask(task.ID, state, config.App.KeyExpire)
 	queue.PushBack(func() {
 		workspace := filepath.Join(config.App.WorkSpace, task.ID)
+		scriptDir := filepath.Join(config.App.ScriptDir, task.ID)
 		t := &Task{
 			log: logx.GetSubLoggerWithKeyValue(map[string]string{
-				"task":      task.ID,
-				"workspace": workspace,
+				"task":       task.ID,
+				"workspace":  workspace,
+				"script_dir": scriptDir,
 			}),
-			workspace: workspace,
 			ID:        task.ID,
 			Steps:     task.Steps,
 			State:     state,
+			ScriptDir: scriptDir,
+			Workspace: workspace,
 		}
 		ctx := manager.AddTask(context.Background(), task.ID)
 		defer func(task string) {
@@ -139,8 +144,11 @@ func (t *Task) run(ctx context.Context) error {
 }
 
 func (t *Task) init() error {
-	err := os.MkdirAll(t.workspace, 0777)
-	if err != nil && err != os.ErrExist {
+	if err := os.MkdirAll(t.Workspace, os.ModePerm); err != nil {
+		t.log.Errorln(err)
+		return err
+	}
+	if err := os.MkdirAll(t.ScriptDir, os.ModePerm); err != nil {
 		t.log.Errorln(err)
 		return err
 	}
@@ -149,24 +157,26 @@ func (t *Task) init() error {
 
 func (t *Task) clear() {
 	t.log.Infof("cleanup workspace")
-	err := os.RemoveAll(t.workspace)
-	if err != nil {
+	if err := os.RemoveAll(t.Workspace); err != nil {
+		t.log.Errorln(err)
+	}
+	if err := os.RemoveAll(t.ScriptDir); err != nil {
 		t.log.Errorln(err)
 	}
 }
 
-func (t *Task) initStepCache(step int64, task *cache.TaskStep) {
+func (t *Task) initStepCache(id int64, step *cache.TaskStep) {
 	var state = &cache.TaskStepState{
-		Step:      step,
-		Name:      task.Name,
+		ID:        id,
+		Name:      step.Name,
 		State:     cache.Pending,
-		DependsOn: task.DependsOn,
+		DependsOn: step.DependsOn,
 		Message:   "The current step only proceeds if the previous step succeeds.",
 		Times: &cache.Times{
 			RT: t.State.Times.RT,
 		},
 	}
-	cache.SetTaskStep(t.ID, step, state, state.Times.RT)
+	cache.SetTaskStep(t.ID, id, state, state.Times.RT)
 }
 
 func (t *Task) newCmd(id int64, step *cache.TaskStep) *exec.Cmd {
@@ -176,31 +186,31 @@ func (t *Task) newCmd(id int64, step *cache.TaskStep) *exec.Cmd {
 		Name:            step.Name,
 		Shell:           step.CommandType,
 		Content:         step.CommandContent,
-		Workspace:       t.workspace,
-		ScriptDir:       config.App.ScriptDir,
+		Workspace:       t.Workspace,
+		ScriptDir:       filepath.Join(t.ScriptDir, strconv.FormatInt(id, 10)),
 		ExternalEnvVars: step.EnvVars,
 		Timeout:         step.Timeout,
 		TTL:             t.State.Times.RT,
 	}
 }
 
-func (t *Task) execStep(ctx context.Context, step int64, task *cache.TaskStep) (err error) {
+func (t *Task) execStep(ctx context.Context, id int64, step *cache.TaskStep) (err error) {
 	var state = &cache.TaskStepState{
-		Step:      step,
-		Name:      task.Name,
+		ID:        id,
+		Name:      step.Name,
 		State:     cache.Running,
-		DependsOn: task.DependsOn,
+		DependsOn: step.DependsOn,
 		Times: &cache.Times{
 			ST: time.Now().UnixNano(),
 			RT: t.State.Times.RT,
 		},
 	}
-	cache.SetTaskStep(t.ID, step, state, state.Times.RT)
-	var cmd = t.newCmd(step, task)
+	cache.SetTaskStep(t.ID, id, state, state.Times.RT)
+	var cmd = t.newCmd(id, step)
 	defer func() {
 		state.Times.ET = time.Now().UnixNano()
 		state.State = cache.Stop
-		cache.SetTaskStep(t.ID, step, state, state.Times.RT)
+		cache.SetTaskStep(t.ID, id, state, state.Times.RT)
 	}()
 	if err = cmd.Create(); err != nil {
 		t.log.Errorln(err)

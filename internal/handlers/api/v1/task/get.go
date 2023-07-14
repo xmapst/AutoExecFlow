@@ -17,7 +17,7 @@ import (
 )
 
 type ResStatus struct {
-	Step      int64    `json:"step"`
+	ID        int64    `json:"id"`
 	URL       string   `json:"url,omitempty"`
 	Name      string   `json:"name,omitempty"`
 	State     int      `json:"state"`
@@ -65,9 +65,9 @@ func Detail(c *gin.Context) {
 		code += v.Code
 		msg := v.Message
 		if v.Code != 0 {
-			msg = fmt.Sprintf("Step: %d, Exit Code: %d", v.Step, v.Code)
+			msg = fmt.Sprintf("Step: %d, Exit Code: %d", v.ID, v.Code)
 			if v.Name != "" {
-				msg = fmt.Sprintf("Step: %d, Name: %s, Exit Code: %d", v.Step, v.Name, v.Code)
+				msg = fmt.Sprintf("Step: %d, Name: %s, Exit Code: %d", v.ID, v.Name, v.Code)
 			}
 			if taskState.MetaData.VMInstanceID != "" {
 				msg += fmt.Sprintf(", Instance ID: %s", taskState.MetaData.VMInstanceID)
@@ -79,15 +79,15 @@ func Detail(c *gin.Context) {
 		}
 		var output []string
 		if v.State == cache.Running {
-			msg = fmt.Sprintf("Step: %d, Name: %s", v.Step, v.Name)
+			msg = fmt.Sprintf("Step: %d, Name: %s", v.ID, v.Name)
 			if v.Name == "" {
-				msg = fmt.Sprintf("Step: %d", v.Step)
+				msg = fmt.Sprintf("Step: %d", v.ID)
 			}
 			runMsg = append(runMsg, msg)
 			output = []string{"The step is running"}
 		}
 		if v.State == cache.Stop {
-			outputs := cache.GetTaskStepAllOutput(task, v.Step)
+			outputs := cache.GetTaskStepAllOutput(task, v.ID)
 			for _, o := range outputs {
 				output = append(output, o.Content)
 			}
@@ -96,8 +96,8 @@ func Detail(c *gin.Context) {
 			output = []string{v.Message}
 		}
 		_res := ResStatus{
-			Step:      v.Step,
-			URL:       fmt.Sprintf("%s://%s%s/%d/console", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), v.Step),
+			ID:        v.ID,
+			URL:       fmt.Sprintf("%s://%s%s/%d/console", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), v.ID),
 			Name:      v.Name,
 			State:     v.State,
 			Code:      v.Code,

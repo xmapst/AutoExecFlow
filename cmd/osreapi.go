@@ -19,6 +19,10 @@ func init() {
 		"host:port for execution.",
 	).Default(":2376").StringVar(&config.App.ListenAddress)
 	kingpin.Flag(
+		"normal",
+		"Normal wait for all task execution to complete",
+	).Default("false").BoolVar(&config.App.Normal)
+	kingpin.Flag(
 		"debug",
 		"Enable debug messages",
 	).Default("false").BoolVar(&config.App.Debug)
