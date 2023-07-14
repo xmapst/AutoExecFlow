@@ -8,6 +8,7 @@ usage: remote_executor-amd64 [<flags>] <command> [<args> ...]
 Flags:
   -h, --[no-]help         Show context-sensitive help (also try --help-long and --help-man).
       --addr=":2376"      host:port for execution.
+      --[no-]normal       Normal wait for all task execution to complete
       --[no-]debug        Enable debug messages
       --root="$TEMP/remote_executor-amd64"  
                           Working root directory

@@ -105,7 +105,11 @@ func (c *Cmd) commonCmd() {
 
 func (c *Cmd) injectionEnv() {
 	c.log.Infoln("inject customize env", c.ExternalEnvVars)
-	c.exec.Env = append(append(os.Environ(), c.ExternalEnvVars...), fmt.Sprintf("WRE_SELF_UPDATE_TASK_ID=%s", c.TaskID))
+	c.exec.Env = append(append(os.Environ(), c.ExternalEnvVars...),
+		fmt.Sprintf("WRE_SELF_UPDATE_TASK_ID=%s", c.TaskID),
+		fmt.Sprintf("TASK_ID=%s", c.TaskID),
+		fmt.Sprintf("TASK_STEP_ID=%d", c.StepID),
+	)
 }
 
 func (c *Cmd) run(done chan bool, errCh chan error, acp uint32) {
