@@ -17,7 +17,7 @@ definitions:
     required:
     - size
     type: object
-  task.Request:
+  task.Step:
     properties:
       command_content:
         example: sleep 10
@@ -41,6 +41,70 @@ definitions:
       name:
         example: script.ps1
         type: string
+      time_out:
+        example: 3m
+        type: string
+    required:
+    - command_content
+    - command_type
+    type: object
+  taskv2.Notify:
+    properties:
+      type:
+        type: string
+    required:
+    - type
+    type: object
+  taskv2.Requests:
+    properties:
+      ansync:
+        example: false
+        type: boolean
+      name:
+        example: ""
+        type: string
+      notify:
+        items:
+          $ref: '#/definitions/taskv2.Notify'
+        type: array
+      steps:
+        items:
+          $ref: '#/definitions/taskv2.Step'
+        type: array
+      time_out:
+        example: 3m
+        type: string
+    required:
+    - steps
+    type: object
+  taskv2.Step:
+    properties:
+      command_content:
+        example: sleep 10
+        type: string
+      command_type:
+        example: powershell
+        type: string
+      depends_on:
+        example:
+        - ""
+        items:
+          type: string
+        type: array
+      env_vars:
+        example:
+        - env1=value1
+        - env2=value2
+        items:
+          type: string
+        type: array
+      name:
+        example: script.ps1
+        type: string
+      notify:
+        items:
+          $ref: '#/definitions/taskv2.Notify'
+        type: array
       time_out:
         example: 3m
         type: string
@@ -171,7 +235,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/task.Request'
+            $ref: '#/definitions/task.Step'
           type: array
       produces:
       - application/json
@@ -296,6 +360,32 @@ paths:
           schema:
             $ref: '#/definitions/base.Result'
       summary: task step detail
+      tags:
+      - Task
+  /api/v2/task:
+    post:
+      consumes:
+      - application/json
+      description: post task step
+      parameters:
+      - description: scripts
+        in: body
+        name: scripts
+        required: true
+        schema:
+          $ref: '#/definitions/taskv2.Requests'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/base.Result'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/base.Result'
+      summary: post task
       tags:
       - Task
 swagger: "2.0"

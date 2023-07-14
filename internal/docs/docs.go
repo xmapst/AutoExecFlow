@@ -195,7 +195,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/task.Request"
+                                "$ref": "#/definitions/task.Step"
                             }
                         }
                     }
@@ -381,6 +381,46 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v2/task": {
+            "post": {
+                "description": "post task step",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task"
+                ],
+                "summary": "post task",
+                "parameters": [
+                    {
+                        "description": "scripts",
+                        "name": "scripts",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/taskv2.Requests"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/base.Result"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/base.Result"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -410,7 +450,7 @@ const docTemplate = `{
                 }
             }
         },
-        "task.Request": {
+        "task.Step": {
             "type": "object",
             "required": [
                 "command_content",
@@ -447,6 +487,99 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "script.ps1"
+                },
+                "time_out": {
+                    "type": "string",
+                    "example": "3m"
+                }
+            }
+        },
+        "taskv2.Notify": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "taskv2.Requests": {
+            "type": "object",
+            "required": [
+                "steps"
+            ],
+            "properties": {
+                "ansync": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "example": ""
+                },
+                "notify": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taskv2.Notify"
+                    }
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taskv2.Step"
+                    }
+                },
+                "time_out": {
+                    "type": "string",
+                    "example": "3m"
+                }
+            }
+        },
+        "taskv2.Step": {
+            "type": "object",
+            "required": [
+                "command_content",
+                "command_type"
+            ],
+            "properties": {
+                "command_content": {
+                    "type": "string",
+                    "example": "sleep 10"
+                },
+                "command_type": {
+                    "type": "string",
+                    "example": "powershell"
+                },
+                "depends_on": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        ""
+                    ]
+                },
+                "env_vars": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "env1=value1",
+                        "env2=value2"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "example": "script.ps1"
+                },
+                "notify": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/taskv2.Notify"
+                    }
                 },
                 "time_out": {
                     "type": "string",

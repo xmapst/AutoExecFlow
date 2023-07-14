@@ -1,4 +1,4 @@
-package task
+package taskv2
 
 import (
 	"context"
@@ -27,10 +27,21 @@ type Step struct {
 	EnvVars        []string `json:"env_vars,omitempty" form:"env_vars,omitempty" example:"env1=value1,env2=value2"`
 	DependsOn      []string `json:"depends_on,omitempty" form:"depends_on,omitempty"  example:""`
 	TimeOut        string   `json:"time_out,omitempty" form:"time_out,omitempty" example:"3m"`
+	Notify         []Notify `json:"notify" form:"notify"`
 	timeout        time.Duration
 }
 
-type Requests []Step
+type Notify struct {
+	Type string `json:"type" form:"type" binding:"required"`
+}
+
+type Requests struct {
+	Name    string   `json:"name" form:"name" example:""`
+	TimeOut string   `json:"time_out" form:"time_out" example:"3m"`
+	AnSync  bool     `json:"ansync" form:"ansync" example:"false"`
+	Steps   []Step   `json:"steps" form:"steps" binding:"required"`
+	Notify  []Notify `json:"notify" form:"notify"`
+}
 
 // Post
 // @Summary post task
@@ -38,16 +49,12 @@ type Requests []Step
 // @Tags Task
 // @Accept json
 // @Produce json
-// @param name query string false "task name"
-// @Param ansync query bool false "task asynchronously" default(false)
 // @Param scripts body Requests true "scripts"
 // @Success 200 {object} base.Result
 // @Failure 500 {object} base.Result
-// @Router /api/v1/task [post]
+// @Router /api/v2/task [post]
 func Post(c *gin.Context) {
 	render := base.Gin{Context: c}
-	name := c.Query("name")
-	ansync := c.DefaultQuery("ansync", "false")
 	var req Requests
 	if err := c.ShouldBind(&req); err != nil {
 		logx.Errorln(err)
@@ -58,7 +65,7 @@ func Post(c *gin.Context) {
 		})
 		return
 	}
-	if req == nil {
+	if req.Steps == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":      http.StatusBadRequest,
 			"message":   base.GetMsg(base.CodeErrParam),
@@ -70,8 +77,8 @@ func Post(c *gin.Context) {
 	var task = cache.Task{
 		ID: ksuid.New().String(),
 	}
-	if name != "" {
-		if manager.TaskRunning(name) {
+	if req.Name != "" {
+		if manager.TaskRunning(req.Name) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":      http.StatusBadRequest,
 				"message":   "task is running",
@@ -79,10 +86,10 @@ func Post(c *gin.Context) {
 			})
 			return
 		}
-		task.ID = name
+		task.ID = req.Name
 	}
 	req.fixName(task.ID)
-	if ansync == "false" {
+	if !req.AnSync {
 		// 非编排模式,按顺序执行
 		req.fixSync()
 	}
@@ -99,7 +106,7 @@ func Post(c *gin.Context) {
 	}
 	req.parseDuration()
 
-	for _, v := range req {
+	for _, v := range req.Steps {
 		task.Steps = append(task.Steps, &cache.TaskStep{
 			Name:           v.Name,
 			CommandType:    v.CommandType,
@@ -133,7 +140,7 @@ func Post(c *gin.Context) {
 		scheme = "https"
 	}
 	render.SetJson(gin.H{
-		"count":     len(req),
+		"count":     len(req.Steps),
 		"id":        task.ID,
 		"url":       fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), task.ID),
 		"timestamp": time.Now().UnixNano(),
@@ -141,26 +148,26 @@ func Post(c *gin.Context) {
 }
 
 func (p Requests) fixName(taskID string) {
-	for step, v := range p {
+	for step, v := range p.Steps {
 		if v.Name == "" {
-			p[step].Name = fmt.Sprintf("%s-%d", taskID, step)
+			p.Steps[step].Name = fmt.Sprintf("%s-%d", taskID, step)
 		}
 	}
 }
 
 func (p Requests) fixSync() {
-	for k := range p {
+	for k := range p.Steps {
 		if k == 0 {
-			p[k].DependsOn = nil
+			p.Steps[k].DependsOn = nil
 			continue
 		}
-		p[k].DependsOn = []string{p[k-1].Name}
+		p.Steps[k].DependsOn = []string{p.Steps[k-1].Name}
 	}
 }
 
 func (p Requests) uniqNames() (result error) {
 	counts := make(map[string]int)
-	for _, v := range p {
+	for _, v := range p.Steps {
 		counts[v.Name]++
 	}
 	for name, count := range counts {
@@ -172,18 +179,18 @@ func (p Requests) uniqNames() (result error) {
 }
 
 func (p Requests) parseDuration() {
-	for k, v := range p {
+	for k, v := range p.Steps {
 		timeout, err := time.ParseDuration(v.TimeOut)
 		if v.TimeOut == "" || err != nil {
 			timeout = config.App.ExecTimeOut
 		}
-		p[k].timeout = timeout
+		p.Steps[k].timeout = timeout
 	}
 }
 
 func (p Requests) getHardWareIDAndVmInstanceID() (res cache.MetaData) {
 	// check envs
-	for k, v := range p {
+	for k, v := range p.Steps {
 		var _env []string
 		m := utils.SliceToStrMap(v.EnvVars)
 		for k, v := range m {
@@ -197,7 +204,7 @@ func (p Requests) getHardWareIDAndVmInstanceID() (res cache.MetaData) {
 		if ok && str != "" {
 			res.VMInstanceID = str
 		}
-		p[k].EnvVars = _env
+		p.Steps[k].EnvVars = _env
 	}
 	return
 }

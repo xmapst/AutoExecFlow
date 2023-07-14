@@ -14,6 +14,7 @@ import (
 	"github.com/xmapst/osreapi/internal/handlers/api/v1/pool"
 	"github.com/xmapst/osreapi/internal/handlers/api/v1/status"
 	"github.com/xmapst/osreapi/internal/handlers/api/v1/task"
+	"github.com/xmapst/osreapi/internal/handlers/api/v2/task"
 	"github.com/xmapst/osreapi/internal/handlers/middleware/limiter"
 	"github.com/xmapst/osreapi/internal/handlers/middleware/zap"
 )
@@ -44,29 +45,25 @@ func Router() *gin.Engine {
 	router.GET("/metrics", metrics)
 	router.GET("/heartbeat", heartbeat)
 	router.HEAD("/heartbeat", heartbeat)
-	apiG := router.Group("/api", limiter.New(config.App.MaxRequests, []string{http.MethodPost}))
+	api := router.Group("/api", limiter.New(config.App.MaxRequests, []string{http.MethodPost}))
 	{
-		v1G := apiG.Group("/v1")
-		{
-			taskG := v1G.Group("/task")
-			{
-				taskG.GET("", task.List)
-				taskG.POST("", task.Post)
-				taskG.GET("/:task", task.Detail)
-				taskG.PUT("/:task", task.Stop)
-				taskG.PUT("/:task/:step", task.StopStep)
-				taskG.GET("/:task/:step/console", task.StepDetail)
-			}
-			poolG := v1G.Group("/pool")
-			{
-				poolG.GET("", pool.Detail)
-				poolG.POST("", pool.Post)
-			}
-			stateG := v1G.Group("/state")
-			{
-				stateG.GET("", status.Detail)
-			}
-		}
+		// V1
+		// task
+		api.GET("/v1/task", task.List)
+		api.POST("/v1/task", task.Post)
+		api.GET("/v1/task/:task", task.Detail)
+		api.PUT("/v1/task/:task", task.Stop)
+		api.PUT("/v1/task/:task/:step", task.StopStep)
+		api.GET("/v1/task/:task/:step/console", task.StepDetail)
+		// worker pool
+		api.GET("/v1/pool", pool.Detail)
+		api.POST("/v1/pool", pool.Post)
+		// server state
+		api.GET("/v1/state", status.Detail)
+
+		// V2
+		// task
+		api.POST("/v2/task", taskv2.Post)
 	}
 
 	// Compatible with the original route, it will be deleted in the future
