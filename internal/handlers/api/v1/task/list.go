@@ -9,24 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/xmapst/osreapi/internal/cache"
 	"github.com/xmapst/osreapi/internal/handlers/base"
+	"github.com/xmapst/osreapi/internal/handlers/types"
 	"github.com/xmapst/osreapi/internal/utils"
 )
-
-type ListRes struct {
-	ID      string `json:"id"`
-	URL     string `json:"url"`
-	State   int    `json:"state"`
-	Code    int64  `json:"code"`
-	Count   int64  `json:"count"`
-	Message string `json:"msg"`
-	Times   *Times `json:"times"`
-}
-
-type Times struct {
-	ST string `json:"st,omitempty"` // 开始时间
-	ET string `json:"et,omitempty"` // 结束时间
-	RT string `json:"rt,omitempty"` // 剩余时间
-}
 
 // List
 // @Summary task detail
@@ -35,8 +20,8 @@ type Times struct {
 // @Accept json
 // @Produce json
 // @Param sort query string false "sort param" Enums(st,et,rt) default(st)
-// @Success 200 {object} base.Result
-// @Failure 500 {object} base.Result
+// @Success 200 {object} types.BaseRes
+// @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task [get]
 func List(c *gin.Context) {
 	render := base.Gin{Context: c}
@@ -60,18 +45,18 @@ func List(c *gin.Context) {
 		render.SetJson(nil)
 		return
 	}
-	var resSlice []ListRes
+	var resSlice []types.TaskListRes
 	var scheme = "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
 	for _, v := range tasksStates {
-		res := ListRes{
+		res := types.TaskListRes{
 			ID:    v.ID,
 			URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), v.ID),
 			State: v.State,
 			Count: v.Count,
-			Times: &Times{
+			Times: &types.Times{
 				ST: utils.TimeStr(v.Times.ST),
 				ET: utils.TimeStr(v.Times.ET),
 			},

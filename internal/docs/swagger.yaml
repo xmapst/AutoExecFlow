@@ -1,5 +1,5 @@
 definitions:
-  base.Result:
+  types.BaseRes:
     properties:
       code:
         example: 255
@@ -9,7 +9,20 @@ definitions:
         example: message
         type: string
     type: object
-  pool.Setting:
+  types.Notify:
+    properties:
+      action:
+        description: or after
+        example: before
+        type: string
+      type:
+        example: webhook
+        type: string
+    required:
+    - action
+    - type
+    type: object
+  types.PoolSetting:
     properties:
       size:
         example: 30
@@ -17,7 +30,7 @@ definitions:
     required:
     - size
     type: object
-  task.Step:
+  types.Step:
     properties:
       command_content:
         example: sleep 10
@@ -41,76 +54,36 @@ definitions:
       name:
         example: script.ps1
         type: string
-      time_out:
+      notify:
+        items:
+          $ref: '#/definitions/types.Notify'
+        type: array
+      timeout:
         example: 3m
         type: string
     required:
     - command_content
     - command_type
     type: object
-  taskv2.Notify:
-    properties:
-      type:
-        type: string
-    required:
-    - type
-    type: object
-  taskv2.Requests:
+  types.Task:
     properties:
       ansync:
         example: false
         type: boolean
-      name:
+      id:
         example: ""
         type: string
       notify:
         items:
-          $ref: '#/definitions/taskv2.Notify'
+          $ref: '#/definitions/types.Notify'
         type: array
-      steps:
+      step:
         items:
-          $ref: '#/definitions/taskv2.Step'
+          $ref: '#/definitions/types.Step'
         type: array
-      time_out:
-        example: 3m
+      timeout:
+        example: ""
         type: string
-    required:
-    - steps
-    type: object
-  taskv2.Step:
-    properties:
-      command_content:
-        example: sleep 10
-        type: string
-      command_type:
-        example: powershell
-        type: string
-      depends_on:
-        example:
-        - ""
-        items:
-          type: string
-        type: array
-      env_vars:
-        example:
-        - env1=value1
-        - env2=value2
-        items:
-          type: string
-        type: array
-      name:
-        example: script.ps1
-        type: string
-      notify:
-        items:
-          $ref: '#/definitions/taskv2.Notify'
-        type: array
-      time_out:
-        example: 3m
-        type: string
-    required:
-    - command_content
-    - command_type
     type: object
 info:
   contact:
@@ -134,11 +107,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: pool detail
       tags:
       - Pool
@@ -152,18 +125,18 @@ paths:
         name: setting
         required: true
         schema:
-          $ref: '#/definitions/pool.Setting'
+          $ref: '#/definitions/types.PoolSetting'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: pool setting
       tags:
       - Pool
@@ -178,11 +151,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: server state detail
       tags:
       - State
@@ -207,11 +180,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: task detail
       tags:
       - Task
@@ -220,22 +193,26 @@ paths:
       - application/json
       description: post task step
       parameters:
-      - description: task name
+      - description: task id
         in: query
-        name: name
+        name: id
         type: string
       - default: false
         description: task asynchronously
         in: query
         name: ansync
         type: boolean
+      - description: task timeout
+        in: query
+        name: timeout
+        type: string
       - description: scripts
         in: body
         name: scripts
         required: true
         schema:
           items:
-            $ref: '#/definitions/task.Step'
+            $ref: '#/definitions/types.Step'
           type: array
       produces:
       - application/json
@@ -243,11 +220,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: post task
       tags:
       - Task
@@ -268,11 +245,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: task detail
       tags:
       - Task
@@ -292,11 +269,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: task stop
       tags:
       - Task
@@ -323,11 +300,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: task step stop
       tags:
       - Task
@@ -354,11 +331,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: task step detail
       tags:
       - Task
@@ -373,18 +350,18 @@ paths:
         name: scripts
         required: true
         schema:
-          $ref: '#/definitions/taskv2.Requests'
+          $ref: '#/definitions/types.Task'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/base.Result'
+            $ref: '#/definitions/types.BaseRes'
       summary: post task
       tags:
       - Task

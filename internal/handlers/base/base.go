@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/xmapst/osreapi/internal/handlers/types"
 )
 
 const (
@@ -40,18 +41,12 @@ type Gin struct {
 	*gin.Context
 }
 
-type Result struct {
-	Code    int64       `json:"code" example:"255"`
-	Message string      `json:"message,omitempty" example:"message"`
-	Data    interface{} `json:"data,omitempty"`
-}
-
-func NewRes(data interface{}, err error, code int64) *Result {
+func NewRes(data interface{}, err error, code int64) *types.BaseRes {
 	if code == 200 {
 		code = 0
 	}
 	codeMsg := GetMsg(code)
-	return &Result{
+	return &types.BaseRes{
 		Data: data,
 		Code: code,
 		Message: func() string {

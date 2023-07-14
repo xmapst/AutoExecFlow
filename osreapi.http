@@ -15,11 +15,11 @@ GET http://localhost:2376/api/v1/task
 Accept: application/json
 
 ### task, sort by completion time
-GET http://localhost:2376/api/v1/task?sort=end
+GET http://localhost:2376/api/v1/task?sort=et
 Accept: application/json
 
 ### task, sort by expiration time
-GET http://localhost:2376/api/v1/task?sort=ttl
+GET http://localhost:2376/api/v1/task?sort=rt
 Accept: application/json
 
 ### task, sequential execution

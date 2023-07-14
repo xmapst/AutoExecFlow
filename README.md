@@ -56,6 +56,11 @@ run
 [GIN-debug] GET    /api/v1/pool              --> github.com/xmapst/osreapi/internal/handlers/api/v1/pool.Detail (6 handlers)
 [GIN-debug] POST   /api/v1/pool              --> github.com/xmapst/osreapi/internal/handlers/api/v1/pool.Post (6 handlers)
 [GIN-debug] GET    /api/v1/state             --> github.com/xmapst/osreapi/internal/handlers/api/v1/status.Detail (6 handlers)
+[GIN-debug] POST   /api/v2/task              --> github.com/xmapst/osreapi/internal/handlers/api/v2/task.Post (6 handlers)
+[GIN-debug] GET    /                         --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.List (5 handlers)
+[GIN-debug] POST   /                         --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.Post (5 handlers)
+[GIN-debug] GET    /:task                    --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.Detail (5 handlers)
+[GIN-debug] GET    /:task/:step/console      --> github.com/xmapst/osreapi/internal/handlers/api/v1/task.StepDetail (5 handlers)
 ```
 
 ## 特性
@@ -64,7 +69,9 @@ run
 - [x] 动态调整工人数量
 - [x] 基于有向无环(DAG)编排执行
 - [x] 支持任务/步骤的强制终止
-- [x] Workspace隔离
+- [x] 支持任务/步骤单独的超时
+- [x] 任务级的Workspace隔离
+- [ ] 执行前/后发送通知
 
 ## 服用方式
 以windows服务形式部署运行

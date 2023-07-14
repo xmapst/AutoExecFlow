@@ -39,6 +39,7 @@ type MetaData struct {
 
 type Task struct {
 	ID       string
+	Timeout  time.Duration
 	MetaData MetaData
 	Steps    []*TaskStep
 }

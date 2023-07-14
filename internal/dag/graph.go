@@ -2,7 +2,6 @@ package dag
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/hashicorp/go-multierror"
@@ -43,7 +42,6 @@ func (g *Graph) runNode(n *node, ch chan<- error) {
 	for _, _node := range n.adjs {
 		select {
 		case <-g.ctx.Done():
-			fmt.Println("xxxxxxxxxxxx")
 			break
 		default:
 			adj := _node

@@ -12,20 +12,10 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/xmapst/osreapi/internal/cache"
 	"github.com/xmapst/osreapi/internal/handlers/base"
+	"github.com/xmapst/osreapi/internal/handlers/types"
 	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/utils"
 )
-
-type ResStatus struct {
-	ID        int64    `json:"id"`
-	URL       string   `json:"url,omitempty"`
-	Name      string   `json:"name,omitempty"`
-	State     int      `json:"state"`
-	Code      int64    `json:"code"`
-	Message   string   `json:"msg"`
-	DependsOn []string `json:"depends_on,omitempty"`
-	Times     *Times   `json:"times,omitempty"`
-}
 
 // Detail
 // @Summary task detail
@@ -34,8 +24,8 @@ type ResStatus struct {
 // @Accept json
 // @Produce json
 // @Param task path string true "task id"
-// @Success 200 {object} base.Result
-// @Failure 500 {object} base.Result
+// @Success 200 {object} types.BaseRes
+// @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task} [get]
 func Detail(c *gin.Context) {
 	render := base.Gin{Context: c}
@@ -50,11 +40,11 @@ func Detail(c *gin.Context) {
 		return
 	}
 	state := cache.StateMap[taskState.State]
-	c.Request.Header.Set(xTaskState, state)
-	c.Writer.Header().Set(xTaskState, state)
-	c.Set(xTaskState, state)
+	c.Request.Header.Set(types.XTaskState, state)
+	c.Writer.Header().Set(types.XTaskState, state)
+	c.Set(types.XTaskState, state)
 	tasksStepStates := cache.GetTaskStepStates(task)
-	var res []ResStatus
+	var res []types.TaskDetailRes
 	var scheme = "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
@@ -95,7 +85,7 @@ func Detail(c *gin.Context) {
 		if output == nil {
 			output = []string{v.Message}
 		}
-		_res := ResStatus{
+		_res := types.TaskDetailRes{
 			ID:        v.ID,
 			URL:       fmt.Sprintf("%s://%s%s/%d/console", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), v.ID),
 			Name:      v.Name,
@@ -103,7 +93,7 @@ func Detail(c *gin.Context) {
 			Code:      v.Code,
 			DependsOn: v.DependsOn,
 			Message:   strings.Join(output, "\n"),
-			Times: &Times{
+			Times: &types.Times{
 				ST: utils.TimeStr(v.Times.ST),
 				ET: utils.TimeStr(v.Times.ET),
 				RT: v.Times.RT.String(),
@@ -146,8 +136,8 @@ var upgrader = websocket.Upgrader{
 // @Produce json
 // @Param task path string true "task id"
 // @Param step path string true "step id" default(0)
-// @Success 200 {object} base.Result
-// @Failure 500 {object} base.Result
+// @Success 200 {object} types.BaseRes
+// @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task}/{step}/console [get]
 func StepDetail(c *gin.Context) {
 	render := base.Gin{Context: c}

@@ -18,13 +18,18 @@ import (
 type Task struct {
 	log       logx.Logger
 	ID        string
+	Timeout   time.Duration
 	State     *cache.TaskState
 	Steps     []*cache.TaskStep
 	ScriptDir string
 	Workspace string
 }
 
-func Submit(task cache.Task) {
+func Submit(task *cache.Task) error {
+	// 检查是否回环
+	if err := checkFlow(task); err != nil {
+		return err
+	}
 	// 临时存储
 	var state = &cache.TaskState{
 		State:    cache.Pending,
@@ -47,6 +52,7 @@ func Submit(task cache.Task) {
 				"script_dir": scriptDir,
 			}),
 			ID:        task.ID,
+			Timeout:   task.Timeout,
 			Steps:     task.Steps,
 			State:     state,
 			ScriptDir: scriptDir,
@@ -62,6 +68,7 @@ func Submit(task cache.Task) {
 			t.log.Infoln(task.ID, res)
 		}
 	})
+	return nil
 }
 
 func (t *Task) run(ctx context.Context) error {
@@ -133,6 +140,11 @@ func (t *Task) run(ctx context.Context) error {
 	defer func() {
 		t.State.State = state
 	}()
+	if t.Timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, t.Timeout)
+		defer cancel()
+	}
 	if err := flow.Run(ctx); err != nil {
 		if err == dag.ErrCycleDetected || err == dag.ErrEmptyTask {
 			state = cache.SystemError

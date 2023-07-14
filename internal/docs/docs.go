@@ -40,13 +40,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -70,7 +70,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/pool.Setting"
+                            "$ref": "#/definitions/types.PoolSetting"
                         }
                     }
                 ],
@@ -78,13 +78,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -107,13 +107,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -150,13 +150,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -176,8 +176,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task name",
-                        "name": "name",
+                        "description": "task id",
+                        "name": "id",
                         "in": "query"
                     },
                     {
@@ -188,6 +188,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "task timeout",
+                        "name": "timeout",
+                        "in": "query"
+                    },
+                    {
                         "description": "scripts",
                         "name": "scripts",
                         "in": "body",
@@ -195,7 +201,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/task.Step"
+                                "$ref": "#/definitions/types.Step"
                             }
                         }
                     }
@@ -204,13 +210,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -242,13 +248,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -278,13 +284,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -324,13 +330,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -370,13 +376,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -402,7 +408,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/taskv2.Requests"
+                            "$ref": "#/definitions/types.Task"
                         }
                     }
                 ],
@@ -410,13 +416,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/base.Result"
+                            "$ref": "#/definitions/types.BaseRes"
                         }
                     }
                 }
@@ -424,7 +430,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "base.Result": {
+        "types.BaseRes": {
             "type": "object",
             "properties": {
                 "code": {
@@ -438,7 +444,25 @@ const docTemplate = `{
                 }
             }
         },
-        "pool.Setting": {
+        "types.Notify": {
+            "type": "object",
+            "required": [
+                "action",
+                "type"
+            ],
+            "properties": {
+                "action": {
+                    "description": "or after",
+                    "type": "string",
+                    "example": "before"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "webhook"
+                }
+            }
+        },
+        "types.PoolSetting": {
             "type": "object",
             "required": [
                 "size"
@@ -450,7 +474,7 @@ const docTemplate = `{
                 }
             }
         },
-        "task.Step": {
+        "types.Step": {
             "type": "object",
             "required": [
                 "command_content",
@@ -488,102 +512,44 @@ const docTemplate = `{
                     "type": "string",
                     "example": "script.ps1"
                 },
-                "time_out": {
+                "notify": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.Notify"
+                    }
+                },
+                "timeout": {
                     "type": "string",
                     "example": "3m"
                 }
             }
         },
-        "taskv2.Notify": {
+        "types.Task": {
             "type": "object",
-            "required": [
-                "type"
-            ],
-            "properties": {
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "taskv2.Requests": {
-            "type": "object",
-            "required": [
-                "steps"
-            ],
             "properties": {
                 "ansync": {
                     "type": "boolean",
                     "example": false
                 },
-                "name": {
+                "id": {
                     "type": "string",
                     "example": ""
                 },
                 "notify": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/taskv2.Notify"
+                        "$ref": "#/definitions/types.Notify"
                     }
                 },
-                "steps": {
+                "step": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/taskv2.Step"
+                        "$ref": "#/definitions/types.Step"
                     }
                 },
-                "time_out": {
+                "timeout": {
                     "type": "string",
-                    "example": "3m"
-                }
-            }
-        },
-        "taskv2.Step": {
-            "type": "object",
-            "required": [
-                "command_content",
-                "command_type"
-            ],
-            "properties": {
-                "command_content": {
-                    "type": "string",
-                    "example": "sleep 10"
-                },
-                "command_type": {
-                    "type": "string",
-                    "example": "powershell"
-                },
-                "depends_on": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        ""
-                    ]
-                },
-                "env_vars": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "env1=value1",
-                        "env2=value2"
-                    ]
-                },
-                "name": {
-                    "type": "string",
-                    "example": "script.ps1"
-                },
-                "notify": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/taskv2.Notify"
-                    }
-                },
-                "time_out": {
-                    "type": "string",
-                    "example": "3m"
+                    "example": ""
                 }
             }
         }

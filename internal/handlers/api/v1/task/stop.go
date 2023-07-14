@@ -17,8 +17,8 @@ import (
 // @Accept json
 // @Produce json
 // @Param task path string true "task id"
-// @Success 200 {object} base.Result
-// @Failure 500 {object} base.Result
+// @Success 200 {object} types.BaseRes
+// @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task} [put]
 func Stop(c *gin.Context) {
 	render := base.Gin{Context: c}
@@ -42,8 +42,8 @@ func Stop(c *gin.Context) {
 // @Produce json
 // @Param task path string true "task id"
 // @Param step path string true "step id" default(0)
-// @Success 200 {object} base.Result
-// @Failure 500 {object} base.Result
+// @Success 200 {object} types.BaseRes
+// @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task}/{step} [put]
 func StopStep(c *gin.Context) {
 	render := base.Gin{Context: c}

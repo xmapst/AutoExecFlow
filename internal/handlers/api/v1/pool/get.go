@@ -14,8 +14,8 @@ import (
 // @Tags Pool
 // @Accept json
 // @Produce json
-// @Success 200 {object} base.Result
-// @Failure 500 {object} base.Result
+// @Success 200 {object} types.BaseRes
+// @Failure 500 {object} types.BaseRes
 // @Router /api/v1/pool [get]
 func Detail(c *gin.Context) {
 	render := base.Gin{Context: c}
