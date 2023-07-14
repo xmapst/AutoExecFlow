@@ -144,17 +144,17 @@ func (s Steps) GetMetaData() (res cache.MetaData) {
 }
 
 type Task struct {
-	ID      string `query:"id" json:"id" form:"id" example:""`
-	Timeout string `query:"timeout" json:"timeout" form:"timeout" example:""`
-	AnSync  bool   `query:"ansync" json:"ansync" form:"ansync" example:"false"`
-	Step   Steps   `json:"step" form:"step"`
-	Notify Notifys `json:"notify" form:"notify"`
+	ID      string  `query:"id" json:"id" form:"id" example:""`
+	Timeout string  `query:"timeout" json:"timeout" form:"timeout" example:""`
+	AnSync  bool    `query:"ansync" json:"ansync" form:"ansync" example:"false"`
+	Step    Steps   `json:"step" form:"step"`
+	Notify  Notifys `json:"notify" form:"notify"`
 
 	TimeoutDuration time.Duration `json:"-" form:"-"`
 }
 
 func (t *Task) Check() error {
-	if t.Step == nil || len(t.Step) ==0 {
+	if t.Step == nil || len(t.Step) == 0 {
 		return errors.New("key: 'Task.Step' Error:Field validation for 'Step' failed on the 'required' tag")
 	}
 	if manager.TaskRunning(t.ID) {
