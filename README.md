@@ -91,7 +91,8 @@ make
 ```
 
 ## Swagger
-![swagger](https://raw.githubusercontent.com/xmapst/osreapi/main/img/swagger.jpg)
+![swagger](https://raw.githubusercontent.com/xmapst/osreapi/main/img/swagger.jpg)[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxmapst%2Fosreapi.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxmapst%2Fosreapi?ref=badge_shield)
+
 
 [注释]  
 + code:  
@@ -109,3 +110,6 @@ make
   - -255: killed
   - -256: timeout
   - -999: system error
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxmapst%2Fosreapi.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxmapst%2Fosreapi?ref=badge_large)
