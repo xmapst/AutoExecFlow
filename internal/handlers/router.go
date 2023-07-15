@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/xmapst/osreapi/internal/config"
 	_ "github.com/xmapst/osreapi/internal/docs"
 	"github.com/xmapst/osreapi/internal/handlers/api/v1/pool"

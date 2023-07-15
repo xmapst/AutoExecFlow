@@ -6,6 +6,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/kardianos/service"
+
 	info "github.com/xmapst/osreapi"
 	"github.com/xmapst/osreapi/internal/config"
 	_ "github.com/xmapst/osreapi/internal/config"

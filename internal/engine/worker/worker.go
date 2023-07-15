@@ -32,7 +32,7 @@ func Submit(task *cache.Task) error {
 	}
 	// 临时存储
 	var state = &cache.TaskState{
-		State:    cache.Pending,
+		State:    exec.Pending,
 		Count:    int64(len(task.Steps)),
 		MetaData: task.MetaData,
 		Times: &cache.Times{
@@ -79,7 +79,7 @@ func (t *Task) run(ctx context.Context) error {
 		}
 	}()
 
-	t.State.State = cache.Running
+	t.State.State = exec.Running
 	cache.SetTask(t.ID, t.State, t.State.Times.RT)
 
 	defer func() {
@@ -93,7 +93,7 @@ func (t *Task) run(ctx context.Context) error {
 
 	if err := t.init(); err != nil {
 		t.log.Errorln(err)
-		t.State.State = cache.SystemError
+		t.State.State = exec.SystemErr
 		t.State.Message = err.Error()
 		return nil
 	}
@@ -135,7 +135,7 @@ func (t *Task) run(ctx context.Context) error {
 		}()...)
 	}
 
-	var state = cache.Stop
+	var state = exec.Stop
 
 	defer func() {
 		t.State.State = state
@@ -147,7 +147,7 @@ func (t *Task) run(ctx context.Context) error {
 	}
 	if err := flow.Run(ctx); err != nil {
 		if err == dag.ErrCycleDetected || err == dag.ErrEmptyTask {
-			state = cache.SystemError
+			state = exec.SystemErr
 		}
 		t.State.Message = err.Error()
 		t.log.Errorln(err)
@@ -181,7 +181,7 @@ func (t *Task) initStepCache(id int64, step *cache.TaskStep) {
 	var state = &cache.TaskStepState{
 		ID:        id,
 		Name:      step.Name,
-		State:     cache.Pending,
+		State:     exec.Pending,
 		DependsOn: step.DependsOn,
 		Message:   "The current step only proceeds if the previous step succeeds.",
 		Times: &cache.Times{
@@ -210,7 +210,7 @@ func (t *Task) execStep(ctx context.Context, id int64, step *cache.TaskStep) (er
 	var state = &cache.TaskStepState{
 		ID:        id,
 		Name:      step.Name,
-		State:     cache.Running,
+		State:     exec.Running,
 		DependsOn: step.DependsOn,
 		Times: &cache.Times{
 			ST: time.Now().UnixNano(),
@@ -221,7 +221,7 @@ func (t *Task) execStep(ctx context.Context, id int64, step *cache.TaskStep) (er
 	var cmd = t.newCmd(id, step)
 	defer func() {
 		state.Times.ET = time.Now().UnixNano()
-		state.State = cache.Stop
+		state.State = exec.Stop
 		cache.SetTaskStep(t.ID, id, state, state.Times.RT)
 	}()
 	if err = cmd.Create(); err != nil {

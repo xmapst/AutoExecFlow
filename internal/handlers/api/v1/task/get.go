@@ -10,7 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+
 	"github.com/xmapst/osreapi/internal/cache"
+	"github.com/xmapst/osreapi/internal/exec"
 	"github.com/xmapst/osreapi/internal/handlers/base"
 	"github.com/xmapst/osreapi/internal/handlers/types"
 	"github.com/xmapst/osreapi/internal/logx"
@@ -39,7 +41,7 @@ func Detail(c *gin.Context) {
 		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
 		return
 	}
-	state := cache.StateMap[taskState.State]
+	state := exec.StateMap[taskState.State]
 	c.Request.Header.Set(types.XTaskState, state)
 	c.Writer.Header().Set(types.XTaskState, state)
 	c.Set(types.XTaskState, state)
@@ -68,7 +70,7 @@ func Detail(c *gin.Context) {
 			stopMsg = append(stopMsg, msg)
 		}
 		var output []string
-		if v.State == cache.Running {
+		if v.State == exec.Running {
 			msg = fmt.Sprintf("Step: %d, Name: %s", v.ID, v.Name)
 			if v.Name == "" {
 				msg = fmt.Sprintf("Step: %d", v.ID)
@@ -76,7 +78,7 @@ func Detail(c *gin.Context) {
 			runMsg = append(runMsg, msg)
 			output = []string{"The step is running"}
 		}
-		if v.State == cache.Stop {
+		if v.State == exec.Stop {
 			outputs := cache.GetTaskStepAllOutput(task, v.ID)
 			for _, o := range outputs {
 				output = append(output, o.Content)
@@ -104,18 +106,18 @@ func Detail(c *gin.Context) {
 
 	switch taskState.State {
 	// 运行结束
-	case cache.Stop:
+	case exec.Stop:
 		if code != 0 {
 			render.SetRes(res, fmt.Errorf("[%s]", strings.Join(stopMsg, "; ")), base.CodeExecErr)
 			return
 		}
 		render.SetJson(res)
 	// 运行中, 排队中
-	case cache.Running:
+	case exec.Running:
 		render.SetRes(res, fmt.Errorf("[%s]", strings.Join(runMsg, "; ")), base.CodeRunning)
-	case cache.Pending:
+	case exec.Pending:
 		render.SetError(base.CodeRunning, nil)
-	case cache.SystemError:
+	case exec.SystemErr:
 		render.SetRes(res, fmt.Errorf(taskState.Message), base.CodeExecErr)
 	default:
 		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
@@ -157,7 +159,7 @@ func StepDetail(c *gin.Context) {
 		render.SetError(base.CodeErrNoData, errors.New("step does not exist"))
 		return
 	}
-	if taskStepState.State == cache.Pending {
+	if taskStepState.State == exec.Pending {
 		render.SetRes([]string{taskStepState.Message}, nil, base.CodePending)
 		return
 	}
@@ -196,7 +198,7 @@ func StepDetail(c *gin.Context) {
 			)
 			return
 		}
-		if taskStepState.State == cache.Running {
+		if taskStepState.State == exec.Running {
 			render.SetRes(fn(&latest), errors.New("in progress"), base.CodeRunning)
 			return
 		}

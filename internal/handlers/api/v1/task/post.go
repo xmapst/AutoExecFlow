@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/xmapst/osreapi/internal/cache"
 	"github.com/xmapst/osreapi/internal/engine/worker"
 	"github.com/xmapst/osreapi/internal/handlers/base"

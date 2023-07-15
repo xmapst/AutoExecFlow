@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/xmapst/osreapi/internal/engine/manager"
 	"github.com/xmapst/osreapi/internal/handlers/base"
 	"github.com/xmapst/osreapi/internal/logx"

@@ -14,6 +14,7 @@ import (
 	"github.com/pires/go-proxyproto"
 	"github.com/reiver/go-telnet"
 	"github.com/soheilhy/cmux"
+
 	"github.com/xmapst/osreapi/internal/cache"
 	"github.com/xmapst/osreapi/internal/config"
 	"github.com/xmapst/osreapi/internal/engine/worker"

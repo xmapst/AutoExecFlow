@@ -43,7 +43,6 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		}
 	}()
 	var done, errCh = make(chan bool), make(chan error)
-	code = 255
 	defer c.clear()
 	c.initCmd(ctx)
 	defer c.cancelFunc()
@@ -57,6 +56,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 			_ = KillAll(c.exec.Process.Pid)
 		}
 		err = ErrManual
+		code = Killed
 	// 执行超时信号
 	case <-c.context.Done():
 		// 如果直接使用cmd.Process.Kill()并不能杀死主进程下的所有子进程
@@ -68,9 +68,9 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		if err == nil {
 			err = ErrTimeOut
 		}
+		code = Timeout
 	// 执行成功
 	case <-done:
-		code = 0
 		if c.exec.ProcessState != nil {
 			code = int64(c.exec.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())
 		}
@@ -78,6 +78,9 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	case err = <-errCh:
 		if c.exec.ProcessState != nil {
 			code = int64(c.exec.ProcessState.Sys().(syscall.WaitStatus).ExitStatus())
+		}
+		if code == 0 {
+			code = SystemErr
 		}
 	}
 	return

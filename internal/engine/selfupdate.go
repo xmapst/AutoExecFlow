@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/json-iterator/go"
+
 	"github.com/xmapst/osreapi/internal/cache"
 	"github.com/xmapst/osreapi/internal/config"
+	"github.com/xmapst/osreapi/internal/exec"
 	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/utils"
 )
@@ -32,7 +34,7 @@ func loadSelfUpdateData() {
 		return
 	}
 	taskState := &cache.TaskState{
-		State: cache.Stop,
+		State: exec.Stop,
 		Count: 1,
 		Times: &cache.Times{
 			ST: time.Now().UnixNano(),
@@ -44,7 +46,7 @@ func loadSelfUpdateData() {
 	taskStepState := &cache.TaskStepState{
 		ID:      0,
 		Name:    "selfupdate",
-		State:   cache.Stop,
+		State:   exec.Stop,
 		Code:    0,
 		Message: config.App.ServiceName + " update completed",
 		Times: &cache.Times{

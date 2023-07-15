@@ -10,27 +10,15 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/json-iterator/go"
+
 	"github.com/xmapst/osreapi/internal/logx"
 )
 
 const (
-	// Stop 0, Running 1, Pending 2
-	Stop = iota
-	Running
-	Pending
-
 	taskPrefix   = "task"
 	stepPrefix   = "step"
 	outputPrefix = "output"
-	SystemError  = 255
 )
-
-var StateMap = map[int]string{
-	SystemError: "System Error",
-	Stop:        "Stop",
-	Running:     "Running",
-	Pending:     "Pending",
-}
 
 type MetaData struct {
 	HardWareID   string `json:"hard_ware_id"`

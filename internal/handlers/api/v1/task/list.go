@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/xmapst/osreapi/internal/cache"
+	"github.com/xmapst/osreapi/internal/exec"
 	"github.com/xmapst/osreapi/internal/handlers/base"
 	"github.com/xmapst/osreapi/internal/handlers/types"
 	"github.com/xmapst/osreapi/internal/utils"
@@ -64,8 +66,8 @@ func List(c *gin.Context) {
 		if v.Times.RT > 0 {
 			res.Times.RT = v.Times.RT.String()
 		}
-		if v.State == cache.SystemError {
-			res.Code = 255
+		if v.State == exec.SystemErr {
+			res.Code = exec.SystemErr
 			res.Message = v.Message
 		} else {
 			tasksStepStates := cache.GetTaskStepStates(v.ID)
@@ -76,23 +78,23 @@ func List(c *gin.Context) {
 				if vv.Name == "" {
 					state = fmt.Sprintf("Step: %d", vv.ID)
 				}
-				if vv.State == cache.Running {
+				if vv.State == exec.Running {
 					runningStateMsg = append(runningStateMsg, state)
 				}
-				if vv.State == cache.Stop && vv.Code != 0 {
+				if vv.State == exec.Stop && vv.Code != 0 {
 					errorStateMsg = append(errorStateMsg, state)
 				}
 				code += vv.Code
 			}
 			res.Code = code
-			res.Message = cache.StateMap[v.State]
+			res.Message = exec.StateMap[v.State]
 			switch {
-			case v.State == cache.Stop:
+			case v.State == exec.Stop:
 				res.Message = fmt.Sprintf("execution failed: [%s]", strings.Join(errorStateMsg, "; "))
 				if res.Code == 0 {
 					res.Message = "all steps executed successfully"
 				}
-			case v.State == cache.Running:
+			case v.State == exec.Running:
 				res.Message = fmt.Sprintf("currently executing: [%s]", strings.Join(runningStateMsg, "; "))
 			default:
 				if v.Message != "" {

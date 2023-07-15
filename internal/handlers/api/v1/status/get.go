@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/xmapst/osreapi/internal/handlers/base"
 	"github.com/xmapst/osreapi/internal/handlers/types"
 )

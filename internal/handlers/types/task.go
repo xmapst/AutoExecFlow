@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/segmentio/ksuid"
+
 	"github.com/xmapst/osreapi/internal/cache"
 	"github.com/xmapst/osreapi/internal/config"
 	"github.com/xmapst/osreapi/internal/engine/manager"

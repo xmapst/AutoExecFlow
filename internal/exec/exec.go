@@ -14,17 +14,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xmapst/osreapi/internal/cache"
-	"github.com/xmapst/osreapi/internal/logx"
 	"go.uber.org/zap"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
+
+	"github.com/xmapst/osreapi/internal/cache"
+	"github.com/xmapst/osreapi/internal/logx"
 )
 
 var (
 	ErrTimeOut = errors.New("forced termination by timeout")
 	ErrManual  = errors.New("artificial force termination")
 )
+
+const (
+	// Stop 0, Running 1, Pending 2
+	Stop = iota
+	Running
+	Pending
+
+	Killed    = -255
+	Timeout   = -256
+	SystemErr = -999
+)
+
+var StateMap = map[int]string{
+	SystemErr: "System Error",
+	Killed:    "Killed",
+	Timeout:   "Timeout",
+	Stop:      "Stop",
+	Running:   "Running",
+	Pending:   "Pending",
+}
 
 type Cmd struct {
 	log             logx.Logger

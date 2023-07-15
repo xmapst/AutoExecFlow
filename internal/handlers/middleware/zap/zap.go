@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xmapst/osreapi/internal/logx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/xmapst/osreapi/internal/logx"
 )
 
 func Logger(c *gin.Context) {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	info "github.com/xmapst/osreapi"
 )
 

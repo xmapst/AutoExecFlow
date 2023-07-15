@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/xmapst/osreapi/internal/handlers/types"
 )
 
@@ -19,13 +20,13 @@ const (
 )
 
 var MsgFlags = map[int64]string{
-	CodeSuccess:   "success",
-	CodeErrApp:    "internal error",
 	CodeErrParam:  "parameter error",
 	CodeRunning:   "running",
 	CodeExecErr:   "exec error",
 	CodeErrNoData: "no data",
 	CodePending:   "pending",
+	CodeSuccess:   "success",
+	CodeErrApp:    "internal error",
 }
 
 // GetMsg get error information based on Code
