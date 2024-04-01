@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/xmapst/osreapi/internal/deque"
-	"github.com/xmapst/osreapi/internal/logx"
-	"github.com/xmapst/osreapi/internal/tunny"
+	"github.com/xmapst/osreapi/pkg/deque"
+	"github.com/xmapst/osreapi/pkg/logx"
+	"github.com/xmapst/osreapi/pkg/tunny"
 )
 
 var (

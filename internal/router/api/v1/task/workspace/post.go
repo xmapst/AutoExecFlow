@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/server/config"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Post
@@ -20,7 +20,7 @@ import (
 // @Produce application/json
 // @Produce application/x-yaml
 // @Produce application/toml
-// @Param task path string true "task id"
+// @Param task path string true "task name"
 // @Param path query string false "dir path"
 // @Param files formData file true "files"
 // @Success 200 {object} types.BaseRes

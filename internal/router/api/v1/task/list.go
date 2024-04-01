@@ -9,13 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/backend"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // List
@@ -95,10 +95,10 @@ func list(c *gin.Context) (*types.TaskListRes, error) {
 	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
 	for _, v := range tasksStates {
 		_res := &types.TaskList{
-			ID:        v.ID,
+			Name:      v.Name,
 			State:     v.State,
-			Manager:   fmt.Sprintf("%s/%s", uriPrefix, v.ID),
-			Workspace: fmt.Sprintf("%s/%s/workspace", uriPrefix, v.ID),
+			Manager:   fmt.Sprintf("%s/%s", uriPrefix, v.Name),
+			Workspace: fmt.Sprintf("%s/%s/workspace", uriPrefix, v.Name),
 			EnvVars:   v.EnvVars,
 			Timeout:   v.Timeout.String(),
 			Count:     v.Count,
@@ -111,7 +111,7 @@ func list(c *gin.Context) (*types.TaskListRes, error) {
 			_res.Code = exec.SystemErr
 			_res.Message = v.Message
 		} else {
-			tasksStepStates, err := storage.TaskStepList(v.ID)
+			tasksStepStates, err := storage.TaskStepList(v.Name)
 			if err != nil {
 				logx.Errorln(err)
 				continue
@@ -119,7 +119,7 @@ func list(c *gin.Context) (*types.TaskListRes, error) {
 			var running, paused, pending, errorStateMsg []string
 			var code int64
 			for _, vv := range tasksStepStates {
-				var state = fmt.Sprintf("Step: %s", vv.ID)
+				var state = fmt.Sprintf("Step: %s", vv.Name)
 				if vv.State == exec.Running {
 					running = append(running, state)
 				}

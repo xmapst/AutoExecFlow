@@ -5,11 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/osreapi/internal/dag"
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/storage"
+	"github.com/xmapst/osreapi/pkg/dag"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Manager
@@ -23,7 +23,7 @@ import (
 // @Produce application/json
 // @Produce application/x-yaml
 // @Produce application/toml
-// @Param task path string true "task id"
+// @Param task path string true "task name"
 // @Param action query string false "management action" Enums(paused,kill,pause,resume) default(paused)
 // @Param duration query string false "how long to pause; if empty, manual continuation is required" default(1m)
 // @Success 200 {object} types.BaseRes
@@ -31,26 +31,26 @@ import (
 // @Router /api/v1/task/{task} [put]
 func Manager(c *gin.Context) {
 	render := base.Gin{Context: c}
-	taskID := c.Param("task")
-	if taskID == "" {
+	task := c.Param("task")
+	if task == "" {
 		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
 		return
 	}
 	action := c.DefaultQuery("action", "paused")
 	duration := c.Query("duration")
-	manager, err := dag.GraphManager(taskID)
+	manager, err := dag.GraphManager(task)
 	if err != nil {
 		logx.Errorln(err)
 		render.SetError(base.CodeErrNoData, err)
 		return
 	}
-	task, err := storage.TaskDetail(taskID)
+	taskDetail, err := storage.TaskDetail(task)
 	if err != nil {
 		logx.Errorln(err)
 		render.SetError(base.CodeErrNoData, err)
 		return
 	}
-	if task.State <= exec.Stop {
+	if taskDetail.State <= exec.Stop {
 		render.SetError(base.CodeExecErr, errors.New("task is no running"))
 		return
 	}
@@ -58,20 +58,20 @@ func Manager(c *gin.Context) {
 	case "kill":
 		err = manager.Kill()
 		if err == nil {
-			task.State = exec.Killed
-			err = storage.SetTask(taskID, task)
+			taskDetail.State = exec.Killed
+			err = storage.SetTask(task, taskDetail)
 		}
 	case "pause":
 		if !manager.Paused() {
 			_ = manager.Pause(duration)
-			task.OldState, task.State = task.State, exec.Paused
-			err = storage.SetTask(taskID, task)
+			taskDetail.OldState, taskDetail.State = taskDetail.State, exec.Paused
+			err = storage.SetTask(task, taskDetail)
 		}
 	case "resume":
 		if manager.Paused() {
 			manager.Resume()
-			task.State, task.OldState = task.OldState, task.State
-			err = storage.SetTask(taskID, task)
+			taskDetail.State, taskDetail.OldState = taskDetail.OldState, taskDetail.State
+			err = storage.SetTask(task, taskDetail)
 		}
 	}
 	if err != nil {

@@ -8,15 +8,15 @@ import (
 
 	"github.com/segmentio/ksuid"
 
-	"github.com/xmapst/osreapi/internal/dag"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/server/config"
 	"github.com/xmapst/osreapi/internal/storage/types"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/pkg/dag"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 const (
-	XTaskID    = "X-Task-ID"
+	XTaskName  = "X-Task-Name"
 	XTaskState = "X-Task-STATE"
 )
 
@@ -43,7 +43,7 @@ type TaskListRes struct {
 }
 
 type TaskList struct {
-	ID        string   `json:"id" yaml:"ID" toml:"id"`
+	Name      string   `json:"name" yaml:"Name" toml:"name"`
 	Code      int64    `json:"code" yaml:"Code" toml:"code"`
 	State     int64    `json:"state" yaml:"State" toml:"state"`
 	Manager   string   `json:"manager" yaml:"Manager" toml:"manager"`
@@ -173,7 +173,7 @@ func (s Steps) GetMetaData() (res types.MetaData) {
 }
 
 type Task struct {
-	ID      string   `query:"id" json:"id" form:"id" yaml:"ID" toml:"id" example:""`
+	Name    string   `query:"name" json:"name" form:"name" yaml:"ID" toml:"name" example:""`
 	Timeout string   `query:"timeout" json:"timeout" form:"timeout" yaml:"Timeout" toml:"timeout" example:""`
 	EnvVars []string `query:"env_vars" json:"env_vars" form:"env_vars" yaml:"EnvVars" toml:"env_vars" example:""`
 	Async   bool     `query:"async" json:"async" form:"async" yaml:"Async" toml:"async" example:"false"`
@@ -187,11 +187,11 @@ func (t *Task) Check() error {
 	if t.Step == nil || len(t.Step) == 0 {
 		return errors.New("key: 'Task.Step' Error:Field validation for 'Step' failed on the 'required' tag")
 	}
-	t.ID = reg.ReplaceAllString(t.ID, "")
-	if t.ID == "" {
-		t.ID = ksuid.New().String()
+	t.Name = reg.ReplaceAllString(t.Name, "")
+	if t.Name == "" {
+		t.Name = ksuid.New().String()
 	}
-	if _, err := dag.GraphManager(t.ID); err == nil {
+	if _, err := dag.GraphManager(t.Name); err == nil {
 		return errors.New("task is running")
 	}
 	timeout, err := time.ParseDuration(t.Timeout)
@@ -206,6 +206,8 @@ func (t *Task) Check() error {
 
 type TaskRes struct {
 	URL   string `json:"url" yaml:"URL" toml:"url"`
-	ID    string `json:"id" form:"id" yaml:"ID" toml:"id"`
+	Name  string `json:"name" form:"name" yaml:"name" toml:"name"`
 	Count int    `json:"count" yaml:"Count" toml:"count"`
+	// Deprecated
+	ID string `json:"id" form:"id" yaml:"ID" toml:"id"`
 }

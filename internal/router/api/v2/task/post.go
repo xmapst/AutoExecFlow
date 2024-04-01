@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/worker"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Post
@@ -42,7 +42,7 @@ func Post(c *gin.Context) {
 	}
 
 	var task = &worker.Task{
-		ID:       req.ID,
+		Name:     req.Name,
 		Timeout:  req.TimeoutDuration,
 		EnvVars:  req.EnvVars,
 		MetaData: req.Step.GetMetaData(),
@@ -50,7 +50,7 @@ func Post(c *gin.Context) {
 
 	for _, v := range req.Step {
 		task.Steps = append(task.Steps, &worker.TaskStep{
-			ID:             v.Name,
+			Name:           v.Name,
 			CommandType:    v.CommandType,
 			CommandContent: v.CommandContent,
 			EnvVars:        v.EnvVars,
@@ -66,9 +66,9 @@ func Post(c *gin.Context) {
 		return
 	}
 
-	c.Request.Header.Set(types.XTaskID, task.ID)
-	c.Writer.Header().Set(types.XTaskID, task.ID)
-	c.Set(types.XTaskID, task.ID)
+	c.Request.Header.Set(types.XTaskName, task.Name)
+	c.Writer.Header().Set(types.XTaskName, task.Name)
+	c.Set(types.XTaskName, task.Name)
 
 	var scheme = "http"
 	if c.Request.TLS != nil {
@@ -76,8 +76,9 @@ func Post(c *gin.Context) {
 	}
 	path := strings.Replace(strings.TrimSuffix(c.Request.URL.Path, "/"), "v2", "v1", 1)
 	render.SetRes(&types.TaskRes{
-		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, path, req.ID),
-		ID:    req.ID,
+		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, path, req.Name),
+		ID:    req.Name,
+		Name:  req.Name,
 		Count: len(req.Step),
 	})
 }

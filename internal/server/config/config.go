@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/xmapst/osreapi/internal/logx"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 var App = new(Config)

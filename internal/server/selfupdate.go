@@ -12,10 +12,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/xmapst/osreapi/internal/logx"
-	"github.com/xmapst/osreapi/internal/osext"
-	"github.com/xmapst/osreapi/internal/selfupdate"
 	"github.com/xmapst/osreapi/internal/worker"
+	"github.com/xmapst/osreapi/pkg/logx"
+	"github.com/xmapst/osreapi/pkg/osext"
+	"github.com/xmapst/osreapi/pkg/selfupdate"
 )
 
 func (p *Program) selfUpdate() {

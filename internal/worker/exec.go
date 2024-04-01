@@ -7,10 +7,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/types"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 const ConsoleStart = "OSREAPI::CONSOLE::START"
@@ -30,7 +30,7 @@ func (t *Task) execStep(ctx context.Context, step *TaskStep, state *types.TaskSt
 		default:
 			state.State = exec.Stop
 		}
-		if _err := storage.SetTaskStep(t.ID, step.ID, state); _err != nil {
+		if _err := storage.SetTaskStep(t.Name, step.Name, state); _err != nil {
 			logx.Errorln(_err)
 		}
 	}()
@@ -38,8 +38,8 @@ func (t *Task) execStep(ctx context.Context, step *TaskStep, state *types.TaskSt
 	var cmd, err = exec.New(
 		exec.WithLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))),
 		exec.WithEnv(append(append(t.EnvVars, step.EnvVars...),
-			fmt.Sprintf("TASK_ID=%s", t.ID),
-			fmt.Sprintf("TASK_STEP_ID=%s", step.ID)),
+			fmt.Sprintf("TASK_NAME=%s", t.Name),
+			fmt.Sprintf("TASK_STEP_NAME=%s", step.Name)),
 		),
 		exec.WithShell(step.CommandType),
 		exec.WithScript(step.CommandContent),
@@ -49,15 +49,15 @@ func (t *Task) execStep(ctx context.Context, step *TaskStep, state *types.TaskSt
 		exec.WithConsoleCh(logCh),
 	)
 	if err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		state.Message = err.Error()
 		state.Code = exec.SystemErr
 		return err
 	}
-	go t.writeLog(step.ID, logCh)
+	go t.writeLog(step.Name, logCh)
 	state.Code, err = cmd.Run(ctx)
 	if err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, "exit code", state.Code, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, "exit code", state.Code, err)
 		state.Message = err.Error()
 		return err
 	}
@@ -65,10 +65,10 @@ func (t *Task) execStep(ctx context.Context, step *TaskStep, state *types.TaskSt
 	return nil
 }
 
-func (t *Task) writeLog(stepID string, logCh chan string) {
+func (t *Task) writeLog(stepName string, logCh chan string) {
 	var num int64
 	// start
-	if err := storage.SetTaskStepLog(t.ID, stepID, num, &types.TaskStepLog{
+	if err := storage.SetTaskStepLog(t.Name, stepName, num, &types.TaskStepLog{
 		Timestamp: time.Now().UnixNano(),
 		Line:      num,
 		Content:   ConsoleStart,
@@ -78,7 +78,7 @@ func (t *Task) writeLog(stepID string, logCh chan string) {
 	defer func() {
 		// end
 		num += 1
-		if err := storage.SetTaskStepLog(t.ID, stepID, num, &types.TaskStepLog{
+		if err := storage.SetTaskStepLog(t.Name, stepName, num, &types.TaskStepLog{
 			Timestamp: time.Now().UnixNano(),
 			Line:      num,
 			Content:   ConsoleDone,
@@ -91,7 +91,7 @@ func (t *Task) writeLog(stepID string, logCh chan string) {
 		// TODO: 从输出中获取内容设置到环境变量中心
 
 		num += 1
-		if err := storage.SetTaskStepLog(t.ID, stepID, num, &types.TaskStepLog{
+		if err := storage.SetTaskStepLog(t.Name, stepName, num, &types.TaskStepLog{
 			Timestamp: time.Now().UnixNano(),
 			Line:      num,
 			Content:   log,

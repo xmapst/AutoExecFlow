@@ -88,10 +88,6 @@ github.com/gin-gonic/gin/render
 # github.com/go-cmd/cmd v1.4.2
 ## explicit; go 1.20
 github.com/go-cmd/cmd
-# github.com/go-ole/go-ole v1.3.0
-## explicit; go 1.12
-github.com/go-ole/go-ole
-github.com/go-ole/go-ole/oleutil
 # github.com/go-openapi/jsonpointer v0.21.0
 ## explicit; go 1.20
 github.com/go-openapi/jsonpointer
@@ -148,9 +144,6 @@ github.com/klauspost/cpuid/v2
 ## explicit; go 1.18
 github.com/leodido/go-urn
 github.com/leodido/go-urn/scim/schema
-# github.com/lufia/plan9stats v0.0.0-20240226150601-1dcf7310316a
-## explicit; go 1.16
-github.com/lufia/plan9stats
 # github.com/mailru/easyjson v0.7.7
 ## explicit; go 1.12
 github.com/mailru/easyjson/buffer
@@ -188,9 +181,6 @@ github.com/pires/go-proxyproto
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55
-## explicit; go 1.14
-github.com/power-devops/perfstat
 # github.com/prometheus/client_golang v1.19.0
 ## explicit; go 1.20
 github.com/prometheus/client_golang/prometheus
@@ -199,7 +189,7 @@ github.com/prometheus/client_golang/prometheus/promhttp
 # github.com/prometheus/client_model v0.6.0
 ## explicit; go 1.19
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.50.0
+# github.com/prometheus/common v0.51.1
 ## explicit; go 1.21
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
@@ -234,16 +224,6 @@ github.com/robfig/cron/v3
 # github.com/segmentio/ksuid v1.0.4
 ## explicit; go 1.12
 github.com/segmentio/ksuid
-# github.com/shirou/gopsutil/v3 v3.24.2
-## explicit; go 1.15
-github.com/shirou/gopsutil/v3/common
-github.com/shirou/gopsutil/v3/cpu
-github.com/shirou/gopsutil/v3/disk
-github.com/shirou/gopsutil/v3/internal/common
-github.com/shirou/gopsutil/v3/mem
-# github.com/shoenig/go-m1cpu v0.1.6
-## explicit; go 1.20
-github.com/shoenig/go-m1cpu
 # github.com/spf13/cobra v1.8.0
 ## explicit; go 1.15
 github.com/spf13/cobra
@@ -259,12 +239,6 @@ github.com/swaggo/gin-swagger
 # github.com/swaggo/swag v1.16.3
 ## explicit; go 1.18
 github.com/swaggo/swag
-# github.com/tklauser/go-sysconf v0.3.13
-## explicit; go 1.18
-github.com/tklauser/go-sysconf
-# github.com/tklauser/numcpus v0.7.0
-## explicit; go 1.18
-github.com/tklauser/numcpus
 # github.com/traefik/yaegi v0.16.0
 ## explicit; go 1.21
 github.com/traefik/yaegi/internal/unsafe2
@@ -302,9 +276,6 @@ github.com/yuin/gopher-lua
 github.com/yuin/gopher-lua/ast
 github.com/yuin/gopher-lua/parse
 github.com/yuin/gopher-lua/pm
-# github.com/yusufpapurcu/wmi v1.2.4
-## explicit; go 1.16
-github.com/yusufpapurcu/wmi
 # go.etcd.io/bbolt v1.3.9
 ## explicit; go 1.17
 go.etcd.io/bbolt
@@ -317,7 +288,7 @@ go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
 go.mongodb.org/mongo-driver/x/bsonx/bsoncore
-# go.starlark.net v0.0.0-20240314022150-ee8ed142361c
+# go.starlark.net v0.0.0-20240329153429-e6e8e7ce1b7a
 ## explicit; go 1.19
 go.starlark.net/internal/compile
 go.starlark.net/internal/spell

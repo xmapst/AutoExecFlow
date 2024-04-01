@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/types"
 	"github.com/xmapst/osreapi/internal/worker"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Get
@@ -28,8 +28,8 @@ import (
 // @Produce application/json
 // @Produce application/x-yaml
 // @Produce application/toml
-// @Param task path string true "task id"
-// @Param step path string true "step id"
+// @Param task path string true "task name"
+// @Param step path string true "step name"
 // @Success 200 {object} types.BaseRes
 // @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task}/step/{step} [get]

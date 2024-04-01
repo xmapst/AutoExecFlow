@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/xmapst/osreapi/internal/logx"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 var upGrader = websocket.Upgrader{

@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/xmapst/osreapi/internal/logx"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 func New() *cobra.Command {
@@ -14,7 +14,9 @@ func New() *cobra.Command {
 		Aliases: []string{
 			"cli",
 		},
-		Args: cobra.NoArgs,
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logx.SetupLogger("", zap.AddStacktrace(zap.ErrorLevel))
 			logx.Infoln("under development, please stay tuned")

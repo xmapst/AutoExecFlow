@@ -11,7 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/osreapi/internal/logx"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 func Logger(c *gin.Context) {

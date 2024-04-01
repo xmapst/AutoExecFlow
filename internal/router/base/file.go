@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // SaveToTarFile 保存为tar压缩文件

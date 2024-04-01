@@ -9,13 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/internal/worker"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Get
@@ -29,7 +29,7 @@ import (
 // @Produce application/json
 // @Produce application/x-yaml
 // @Produce application/toml
-// @Param task path string true "task id"
+// @Param task path string true "task name"
 // @Success 200 {object} types.BaseRes
 // @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task} [get]
@@ -108,7 +108,7 @@ func get(c *gin.Context) ([]types.TaskDetailRes, error, int) {
 		exitCode += v.Code
 		msg := v.Message
 		if v.Code != 0 {
-			msg = fmt.Sprintf("Step: %s, Exit Code: %d", v.ID, v.Code)
+			msg = fmt.Sprintf("Step: %s, Exit Code: %d", v.Name, v.Code)
 			if taskState.MetaData.VMInstanceID != "" {
 				msg += fmt.Sprintf(", Instance ID: %s", taskState.MetaData.VMInstanceID)
 			}
@@ -119,7 +119,7 @@ func get(c *gin.Context) ([]types.TaskDetailRes, error, int) {
 		}
 		var output []string
 		if v.State == exec.Stop {
-			outputs, _ := storage.TaskStepLogList(task, v.ID)
+			outputs, _ := storage.TaskStepLogList(task, v.Name)
 			for _, o := range outputs {
 				if o.Content == worker.ConsoleStart || o.Content == worker.ConsoleDone {
 					continue
@@ -127,7 +127,7 @@ func get(c *gin.Context) ([]types.TaskDetailRes, error, int) {
 				output = append(output, o.Content)
 			}
 		} else {
-			msg = fmt.Sprintf("Step: %s", v.ID)
+			msg = fmt.Sprintf("Step: %s", v.Name)
 			switch v.State {
 			case exec.Running:
 				runMsg = append(runMsg, msg)
@@ -146,10 +146,10 @@ func get(c *gin.Context) ([]types.TaskDetailRes, error, int) {
 			output = []string{v.Message}
 		}
 		_res := types.TaskDetailRes{
-			Name:           v.ID,
+			Name:           v.Name,
 			State:          v.State,
 			Code:           v.Code,
-			Manager:        fmt.Sprintf("%s/step/%s", uriPrefix, v.ID),
+			Manager:        fmt.Sprintf("%s/step/%s", uriPrefix, v.Name),
 			Workspace:      fmt.Sprintf("%s/workspace", uriPrefix),
 			Message:        strings.Join(output, "\n"),
 			EnvVars:        v.EnvVars,

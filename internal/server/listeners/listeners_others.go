@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/xmapst/osreapi/internal/sockets"
+	"github.com/xmapst/osreapi/pkg/sockets"
 )
 
 var PipeName = "unix:///var/run/osreapi.sock"

@@ -8,9 +8,9 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/plugins"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 func init() {

@@ -8,18 +8,18 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/xmapst/osreapi/internal/dag"
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	_ "github.com/xmapst/osreapi/internal/plugins"
 	"github.com/xmapst/osreapi/internal/server/config"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/types"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/pkg/dag"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 type TaskStep struct {
-	ID             string
+	Name           string
 	CommandType    string
 	CommandContent string
 	EnvVars        []string
@@ -35,7 +35,7 @@ type Task struct {
 	graph     *dag.Graph
 	state     *types.TaskState
 
-	ID       string
+	Name     string
 	Timeout  time.Duration
 	EnvVars  []string
 	MetaData types.MetaData
@@ -44,10 +44,10 @@ type Task struct {
 
 func Submit(task *Task) error {
 	atomic.AddInt64(&taskTotal, 1)
-	task.workspace = filepath.Join(config.App.WorkSpace, task.ID)
-	task.scriptDir = filepath.Join(config.App.ScriptDir, task.ID)
+	task.workspace = filepath.Join(config.App.WorkSpace, task.Name)
+	task.scriptDir = filepath.Join(config.App.ScriptDir, task.Name)
 	task.state = &types.TaskState{
-		ID:       task.ID,
+		Name:     task.Name,
 		State:    exec.Pending,
 		Count:    int64(len(task.Steps)),
 		EnvVars:  task.EnvVars,
@@ -61,21 +61,21 @@ func Submit(task *Task) error {
 	var stepFnMap = make(map[string]*dag.Vertex)
 	for k, step := range task.Steps {
 		state, stepFn := task.buildStep(step)
-		stepFnMap[step.ID] = dag.NewVertex(step.ID, stepFn)
+		stepFnMap[step.Name] = dag.NewVertex(step.Name, stepFn)
 		task.Steps[k].state = state
 	}
 
 	var err error
 	defer func() {
 		if err != nil {
-			logx.Errorln(task.ID, task.workspace, task.scriptDir, err)
+			logx.Errorln(task.Name, task.workspace, task.scriptDir, err)
 		}
 	}()
 
 	// 编排步骤: 创建一个有向无环图，图中的每个顶点都是一个作业
-	task.graph = dag.New(task.ID)
+	task.graph = dag.New(task.Name)
 	for _, step := range task.Steps {
-		stepFn, ok := stepFnMap[step.ID]
+		stepFn, ok := stepFnMap[step.Name]
 		if !ok {
 			continue
 		}
@@ -89,13 +89,13 @@ func Submit(task *Task) error {
 	}
 	// 校验dag图形
 	if err = task.graph.Validator(); err != nil {
-		logx.Errorln(task.ID, task.workspace, task.scriptDir, err)
+		logx.Errorln(task.Name, task.workspace, task.scriptDir, err)
 		return err
 	}
 
 	// 插入数据
-	if err = storage.SetTask(task.ID, task.state); err != nil {
-		logx.Errorln(task.ID, task.workspace, task.scriptDir, err)
+	if err = storage.SetTask(task.Name, task.state); err != nil {
+		logx.Errorln(task.Name, task.workspace, task.scriptDir, err)
 		return err
 	}
 	queue.PushBack(func() {
@@ -105,9 +105,9 @@ func Submit(task *Task) error {
 		}
 		defer cancel()
 		res := task.run(ctx)
-		logx.Infoln(task.ID, task.workspace, task.scriptDir, "end of execution")
+		logx.Infoln(task.Name, task.workspace, task.scriptDir, "end of execution")
 		if res != nil {
-			logx.Infoln(task.ID, task.workspace, task.scriptDir, res)
+			logx.Infoln(task.Name, task.workspace, task.scriptDir, res)
 		}
 	})
 	return nil
@@ -121,29 +121,29 @@ func (t *Task) buildStep(step *TaskStep) (*types.TaskStepState, dag.VertexFunc) 
 		state.State = exec.Running
 		state.Times.ST = time.Now().UnixNano()
 
-		if err := storage.SetTaskStep(t.ID, step.ID, state); err != nil {
-			logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		if err := storage.SetTaskStep(t.Name, step.Name, state); err != nil {
+			logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 			return err
 		}
 
 		defer func() {
 			if _err := recover(); _err != nil {
-				logx.Errorln(t.ID, t.workspace, t.scriptDir, _err)
+				logx.Errorln(t.Name, t.workspace, t.scriptDir, _err)
 				state.State = exec.SystemErr
 				state.Code = exec.SystemErr
 				state.Message = fmt.Sprintf("%v", _err)
 				state.Times.ET = time.Now().UnixNano()
-				if err := storage.SetTaskStep(t.ID, step.ID, state); err != nil {
-					logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+				if err := storage.SetTaskStep(t.Name, step.Name, state); err != nil {
+					logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 				}
 			}
 		}()
 
 		// TODO: 执行前
-		logx.Infoln(t.ID, t.workspace, t.scriptDir, "started")
+		logx.Infoln(t.Name, t.workspace, t.scriptDir, "started")
 		defer func() {
 			// TODO: 执行后
-			logx.Infoln(t.ID, t.workspace, t.scriptDir, "end")
+			logx.Infoln(t.Name, t.workspace, t.scriptDir, "end")
 		}()
 
 		if err := t.execStep(ctx, step, state); err != nil {
@@ -170,7 +170,7 @@ func (t *Task) run(ctx context.Context) error {
 	defer func() {
 		err := recover()
 		if err != nil {
-			logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+			logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		}
 	}()
 
@@ -180,8 +180,8 @@ func (t *Task) run(ctx context.Context) error {
 	}
 
 	t.state.State = exec.Running
-	if err := storage.SetTask(t.ID, t.state); err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+	if err := storage.SetTask(t.Name, t.state); err != nil {
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		return err
 	}
 
@@ -191,13 +191,13 @@ func (t *Task) run(ctx context.Context) error {
 		// 结束时间
 		t.state.Times.ET = time.Now().UnixNano()
 		// 更新数据
-		if err := storage.SetTask(t.ID, t.state); err != nil {
-			logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		if err := storage.SetTask(t.Name, t.state); err != nil {
+			logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		}
 	}()
 
 	if err := t.init(); err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		t.state.State = exec.SystemErr
 		t.state.Message = err.Error()
 		return nil
@@ -212,18 +212,18 @@ func (t *Task) run(ctx context.Context) error {
 	if err := t.graph.Run(ctx); err != nil {
 		state = exec.SystemErr
 		t.state.Message = err.Error()
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 	}
 	return nil
 }
 
 func (t *Task) init() error {
 	if err := utils.EnsureDirExist(t.workspace); err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		return err
 	}
 	if err := utils.EnsureDirExist(t.scriptDir); err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		return err
 	}
 	return nil
@@ -231,13 +231,13 @@ func (t *Task) init() error {
 
 func (t *Task) clear() {
 	if err := os.RemoveAll(t.scriptDir); err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 	}
 }
 
 func (t *Task) initStepCache(step *TaskStep) *types.TaskStepState {
 	var state = &types.TaskStepState{
-		ID:             step.ID,
+		Name:           step.Name,
 		State:          exec.Pending,
 		Message:        "The current step only proceeds if the previous step succeeds.",
 		EnvVars:        step.EnvVars,
@@ -246,8 +246,8 @@ func (t *Task) initStepCache(step *TaskStep) *types.TaskStepState {
 		CommandType:    step.CommandType,
 		CommandContent: step.CommandContent,
 	}
-	if err := storage.SetTaskStep(t.ID, step.ID, state); err != nil {
-		logx.Errorln(t.ID, t.workspace, t.scriptDir, err)
+	if err := storage.SetTaskStep(t.Name, step.Name, state); err != nil {
+		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 	}
 	return state
 }

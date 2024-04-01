@@ -99,40 +99,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/state": {
-            "get": {
-                "description": "detail server state",
-                "consumes": [
-                    "application/json",
-                    "application/toml",
-                    "application/x-yaml",
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json",
-                    "application/x-yaml",
-                    "application/toml"
-                ],
-                "tags": [
-                    "State"
-                ],
-                "summary": "server state detail",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.BaseRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.BaseRes"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/task": {
             "get": {
                 "description": "get all task",
@@ -186,8 +152,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
-                        "name": "id",
+                        "description": "task name",
+                        "name": "name",
                         "in": "query"
                     },
                     {
@@ -263,7 +229,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
@@ -304,7 +270,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
@@ -367,14 +333,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "step id",
+                        "description": "step name",
                         "name": "step",
                         "in": "path",
                         "required": true
@@ -415,14 +381,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "step id",
+                        "description": "step name",
                         "name": "step",
                         "in": "path",
                         "required": true
@@ -485,7 +451,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
@@ -529,7 +495,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
@@ -583,7 +549,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "task id",
+                        "description": "task name",
                         "name": "task",
                         "in": "path",
                         "required": true
@@ -780,7 +746,7 @@ const docTemplate = `{
                         ""
                     ]
                 },
-                "id": {
+                "name": {
                     "type": "string",
                     "example": ""
                 },

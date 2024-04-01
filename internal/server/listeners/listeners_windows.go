@@ -9,7 +9,7 @@ import (
 
 	"github.com/Microsoft/go-winio"
 
-	"github.com/xmapst/osreapi/internal/sockets"
+	"github.com/xmapst/osreapi/pkg/sockets"
 )
 
 var PipeName = "npipe:////./pipe/osreapi"

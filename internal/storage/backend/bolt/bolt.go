@@ -12,18 +12,24 @@ import (
 
 	"go.etcd.io/bbolt"
 
-	"github.com/xmapst/osreapi/internal/crypto"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/storage/backend"
 	"github.com/xmapst/osreapi/internal/storage/types"
+	"github.com/xmapst/osreapi/pkg/crypto"
+	"github.com/xmapst/osreapi/pkg/logx"
+)
+
+const (
+	tableTask = "task"
+	tableStep = "step"
+	tableLog  = "log"
 )
 
 type Bolt struct {
-	db *bbolt.DB
+	*bbolt.DB
 }
 
 func (b *Bolt) Get(bucket, key string) (value []byte, err error) {
-	err = b.db.View(func(tx *bbolt.Tx) error {
+	err = b.View(func(tx *bbolt.Tx) error {
 		if buk := tx.Bucket([]byte(bucket)); buk != nil {
 			value = buk.Get([]byte(key))
 		}
@@ -36,7 +42,7 @@ func (b *Bolt) Get(bucket, key string) (value []byte, err error) {
 }
 
 func (b *Bolt) Set(bucket, key string, value []byte) (err error) {
-	err = b.db.Update(func(tx *bbolt.Tx) error {
+	err = b.Update(func(tx *bbolt.Tx) error {
 		buk, e := tx.CreateBucketIfNotExists([]byte(bucket))
 		if e != nil {
 			return e
@@ -48,7 +54,7 @@ func (b *Bolt) Set(bucket, key string, value []byte) (err error) {
 }
 
 func (b *Bolt) Del(bucket, key string) (err error) {
-	err = b.db.Update(func(tx *bbolt.Tx) error {
+	err = b.Update(func(tx *bbolt.Tx) error {
 		if buk := tx.Bucket([]byte(bucket)); buk != nil {
 			return buk.Delete([]byte(key))
 		}
@@ -59,7 +65,7 @@ func (b *Bolt) Del(bucket, key string) (err error) {
 }
 
 func (b *Bolt) Prefix(bucket, prefix string) (values [][]byte, err error) {
-	err = b.db.View(func(tx *bbolt.Tx) error {
+	err = b.View(func(tx *bbolt.Tx) error {
 		if buk := tx.Bucket([]byte(bucket)); buk != nil {
 			c := buk.Cursor()
 			for key, val := c.Seek([]byte(prefix)); key != nil && bytes.HasPrefix(key, []byte(prefix)); key, val = c.Next() {
@@ -76,7 +82,7 @@ func (b *Bolt) Prefix(bucket, prefix string) (values [][]byte, err error) {
 }
 
 func (b *Bolt) Suffix(bucket, suffix string) (values [][]byte, err error) {
-	err = b.db.View(func(tx *bbolt.Tx) error {
+	err = b.View(func(tx *bbolt.Tx) error {
 		if buk := tx.Bucket([]byte(bucket)); buk != nil {
 			err = buk.ForEach(func(k, v []byte) error {
 				if bytes.HasSuffix(k, []byte(suffix)) {
@@ -95,7 +101,7 @@ func (b *Bolt) Suffix(bucket, suffix string) (values [][]byte, err error) {
 }
 
 func (b *Bolt) Range(bucket, start, limit string) (values [][]byte, err error) {
-	err = b.db.View(func(tx *bbolt.Tx) error {
+	err = b.View(func(tx *bbolt.Tx) error {
 		if buk := tx.Bucket([]byte(bucket)); buk != nil {
 			c := buk.Cursor()
 			_start := filepath.ToSlash(filepath.Join(bucket, start))
@@ -118,13 +124,13 @@ func (b *Bolt) Range(bucket, start, limit string) (values [][]byte, err error) {
 }
 
 func (b *Bolt) BatchSet(bucket string, kvs map[string][]byte) error {
-	if err := b.db.Update(func(tx *bbolt.Tx) (err error) {
+	if err := b.Update(func(tx *bbolt.Tx) (err error) {
 		_, err = tx.CreateBucketIfNotExists([]byte(bucket))
 		return err
 	}); err != nil {
 		return err
 	}
-	return b.db.Batch(func(tx *bbolt.Tx) (err error) {
+	return b.Batch(func(tx *bbolt.Tx) (err error) {
 		buk := tx.Bucket([]byte(bucket))
 		for k, v := range kvs {
 			if err = buk.Put([]byte(k), v); err != nil {
@@ -186,7 +192,7 @@ func (b *Bolt) Name() string {
 
 func (b *Bolt) Close() error {
 	logx.Infoln("wait for data removal to complete")
-	return b.db.Close()
+	return b.DB.Close()
 }
 
 func New(path string) (*Bolt, error) {
@@ -196,16 +202,16 @@ func New(path string) (*Bolt, error) {
 	}
 
 	b := &Bolt{
-		db: db,
+		DB: db,
 	}
 	return b, nil
 }
 
-func (b *Bolt) TaskList(table, prefix string) (res types.TaskStates, err error) {
+func (b *Bolt) TaskList(prefix string) (res types.TaskStates, err error) {
 	if prefix != "" {
-		prefix = filepath.ToSlash(filepath.Join(prefix, types.TableTask))
+		prefix = filepath.ToSlash(filepath.Join(prefix, tableTask))
 	}
-	val, err := b.Prefix(table, prefix)
+	val, err := b.Prefix(tableTask, prefix)
 	if err != nil {
 		if errors.Is(err, bbolt.ErrBucketNotFound) {
 			return nil, backend.ErrNotExist
@@ -231,9 +237,9 @@ func (b *Bolt) TaskList(table, prefix string) (res types.TaskStates, err error) 
 	return
 }
 
-func (b *Bolt) TaskDetail(table, task string) (res *types.TaskState, err error) {
-	key := filepath.ToSlash(filepath.Join(task, types.TableTask))
-	val, err := b.Get(table, key)
+func (b *Bolt) TaskDetail(task string) (res *types.TaskState, err error) {
+	key := filepath.ToSlash(filepath.Join(task, tableTask))
+	val, err := b.Get(tableTask, key)
 	if err != nil {
 		if errors.Is(err, bbolt.ErrBucketNotFound) {
 			return nil, backend.ErrNotExist
@@ -255,7 +261,7 @@ func (b *Bolt) TaskDetail(table, task string) (res *types.TaskState, err error) 
 	return
 }
 
-func (b *Bolt) SetTask(table, task string, val *types.TaskState) error {
+func (b *Bolt) SetTask(task string, val *types.TaskState) error {
 	var data bytes.Buffer
 	if err := gob.NewEncoder(&data).Encode(val); err != nil {
 		logx.Errorln(err)
@@ -266,13 +272,13 @@ func (b *Bolt) SetTask(table, task string, val *types.TaskState) error {
 		logx.Errorln(err)
 		return err
 	}
-	key := filepath.ToSlash(filepath.Join(task, types.TableTask))
-	return b.Set(table, key, result)
+	key := filepath.ToSlash(filepath.Join(task, tableTask))
+	return b.Set(tableTask, key, result)
 }
 
-func (b *Bolt) TaskStepList(table, task string) (res types.TaskStepStates, err error) {
-	prefix := filepath.ToSlash(filepath.Join(task, types.TableTask))
-	val, err := b.Prefix(table, prefix)
+func (b *Bolt) TaskStepList(task string) (res types.TaskStepStates, err error) {
+	prefix := filepath.ToSlash(filepath.Join(task, tableTask))
+	val, err := b.Prefix(tableStep, prefix)
 	if err != nil {
 		if errors.Is(err, bbolt.ErrBucketNotFound) {
 			return nil, backend.ErrNotExist
@@ -298,9 +304,9 @@ func (b *Bolt) TaskStepList(table, task string) (res types.TaskStepStates, err e
 	return
 }
 
-func (b *Bolt) TaskStepDetail(table, task, step string) (res *types.TaskStepState, err error) {
-	key := filepath.ToSlash(filepath.Join(task, types.TableTask, step, types.TableStep))
-	val, err := b.Get(table, key)
+func (b *Bolt) TaskStepDetail(task, step string) (res *types.TaskStepState, err error) {
+	key := filepath.ToSlash(filepath.Join(task, tableTask, step, tableStep))
+	val, err := b.Get(tableStep, key)
 	if err != nil {
 		if errors.Is(err, bbolt.ErrBucketNotFound) {
 			return nil, backend.ErrNotExist
@@ -322,7 +328,7 @@ func (b *Bolt) TaskStepDetail(table, task, step string) (res *types.TaskStepStat
 	return
 }
 
-func (b *Bolt) SetTaskStep(table, task, step string, val *types.TaskStepState) error {
+func (b *Bolt) SetTaskStep(task, step string, val *types.TaskStepState) error {
 	var data bytes.Buffer
 	err := gob.NewEncoder(&data).Encode(val)
 	if err != nil {
@@ -334,13 +340,13 @@ func (b *Bolt) SetTaskStep(table, task, step string, val *types.TaskStepState) e
 		logx.Errorln(err)
 		return err
 	}
-	key := filepath.ToSlash(filepath.Join(task, types.TableTask, step, types.TableStep))
-	return b.Set(table, key, result)
+	key := filepath.ToSlash(filepath.Join(task, tableTask, step, tableStep))
+	return b.Set(tableStep, key, result)
 }
 
-func (b *Bolt) TaskStepLogList(table, task, step string) (res types.TaskStepLogs, err error) {
-	prefix := filepath.ToSlash(filepath.Join(task, types.TableTask, step, types.TableLog))
-	val, err := b.Prefix(table, prefix)
+func (b *Bolt) TaskStepLogList(task, step string) (res types.TaskStepLogs, err error) {
+	prefix := filepath.ToSlash(filepath.Join(task, tableTask, step, tableLog))
+	val, err := b.Prefix(tableLog, prefix)
 	if err != nil {
 		if errors.Is(err, bbolt.ErrBucketNotFound) {
 			return nil, backend.ErrNotExist
@@ -366,7 +372,7 @@ func (b *Bolt) TaskStepLogList(table, task, step string) (res types.TaskStepLogs
 	return
 }
 
-func (b *Bolt) SetTaskStepLog(table, task, step string, line int64, val *types.TaskStepLog) error {
+func (b *Bolt) SetTaskStepLog(task, step string, line int64, val *types.TaskStepLog) error {
 	var data bytes.Buffer
 	err := gob.NewEncoder(&data).Encode(val)
 	if err != nil {
@@ -378,6 +384,6 @@ func (b *Bolt) SetTaskStepLog(table, task, step string, line int64, val *types.T
 		logx.Errorln(err)
 		return err
 	}
-	key := filepath.ToSlash(filepath.Join(task, types.TableTask, step, types.TableLog, strconv.FormatInt(line, 10)))
-	return b.Set(table, key, result)
+	key := filepath.ToSlash(filepath.Join(task, tableTask, step, tableLog, strconv.FormatInt(line, 10)))
+	return b.Set(tableLog, key, result)
 }

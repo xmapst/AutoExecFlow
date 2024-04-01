@@ -4,6 +4,7 @@ import (
 	"github.com/xmapst/osreapi/internal/storage/backend"
 	"github.com/xmapst/osreapi/internal/storage/backend/bolt"
 	"github.com/xmapst/osreapi/internal/storage/types"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 var db backend.ITaskCache
@@ -15,41 +16,42 @@ func New(t, d string) (err error) {
 		db, err = bolt.New(d)
 	}
 	if err != nil {
+		logx.Errorln(err)
 		return err
 	}
-	return nil
+	return
 }
 
 func TaskList() (res types.TaskStates, err error) {
-	return db.TaskList(types.TableTask, "")
+	return db.TaskList("")
 }
 
 func TaskDetail(task string) (res *types.TaskState, err error) {
-	return db.TaskDetail(types.TableTask, task)
+	return db.TaskDetail(task)
 }
 
 func TaskStepList(task string) (res types.TaskStepStates, err error) {
-	return db.TaskStepList(types.TableStep, task)
+	return db.TaskStepList(task)
 }
 
 func TaskStepDetail(task, step string) (res *types.TaskStepState, err error) {
-	return db.TaskStepDetail(types.TableStep, task, step)
+	return db.TaskStepDetail(task, step)
 }
 
 func TaskStepLogList(task, step string) (res types.TaskStepLogs, err error) {
-	return db.TaskStepLogList(types.TableLog, task, step)
+	return db.TaskStepLogList(task, step)
 }
 
 func SetTask(task string, val *types.TaskState) error {
-	return db.SetTask(types.TableTask, task, val)
+	return db.SetTask(task, val)
 }
 
 func SetTaskStep(task, step string, val *types.TaskStepState) error {
-	return db.SetTaskStep(types.TableStep, task, step, val)
+	return db.SetTaskStep(task, step, val)
 }
 
 func SetTaskStepLog(task, step string, line int64, val *types.TaskStepLog) error {
-	return db.SetTaskStepLog(types.TableLog, task, step, line, val)
+	return db.SetTaskStepLog(task, step, line, val)
 }
 func Close() error {
 	return db.Close()

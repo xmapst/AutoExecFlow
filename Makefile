@@ -8,13 +8,13 @@ USER_EMAIL := $(shell git config user.email || echo "Unknown")
 BUILD_TIME := $(shell date +"%Y-%m-%d %H:%M:%S %Z" || echo "Unknown")
 CGO_ENABLED := 0
 LDFLAGS := "-w -s \
--X 'github.com/xmapst/osreapi/internal/info.Version=$(VERSION)' \
--X 'github.com/xmapst/osreapi/internal/info.GitUrl=$(GIT_URL)' \
--X 'github.com/xmapst/osreapi/internal/info.GitBranch=$(GIT_BRANCH)' \
--X 'github.com/xmapst/osreapi/internal/info.GitCommit=$(GIT_COMMIT)' \
--X 'github.com/xmapst/osreapi/internal/info.BuildTime=$(BUILD_TIME)' \
--X 'github.com/xmapst/osreapi/internal/info.UserName=$(USER_NAME)' \
--X 'github.com/xmapst/osreapi/internal/info.UserEmail=$(USER_EMAIL)' \
+-X 'github.com/xmapst/osreapi/pkg/info.Version=$(VERSION)' \
+-X 'github.com/xmapst/osreapi/pkg/info.GitUrl=$(GIT_URL)' \
+-X 'github.com/xmapst/osreapi/pkg/info.GitBranch=$(GIT_BRANCH)' \
+-X 'github.com/xmapst/osreapi/pkg/info.GitCommit=$(GIT_COMMIT)' \
+-X 'github.com/xmapst/osreapi/pkg/info.BuildTime=$(BUILD_TIME)' \
+-X 'github.com/xmapst/osreapi/pkg/info.UserName=$(USER_NAME)' \
+-X 'github.com/xmapst/osreapi/pkg/info.UserEmail=$(USER_EMAIL)' \
 "
 
 all: vet fmt windows linux darwin sha256sum

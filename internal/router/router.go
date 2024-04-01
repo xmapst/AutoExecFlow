@@ -15,7 +15,6 @@ import (
 
 	_ "github.com/xmapst/osreapi/internal/docs"
 	"github.com/xmapst/osreapi/internal/router/api/v1/pool"
-	"github.com/xmapst/osreapi/internal/router/api/v1/status"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/step"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/workspace"
@@ -93,8 +92,6 @@ func New(debug bool, maxRequests int64) *gin.Engine {
 		// worker pool
 		api.GET("/v1/pool", pool.Detail)
 		api.POST("/v1/pool", pool.Post)
-		// server state
-		api.GET("/v1/state", status.Detail)
 	}
 	// V2
 	{

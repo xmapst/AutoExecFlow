@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/worker"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Post
@@ -23,7 +23,7 @@ import (
 // @Produce application/json
 // @Produce application/x-yaml
 // @Produce application/toml
-// @param id query string false "task id"
+// @param name query string false "task name"
 // @Param async query bool false "task asynchronously" default(false)
 // @Param timeout query string false "task timeout"
 // @Param env_vars query []string false "task envs"
@@ -52,7 +52,7 @@ func Post(c *gin.Context) {
 	}
 
 	var task = &worker.Task{
-		ID:       req.ID,
+		Name:     req.Name,
 		Timeout:  req.TimeoutDuration,
 		EnvVars:  req.EnvVars,
 		MetaData: req.Step.GetMetaData(),
@@ -60,7 +60,7 @@ func Post(c *gin.Context) {
 
 	for _, v := range req.Step {
 		task.Steps = append(task.Steps, &worker.TaskStep{
-			ID:             v.Name,
+			Name:           v.Name,
 			CommandType:    v.CommandType,
 			CommandContent: v.CommandContent,
 			EnvVars:        v.EnvVars,
@@ -76,17 +76,18 @@ func Post(c *gin.Context) {
 		return
 	}
 
-	c.Request.Header.Set(types.XTaskID, task.ID)
-	c.Writer.Header().Set(types.XTaskID, task.ID)
-	c.Set(types.XTaskID, task.ID)
+	c.Request.Header.Set(types.XTaskName, task.Name)
+	c.Writer.Header().Set(types.XTaskName, task.Name)
+	c.Set(types.XTaskName, task.Name)
 
 	var scheme = "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
 	render.SetRes(&types.TaskRes{
-		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), req.ID),
-		ID:    req.ID,
+		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), req.Name),
+		ID:    req.Name,
+		Name:  req.Name,
 		Count: len(req.Step),
 	})
 }

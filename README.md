@@ -70,7 +70,6 @@ Use "linux-remote_executor-amd64 [command] --help" for more information about a 
 [GIN-debug] PUT    /api/v1/task/:task/step/:step --> github.com/xmapst/osreapi/internal/router/api/v1/task/step.Manager (6 handlers)
 [GIN-debug] GET    /api/v1/pool              --> github.com/xmapst/osreapi/internal/router/api/v1/pool.Detail (6 handlers)
 [GIN-debug] POST   /api/v1/pool              --> github.com/xmapst/osreapi/internal/router/api/v1/pool.Post (6 handlers)
-[GIN-debug] GET    /api/v1/state             --> github.com/xmapst/osreapi/internal/router/api/v1/status.Detail (6 handlers)
 [GIN-debug] POST   /api/v2/task              --> github.com/xmapst/osreapi/internal/router/api/v2/task.Post (6 handlers)
 [GIN-debug] GET    /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
 [GIN-debug] POST   /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
@@ -205,51 +204,51 @@ curl -X GET -H "Content-Type:application/json"'http://localhost:2376/api/v1/task
 ### 获取任务详情
 
 ```shell
-curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}
+curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}
 ```
 
 ### 获取任务工作目录
 
 ```shell
-curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}/workspace
+curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/workspace
 ```
 
 ### 任务控制
 
 ```shell
 # 强杀任务
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}?action=kill
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}?action=kill
 
 # 暂停任务执行[只有待运行的任务才能暂停]
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}?action=pause
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}?action=pause
 
 # 暂停任务执行(暂停5分钟)[只有待运行的任务才能暂停]
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}?action=pause&duration=5m
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}?action=pause&duration=5m
 
 # 继续执行任务
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}?action=resume
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}?action=resume
 ```
 
 ### 获取步骤控制台输出
 
 ```shell
-curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}/step/{步骤名称}
+curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/step/{步骤名称}
 ```
 
 ### 步骤控制
 
 ```shell
 # 强杀步骤
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}/step/{步骤名称}?action=kill
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/step/{步骤名称}?action=kill
 
 # 暂停步骤执行[只有待运行的步骤才能暂停]
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}/step/{步骤名称}?action=pause
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/step/{步骤名称}?action=pause
 
 # 暂停步骤执行(暂停5分钟)[只有待运行的步骤才能暂停]
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}/step/{步骤名称}?action=pause&duration=5m
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/step/{步骤名称}?action=pause&duration=5m
 
 # 继续执行步骤
-curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务ID}/step/{步骤名称}?action=resume
+curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/step/{步骤名称}?action=resume
 ```
 
 

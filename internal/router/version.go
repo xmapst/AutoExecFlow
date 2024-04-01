@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"github.com/xmapst/osreapi/internal/info"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
+	"github.com/xmapst/osreapi/pkg/info"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 func version(c *gin.Context) {

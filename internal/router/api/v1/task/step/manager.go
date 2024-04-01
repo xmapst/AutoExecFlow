@@ -5,11 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/osreapi/internal/dag"
-	"github.com/xmapst/osreapi/internal/exec"
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/storage"
+	"github.com/xmapst/osreapi/pkg/dag"
+	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 // Manager
@@ -23,8 +23,8 @@ import (
 // @Produce application/json
 // @Produce application/x-yaml
 // @Produce application/toml
-// @Param task path string true "task id"
-// @Param step path string true "step id"
+// @Param task path string true "task name"
+// @Param step path string true "step name"
 // @Param action query string false "management action" Enums(paused,kill,pause,resume) default(paused)
 // @Param duration query string false "how long to pause; if empty, manual continuation is required" default(1m)
 // @Success 200 {object} types.BaseRes
@@ -32,25 +32,25 @@ import (
 // @Router /api/v1/task/{task}/step/{step} [put]
 func Manager(c *gin.Context) {
 	render := base.Gin{Context: c}
-	taskID := c.Param("task")
-	if taskID == "" {
+	task := c.Param("task")
+	if task == "" {
 		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
 		return
 	}
-	stepID := c.Param("step")
-	if stepID == "" {
+	step := c.Param("step")
+	if step == "" {
 		render.SetError(base.CodeErrNoData, errors.New("step does not exist"))
 		return
 	}
 	action := c.DefaultQuery("action", "paused")
 	duration := c.Query("duration")
-	manager, err := dag.VertexManager(taskID, stepID)
+	manager, err := dag.VertexManager(task, step)
 	if err != nil {
 		logx.Errorln(err)
 		render.SetError(base.CodeErrNoData, err)
 		return
 	}
-	step, err := storage.TaskStepDetail(taskID, stepID)
+	stepDetail, err := storage.TaskStepDetail(task, step)
 	if err != nil {
 		logx.Errorln(err)
 		render.SetError(base.CodeErrNoData, err)
@@ -60,24 +60,24 @@ func Manager(c *gin.Context) {
 	case "kill":
 		err = manager.Kill()
 		if err == nil {
-			step.State = exec.Killed
-			err = storage.SetTaskStep(taskID, stepID, step)
+			stepDetail.State = exec.Killed
+			err = storage.SetTaskStep(task, step, stepDetail)
 		}
 	case "pause":
-		if step.State == exec.Running {
+		if stepDetail.State == exec.Running {
 			render.SetError(base.CodeExecErr, dag.ErrRunning)
 			return
 		}
 		if !manager.Paused() {
 			_ = manager.Pause(duration)
-			step.State = exec.Paused
-			err = storage.SetTaskStep(taskID, stepID, step)
+			stepDetail.State = exec.Paused
+			err = storage.SetTaskStep(task, step, stepDetail)
 		}
 	case "resume":
 		if manager.Paused() {
 			manager.Resume()
-			step.State = exec.Pending
-			err = storage.SetTaskStep(taskID, stepID, step)
+			stepDetail.State = exec.Pending
+			err = storage.SetTaskStep(task, step, stepDetail)
 		}
 	}
 	if err != nil {

@@ -8,9 +8,9 @@ import (
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/server"
 	"github.com/xmapst/osreapi/internal/server/config"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 func New() *cobra.Command {
@@ -20,7 +20,9 @@ func New() *cobra.Command {
 			"run",
 		},
 		Short: "start server",
-		Args:  cobra.NoArgs,
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name, err := filepath.Abs(os.Args[0])
 			if err != nil {

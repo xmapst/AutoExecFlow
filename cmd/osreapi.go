@@ -8,20 +8,18 @@ import (
 
 	"github.com/xmapst/osreapi/cmd/client"
 	"github.com/xmapst/osreapi/cmd/server"
-	"github.com/xmapst/osreapi/internal/info"
+	"github.com/xmapst/osreapi/pkg/info"
 )
 
 const longText = `The remote executor (OSReApi) provides API remote operation mode,batch execution of Shell, Powershell, Python and other commands, and easily completes common management tasks such as running automated operation and maintenance scripts, polling processes, installing or uninstalling software, updating applications, and installing patches.`
 
 func main() {
 	cmd := &cobra.Command{
-		Use:                   os.Args[0],
-		Short:                 "Operating system remote execution interface",
-		Long:                  longText,
-		DisableAutoGenTag:     true,
-		DisableFlagsInUseLine: true,
-		CompletionOptions: cobra.CompletionOptions{
-			HiddenDefaultCmd: true,
+		Use:   os.Args[0],
+		Short: "Operating system remote execution interface",
+		Long:  longText,
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
 		},
 		Version: info.Version,
 	}

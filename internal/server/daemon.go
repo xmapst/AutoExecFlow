@@ -14,13 +14,13 @@ import (
 	"github.com/pires/go-proxyproto"
 	"github.com/robfig/cron/v3"
 
-	"github.com/xmapst/osreapi/internal/logx"
 	"github.com/xmapst/osreapi/internal/router"
 	"github.com/xmapst/osreapi/internal/server/config"
 	"github.com/xmapst/osreapi/internal/server/listeners"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/internal/worker"
+	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 type Program struct {
@@ -170,11 +170,14 @@ func (p *Program) close() {
 }
 
 func (p *Program) Stop(service.Service) error {
+	logx.Infoln("receive a shutdown event and start shutting down")
 	p.close()
 	p.wg.Wait()
 	if config.App.Normal {
+		logx.Infoln("wait for workers to converge")
 		worker.StopWait()
 	}
+	logx.Infoln("put data to disk and close data storage")
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)
 	}

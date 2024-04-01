@@ -84,7 +84,7 @@ definitions:
         items:
           type: string
         type: array
-      id:
+      name:
         example: ""
         type: string
       notify:
@@ -164,30 +164,6 @@ paths:
       summary: pool setting
       tags:
       - Pool
-  /api/v1/state:
-    get:
-      consumes:
-      - application/json
-      - application/toml
-      - application/x-yaml
-      - multipart/form-data
-      description: detail server state
-      produces:
-      - application/json
-      - application/x-yaml
-      - application/toml
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.BaseRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.BaseRes'
-      summary: server state detail
-      tags:
-      - State
   /api/v1/task:
     get:
       consumes:
@@ -220,9 +196,9 @@ paths:
       - multipart/form-data
       description: post task step
       parameters:
-      - description: task id
+      - description: task name
         in: query
-        name: id
+        name: name
         type: string
       - default: false
         description: task asynchronously
@@ -273,7 +249,7 @@ paths:
       - multipart/form-data
       description: detail task
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
@@ -302,7 +278,7 @@ paths:
       - multipart/form-data
       description: manager task
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
@@ -347,12 +323,12 @@ paths:
       - multipart/form-data
       description: detail task step
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
         type: string
-      - description: step id
+      - description: step name
         in: path
         name: step
         required: true
@@ -381,12 +357,12 @@ paths:
       - multipart/form-data
       description: manager task step
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
         type: string
-      - description: step id
+      - description: step name
         in: path
         name: step
         required: true
@@ -431,7 +407,7 @@ paths:
       - multipart/form-data
       description: task workspace delete
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
@@ -464,7 +440,7 @@ paths:
       - multipart/form-data
       description: task workspace list
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
@@ -494,7 +470,7 @@ paths:
       - multipart/form-data
       description: task workspace upload file or dir
       parameters:
-      - description: task id
+      - description: task name
         in: path
         name: task
         required: true
