@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	"github.com/gin-gonic/gin"
 	"github.com/kardianos/service"
 	"github.com/pires/go-proxyproto"
 	"github.com/robfig/cron/v3"
@@ -87,11 +88,15 @@ func (p *Program) Start(service.Service) error {
 }
 
 func (p *Program) startServer() error {
+	gin.SetMode(gin.ReleaseMode)
+	if config.App.Debug {
+		gin.SetMode(gin.DebugMode)
+	}
 	p.http = &http.Server{
 		WriteTimeout: config.App.WebTimeout,
 		ReadTimeout:  config.App.WebTimeout,
 		IdleTimeout:  config.App.WebTimeout,
-		Handler:      router.New(config.App.Debug, config.App.MaxRequests),
+		Handler:      router.New(config.App.MaxRequests),
 	}
 
 	_ = retry.Do(

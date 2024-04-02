@@ -36,8 +36,7 @@ import (
 // @license.name  GPL-3.0
 // @license.url   https://github.com/xmapst/osreapi/blob/main/LICENSE
 
-func New(debug bool, maxRequests int64) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
+func New(maxRequests int64) *gin.Engine {
 	gin.DisableConsoleColor()
 	router := gin.New()
 	router.Use(
@@ -55,15 +54,12 @@ func New(debug bool, maxRequests int64) *gin.Engine {
 		zap.Logger,
 		zap.Recovery,
 	)
-	if debug {
-		gin.SetMode(gin.DebugMode)
 
-		// debug pprof
-		pprof.Register(router)
+	// debug pprof
+	pprof.Register(router)
 
-		// swagger docs
-		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	}
+	// swagger docs
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// web ui
 	router.Use(webui.File("/ui", "/static", "/assets", "/favicon.ico"))
