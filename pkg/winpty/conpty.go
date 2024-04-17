@@ -148,7 +148,7 @@ type ConPty struct {
 // Wait for the process to exit and return the exit code. If context is canceled,
 // Wait() will return STILL_ACTIVE and an error indicating the context was canceled.
 func (cpty *ConPty) Wait(ctx context.Context) (uint32, error) {
-	var exitCode uint32 = STILL_ACTIVE
+	var exitCode = STILL_ACTIVE
 	for {
 		if err := ctx.Err(); err != nil {
 			return STILL_ACTIVE, fmt.Errorf("wait canceled: %v", err)
@@ -175,7 +175,7 @@ func (cpty *ConPty) Write(p []byte) (int, error) {
 // Close all open handles and terminate the process.
 func (cpty *ConPty) Close() error {
 	// there is no return code
-	Win32ClosePseudoConsole(cpty.hpc)
+	windows.ClosePseudoConsole(cpty.hpc)
 	return WinCloseHandles(
 		cpty.pi.Process,
 		cpty.pi.Thread,
@@ -186,23 +186,23 @@ func (cpty *ConPty) Close() error {
 	)
 }
 
-func (cpty *ConPty) Resize(width, height int) error {
-	coords := COORD{
-		width,
-		height,
+func (cpty *ConPty) Resize(width, height int16) error {
+	coords := windows.Coord{
+		X: width,
+		Y: height,
 	}
-	return Win32ResizePseudoConsole(cpty.hpc, &coords)
+	return windows.ResizePseudoConsole(cpty.hpc, coords)
 }
 
 type conPtyArgs struct {
-	coord  *COORD
+	coord   windows.Coord
 	workDir string
 	envs    []string
 }
 
 type ConPtyOption func(args *conPtyArgs)
 
-func ConPtyDimensions(width, height int) ConPtyOption {
+func ConPtyDimensions(width, height int16) ConPtyOption {
 	return func(args *conPtyArgs) {
 		args.coord.X = width
 		args.coord.Y = height
@@ -231,7 +231,7 @@ func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 	}
 	coord, err := WinConsoleScreenSize()
 	if err != nil {
-		coord = &COORD{defaultConsoleWidth, defaultConsoleHeight}
+		coord = windows.Coord{X: defaultConsoleWidth, Y: defaultConsoleHeight}
 	}
 	args := &conPtyArgs{
 		coord: coord,
@@ -253,8 +253,9 @@ func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 	defer func(handles ...windows.Handle) {
 		_ = WinCloseHandles(handles...)
 	}(inHandle, outHandle)
-
-	hPc, err := Win32CreatePseudoConsole(args.coord, ptyIn, ptyOut)
+	var hPc windows.Handle
+	//hPc, err := Win32CreatePseudoConsole(args.coord, ptyIn, ptyOut)
+	err = windows.CreatePseudoConsole(args.coord, ptyIn, ptyOut, 0, &hPc)
 	if err != nil {
 		_ = WinCloseHandles(ptyIn, ptyOut, cmdIn, cmdOut)
 		return nil, err
@@ -263,7 +264,7 @@ func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 	pi, err := CreateConsoleProcessAttachedToPTY(hPc, commandLine, args.workDir, args.envs)
 	if err != nil {
 		_ = WinCloseHandles(ptyIn, ptyOut, cmdIn, cmdOut)
-		Win32ClosePseudoConsole(hPc)
+		windows.ClosePseudoConsole(hPc)
 		return nil, fmt.Errorf("failed to create console process: %v", err)
 	}
 
