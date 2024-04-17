@@ -43,8 +43,8 @@ type StartupInfoEx struct {
 const (
 	PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE uintptr = 0x20016
 	STILL_ACTIVE                        uint32  = 259
-	defaultConsoleWidth                         = 80 // in characters
-	defaultConsoleHeight                        = 40 // in characters
+	defaultConsoleWidth                         = 180 // in characters
+	defaultConsoleHeight                        = 100 // in characters
 )
 
 func GetStartupInfoExForPTY(hpc windows.Handle) (*StartupInfoEx, error) {
@@ -194,13 +194,8 @@ func (cpty *ConPty) Resize(width, height int) error {
 	return Win32ResizePseudoConsole(cpty.hpc, &coords)
 }
 
-func (cpty *ConPty) Size() (width, height int, err error) {
-	coord, err := WinConsoleScreenSize()
-	return coord.Y, coord.X, err
-}
-
 type conPtyArgs struct {
-	coords  *COORD
+	coord  *COORD
 	workDir string
 	envs    []string
 }
@@ -209,8 +204,8 @@ type ConPtyOption func(args *conPtyArgs)
 
 func ConPtyDimensions(width, height int) ConPtyOption {
 	return func(args *conPtyArgs) {
-		args.coords.X = width
-		args.coords.Y = height
+		args.coord.X = width
+		args.coord.Y = height
 	}
 }
 
@@ -234,9 +229,12 @@ func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 	if !WinIsConPtyAvailable() {
 		return nil, ErrConPtyUnsupported
 	}
-
+	coord, err := WinConsoleScreenSize()
+	if err != nil {
+		coord = &COORD{defaultConsoleWidth, defaultConsoleHeight}
+	}
 	args := &conPtyArgs{
-		coords: &COORD{defaultConsoleWidth, defaultConsoleHeight},
+		coord: coord,
 	}
 	for _, opt := range options {
 		opt(args)
@@ -256,7 +254,7 @@ func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 		_ = WinCloseHandles(handles...)
 	}(inHandle, outHandle)
 
-	hPc, err := Win32CreatePseudoConsole(args.coords, ptyIn, ptyOut)
+	hPc, err := Win32CreatePseudoConsole(args.coord, ptyIn, ptyOut)
 	if err != nil {
 		_ = WinCloseHandles(ptyIn, ptyOut, cmdIn, cmdOut)
 		return nil, err
