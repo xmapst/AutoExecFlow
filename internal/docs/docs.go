@@ -22,6 +22,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/pty": {
+            "get": {
+                "description": "terminal pty",
+                "consumes": [
+                    "application/json",
+                    "application/toml",
+                    "application/x-yaml",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/x-yaml",
+                    "application/toml"
+                ],
+                "tags": [
+                    "Pool"
+                ],
+                "summary": "terminal",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.BaseRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.BaseRes"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/pool": {
             "get": {
                 "description": "detail pool",

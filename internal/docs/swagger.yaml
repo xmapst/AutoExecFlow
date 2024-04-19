@@ -110,6 +110,30 @@ info:
   title: OS Remote Executor API
   version: "1.0"
 paths:
+  /api/pty:
+    get:
+      consumes:
+      - application/json
+      - application/toml
+      - application/x-yaml
+      - multipart/form-data
+      description: terminal pty
+      produces:
+      - application/json
+      - application/x-yaml
+      - application/toml
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.BaseRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.BaseRes'
+      summary: terminal
+      tags:
+      - Pool
   /api/v1/pool:
     get:
       consumes:

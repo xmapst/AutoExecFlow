@@ -14,6 +14,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "github.com/xmapst/osreapi/internal/docs"
+	"github.com/xmapst/osreapi/internal/router/api"
 	"github.com/xmapst/osreapi/internal/router/api/v1/pool"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/step"
@@ -70,30 +71,33 @@ func New(maxRequests int64) *gin.Engine {
 	router.GET("/metrics", metrics)
 	router.GET("/heartbeat", heartbeat)
 	router.HEAD("/heartbeat", heartbeat)
-	api := router.Group("/api", limiter.New(maxRequests, http.MethodPost))
+	apiGroup := router.Group("/api", limiter.New(maxRequests, http.MethodPost))
 	// V1
 	{
 		// task
-		api.GET("/v1/task", task.List)
-		api.POST("/v1/task", task.Post)
-		api.GET("/v1/task/:task", task.Get)
-		api.PUT("/v1/task/:task", task.Manager)
+		apiGroup.GET("/v1/task", task.List)
+		apiGroup.POST("/v1/task", task.Post)
+		apiGroup.GET("/v1/task/:task", task.Get)
+		apiGroup.PUT("/v1/task/:task", task.Manager)
 		// workspace
-		api.GET("/v1/task/:task/workspace", workspace.Get)
-		api.DELETE("/v1/task/:task/workspace", workspace.Delete)
-		api.POST("/v1/task/:task/workspace", workspace.Post)
+		apiGroup.GET("/v1/task/:task/workspace", workspace.Get)
+		apiGroup.DELETE("/v1/task/:task/workspace", workspace.Delete)
+		apiGroup.POST("/v1/task/:task/workspace", workspace.Post)
 		// step
-		api.GET("/v1/task/:task/step/:step", step.Get)
-		api.PUT("/v1/task/:task/step/:step", step.Manager)
+		apiGroup.GET("/v1/task/:task/step/:step", step.Get)
+		apiGroup.PUT("/v1/task/:task/step/:step", step.Manager)
 		// worker pool
-		api.GET("/v1/pool", pool.Detail)
-		api.POST("/v1/pool", pool.Post)
+		apiGroup.GET("/v1/pool", pool.Detail)
+		apiGroup.POST("/v1/pool", pool.Post)
 	}
 	// V2
 	{
 		// task
-		api.POST("/v2/task", taskv2.Post)
+		apiGroup.POST("/v2/task", taskv2.Post)
 	}
+
+	// pty
+	router.GET("/api/pty", api.PtyWs)
 
 	// endpoints
 	router.Any("/api/endpoints", func(c *gin.Context) {
