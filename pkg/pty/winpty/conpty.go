@@ -5,6 +5,7 @@ package winpty
 import (
 	"context"
 	"fmt"
+	"os"
 	"syscall"
 	"unsafe"
 
@@ -194,6 +195,13 @@ func (cpty *ConPty) Resize(width, height int16) error {
 	return windows.ResizePseudoConsole(cpty.hpc, coords)
 }
 
+func (cpty *ConPty) Kill() error {
+	if cpty.pi != nil {
+		return windows.TerminateProcess(cpty.pi.Process, 0)
+	}
+	return nil
+}
+
 type conPtyArgs struct {
 	coord   windows.Coord
 	workDir string
@@ -221,11 +229,7 @@ func ConPtyEnvs(envs ...string) ConPtyOption {
 	}
 }
 
-// Start a new process specified in `commandLine` and attach a pseudo console using the Windows
-// ConPty API. If ConPty is not available, ErrConPtyUnsupported will be returned.
-// On successful return, an instance of ConPty is returned. You must call Close() on this to release
-// any resources associated with the process. To get the exit code of the process, you can call Wait().
-func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
+func Start(commandLine string,options ...ConPtyOption) (*ConPty, error) {
 	if !WinIsConPtyAvailable() {
 		return nil, ErrConPtyUnsupported
 	}
@@ -235,6 +239,8 @@ func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 	}
 	args := &conPtyArgs{
 		coord: coord,
+		envs: os.Environ(),
+		workDir: "C:\\Windows\\System32",
 	}
 	for _, opt := range options {
 		opt(args)
