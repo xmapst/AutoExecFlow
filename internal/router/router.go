@@ -24,7 +24,6 @@ import (
 	"github.com/xmapst/osreapi/internal/router/middleware/limiter"
 	"github.com/xmapst/osreapi/internal/router/middleware/zap"
 	"github.com/xmapst/osreapi/internal/router/types"
-	"github.com/xmapst/osreapi/internal/webui"
 )
 
 // @title           OS Remote Executor API
@@ -61,9 +60,6 @@ func New(maxRequests int64) *gin.Engine {
 
 	// swagger docs
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// web ui
-	router.Use(webui.File("/ui", "/static", "/assets", "/favicon.ico"))
 
 	// base
 	router.GET("/version", version)

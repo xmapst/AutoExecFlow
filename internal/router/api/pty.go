@@ -38,7 +38,6 @@ type TTYSize struct {
 	Y    uint16 `json:"y"`
 }
 
-
 // PtyWs
 // @Summary terminal
 // @description terminal pty
