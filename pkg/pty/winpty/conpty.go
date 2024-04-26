@@ -229,7 +229,7 @@ func ConPtyEnvs(envs ...string) ConPtyOption {
 	}
 }
 
-func Start(commandLine string,options ...ConPtyOption) (*ConPty, error) {
+func Start(commandLine string, options ...ConPtyOption) (*ConPty, error) {
 	if !WinIsConPtyAvailable() {
 		return nil, ErrConPtyUnsupported
 	}
@@ -238,8 +238,8 @@ func Start(commandLine string,options ...ConPtyOption) (*ConPty, error) {
 		coord = windows.Coord{X: defaultConsoleWidth, Y: defaultConsoleHeight}
 	}
 	args := &conPtyArgs{
-		coord: coord,
-		envs: os.Environ(),
+		coord:   coord,
+		envs:    os.Environ(),
 		workDir: "C:\\Windows\\System32",
 	}
 	for _, opt := range options {

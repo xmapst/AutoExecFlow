@@ -38,7 +38,7 @@ func New(rate int64, modes ...string) gin.HandlerFunc {
 
 			if !limiter.IsAccept() {
 				render := base.Gin{Context: c}
-				render.SetError(base.CodeErrNoData, errors.New("this ip too many requests"))
+				render.SetError(base.CodeNoData, errors.New("this ip too many requests"))
 			}
 		}
 	}

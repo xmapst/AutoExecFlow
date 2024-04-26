@@ -36,43 +36,56 @@ func Post(c *gin.Context) {
 	var req = new(types.Task)
 	if err := c.ShouldBindQuery(req); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 
 	if err := c.ShouldBind(&req.Step); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 
 	if err := req.Check(); err != nil {
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 
 	var task = &worker.Task{
-		Name:     req.Name,
-		Timeout:  req.TimeoutDuration,
-		EnvVars:  req.EnvVars,
-		MetaData: req.Step.GetMetaData(),
+		Name:    req.Name,
+		Timeout: req.TimeoutDuration,
 	}
 
+	if err := task.SaveEnv(req.Env); err != nil {
+		logx.Errorln(err)
+		render.SetError(base.CodeFailed, err)
+		return
+	}
 	for _, v := range req.Step {
-		task.Steps = append(task.Steps, &worker.TaskStep{
-			Name:           v.Name,
-			CommandType:    v.CommandType,
-			CommandContent: v.CommandContent,
-			EnvVars:        v.EnvVars,
-			DependsOn:      v.DependsOn,
-			Timeout:        v.TimeoutDuration,
-		})
+		step := &worker.Step{
+			TaskName: task.Name,
+			Name:     v.Name,
+			Type:     v.Type,
+			Content:  v.Content,
+			Timeout:  v.TimeoutDuration,
+		}
+		if err := step.SaveEnv(v.Env); err != nil {
+			logx.Errorln(err)
+			render.SetError(base.CodeFailed, err)
+			return
+		}
+		if err := step.SaveDepends(v.Depends); err != nil {
+			logx.Errorln(err)
+			render.SetError(base.CodeFailed, err)
+			return
+		}
+		task.Steps = append(task.Steps, step)
 	}
 
 	// 提交任务
 	if err := worker.Submit(task); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 
@@ -84,7 +97,7 @@ func Post(c *gin.Context) {
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
-	render.SetRes(&types.TaskRes{
+	render.SetRes(&types.TaskCreateRes{
 		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), req.Name),
 		ID:    req.Name,
 		Name:  req.Name,

@@ -33,18 +33,18 @@ func Delete(c *gin.Context) {
 	render := base.Gin{Context: c}
 	task := c.Param("task")
 	if task == "" {
-		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
+		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
 	}
 	prefix := filepath.Join(config.App.WorkSpace, task)
 	if !utils.FileOrPathExist(prefix) {
-		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
+		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
 	}
 	path := filepath.Join(prefix, utils.PathEscape(c.Query("path")))
 	if err := os.RemoveAll(path); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 	render.SetRes(nil)

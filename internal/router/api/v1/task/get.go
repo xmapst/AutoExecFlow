@@ -3,6 +3,7 @@ package task
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -12,9 +13,8 @@ import (
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
-	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/internal/worker"
-	"github.com/xmapst/osreapi/pkg/exec"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
@@ -41,19 +41,13 @@ func Get(c *gin.Context) {
 		ws, err = base.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeErrNoData, err)
+			render.SetError(base.CodeNoData, err)
 			return
 		}
 	}
 
 	if ws == nil {
-		res, err, code := get(c)
-		switch code {
-		case base.CodePending, base.CodePaused:
-			render.SetNegotiate(res, err, base.CodeRunning)
-		default:
-			render.SetNegotiate(res, err, code)
-		}
+		render.SetNegotiate(get(c))
 		return
 	}
 	// websocket 方式
@@ -64,7 +58,7 @@ func Get(c *gin.Context) {
 	ticker := time.NewTicker(1 * time.Second)
 	for range ticker.C {
 		res, err, code := get(c)
-		if code == base.CodeErrNoData {
+		if code == base.CodeNoData {
 			err = ws.WriteJSON(base.NewRes(res, err, code))
 			if err != nil {
 				logx.Errorln(err)
@@ -79,117 +73,98 @@ func Get(c *gin.Context) {
 	}
 }
 
-func get(c *gin.Context) ([]types.TaskDetailRes, error, int) {
-	task := c.Param("task")
-	if task == "" {
-		return nil, errors.New("task does not exist"), base.CodeErrNoData
+func get(c *gin.Context) ([]types.StepRes, error, int) {
+	taskName := c.Param("task")
+	if taskName == "" {
+		return nil, errors.New("task does not exist"), base.CodeNoData
 	}
-	taskState, err := storage.TaskDetail(task)
+	task, err := storage.Task(taskName).Get()
 	if err != nil {
-		return nil, err, base.CodeErrNoData
+		return nil, err, base.CodeNoData
 	}
-	state := exec.StateMap[taskState.State]
+	state := models.StateMap[*task.State]
 	c.Request.Header.Set(types.XTaskState, state)
 	c.Writer.Header().Set(types.XTaskState, state)
 	c.Set(types.XTaskState, state)
-	tasksStepStates, err := storage.TaskStepList(task)
-	if err != nil {
-		return nil, err, base.CodeErrNoData
+	steps := storage.Task(taskName).StepList("", -1, 0)
+	if steps == nil {
+		return nil, err, base.CodeNoData
 	}
 	var scheme = "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
-	var stopMsg, runMsg, pausedMsg, pendingMsg []string
-	var exitCode int64
-	var res []types.TaskDetailRes
+	var res []types.StepRes
+	var groups = make(map[int][]string)
 	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
-	for _, v := range tasksStepStates {
-		exitCode += v.Code
-		msg := v.Message
-		if v.Code != 0 {
-			msg = fmt.Sprintf("Step: %s, Exit Code: %d", v.Name, v.Code)
-			if taskState.MetaData.VMInstanceID != "" {
-				msg += fmt.Sprintf(", Instance ID: %s", taskState.MetaData.VMInstanceID)
-			}
-			if taskState.MetaData.HardWareID != "" {
-				msg += fmt.Sprintf(", Hardware ID: %s", taskState.MetaData.HardWareID)
-			}
-			stopMsg = append(stopMsg, msg)
-		}
-		var output []string
-		if v.State == exec.Stop {
-			outputs, _ := storage.TaskStepLogList(task, v.Name)
-			for _, o := range outputs {
-				if o.Content == worker.ConsoleStart || o.Content == worker.ConsoleDone {
-					continue
-				}
-				output = append(output, o.Content)
-			}
-		} else {
-			msg = fmt.Sprintf("Step: %s", v.Name)
-			switch v.State {
-			case exec.Running:
-				runMsg = append(runMsg, msg)
-				output = []string{"The step is running"}
-			case exec.Paused:
-				pausedMsg = append(pausedMsg, msg)
-				output = []string{"The step is paused"}
-			case exec.Pending:
-				pendingMsg = append(pendingMsg, msg)
-			default:
-				logx.Debugln("unknown state", v.State)
-			}
-		}
-
-		if output == nil {
-			output = []string{v.Message}
-		}
-		_res := types.TaskDetailRes{
-			Name:           v.Name,
-			State:          v.State,
-			Code:           v.Code,
-			Manager:        fmt.Sprintf("%s/step/%s", uriPrefix, v.Name),
-			Workspace:      fmt.Sprintf("%s/workspace", uriPrefix),
-			Message:        strings.Join(output, "\n"),
-			EnvVars:        v.EnvVars,
-			Timeout:        v.Timeout.String(),
-			DependsOn:      v.DependsOn,
-			CommandType:    v.CommandType,
-			CommandContent: v.CommandContent,
-			Times: &types.StrTimes{
-				ST: utils.TimeStr(v.Times.ST),
-				ET: utils.TimeStr(v.Times.ET),
-			},
-		}
-		res = append(res, _res)
+	for _, v := range steps {
+		groups[*v.State] = append(groups[*v.State], v.Name)
+		res = append(res, procStep(uriPrefix, v))
 	}
 
-	switch taskState.State {
-	// 运行结束
-	case exec.Stop:
-		if exitCode != 0 {
-			return res, fmt.Errorf("[%s]", strings.Join(stopMsg, "; ")), base.CodeExecErr
-		}
-		return res, nil, base.CodeSuccess
-	// 运行中, 排队中
-	case exec.Running:
-		var err error
-		if runMsg != nil && pausedMsg != nil {
-			err = fmt.Errorf("currently executing: [%s]; paused:[%s]", strings.Join(runMsg, "; "), strings.Join(pausedMsg, "; "))
-		} else if runMsg != nil {
-			err = fmt.Errorf("currently executing: [%s]", strings.Join(runMsg, "; "))
-		} else if pausedMsg != nil {
-			err = fmt.Errorf("paused:[%s]", strings.Join(pausedMsg, "; "))
-		}
-		return res, err, base.CodeRunning
-	case exec.Pending:
-		return res, nil, base.CodePending
-	case exec.Paused:
-		return res, nil, base.CodePaused
-	case exec.SystemErr:
-		return res, fmt.Errorf(taskState.Message), base.CodeExecErr
+	var keys []int
+	for k := range groups {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, key := range keys {
+		task.Message = fmt.Sprintf("%s; %s: [%s]", task.Message, models.StateMap[key], strings.Join(groups[key], ","))
+	}
+	var code int
+	switch *task.State {
+	case models.Stop:
+		code = base.CodeSuccess
+	case models.Running:
+		code = base.CodeRunning
+	case models.Pending:
+		code = base.CodePending
+	case models.Paused:
+		code = base.CodePaused
+	case models.Failed:
+		code = base.CodeFailed
 	default:
-		return nil, errors.New("task does not exist"), base.CodeErrNoData
+		code = base.CodeNoData
 	}
+	return res, fmt.Errorf(task.Message), code
+}
+
+func procStep(uriPrefix string, step *models.Step) types.StepRes {
+	res := types.StepRes{
+		Name:      step.Name,
+		State:     models.StateMap[*step.State],
+		Code:      *step.Code,
+		Manager:   fmt.Sprintf("%s/step/%s", uriPrefix, step.Name),
+		Workspace: fmt.Sprintf("%s/workspace", uriPrefix),
+		Timeout:   step.Timeout.String(),
+		Env:       make(map[string]string),
+		Type:      step.Type,
+		Content:   step.Content,
+		Time: &types.Time{
+			ST: step.STime.Format(time.RFC3339),
+			ET: step.ETime.Format(time.RFC3339),
+		},
+	}
+
+	res.Depends = storage.Task(step.TaskName).Step(step.Name).Depend().List()
+	envs := storage.Task(step.TaskName).Step(step.Name).Env().List(-1, 0)
+	for _, env := range envs {
+		res.Env[env.Name] = env.Value
+	}
+
+	var output []string
+	if *step.State == models.Stop || *step.State == models.Failed {
+		logs := storage.Task(step.TaskName).Step(step.Name).Log().List(-1, 0)
+		for _, o := range logs {
+			if o.Content == worker.ConsoleStart || o.Content == worker.ConsoleDone {
+				continue
+			}
+			output = append(output, o.Content)
+		}
+	}
+
+	if output == nil {
+		output = []string{step.Message}
+	}
+	res.Message = strings.Join(output, "\n")
+	return res
 }

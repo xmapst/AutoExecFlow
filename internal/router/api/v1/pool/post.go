@@ -31,11 +31,11 @@ func Post(c *gin.Context) {
 	var req types.Pool
 	if err := c.ShouldBind(&req); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 	if (worker.Running() != 0 || worker.Waiting() != 0) && req.Size <= worker.GetSize() {
-		render.SetError(base.CodeExecErr, errors.New("there are still tasks running, scaling down is not allowed"))
+		render.SetError(base.CodeFailed, errors.New("there are still tasks running, scaling down is not allowed"))
 		return
 	}
 	worker.SetSize(req.Size)

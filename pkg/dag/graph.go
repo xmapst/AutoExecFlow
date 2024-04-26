@@ -229,7 +229,7 @@ func (g *Graph) Run(ctx context.Context) error {
 		remove(fmt.Sprintf(graphPrefix, g.Name()))
 	}()
 
-	var chError = make(chan error)
+	var chError = make(chan error, 1)
 	var errs []error
 	go func() {
 		for err := range chError {

@@ -19,26 +19,10 @@ var (
 )
 
 const (
-	// Stop 0, Running 1, Pending 2, Paused 3
-	Stop int64 = iota
-	Running
-	Pending
-	Paused
-
-	Killed    = -997
-	Timeout   = -998
-	SystemErr = -999
+	Killed    int64 = -997
+	Timeout   int64 = -998
+	SystemErr int64 = -999
 )
-
-var StateMap = map[int64]string{
-	SystemErr: "System Error",
-	Killed:    "Killed",
-	Timeout:   "Timeout",
-	Stop:      "Stop",
-	Running:   "Running",
-	Pending:   "Pending",
-	Paused:    "Paused",
-}
 
 type Cmd struct {
 	ops        cmd.Options
@@ -174,7 +158,7 @@ func (c *Cmd) consoleOutput() {
 
 func last(slice []string) string {
 	if len(slice) > 0 {
-		return slice[len(slice)-1]
+		return ";" + slice[len(slice)-1]
 	}
 	return ""
 }

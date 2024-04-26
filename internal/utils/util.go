@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 func FileOrPathExist(filename string) bool {
@@ -38,13 +37,6 @@ func SliceToStrMap(s []string) map[string]string {
 func ClearDir(path string) {
 	_ = os.RemoveAll(path)
 	_ = EnsureDirExist(path)
-}
-
-func TimeStr(nsec int64) string {
-	if nsec == 0 {
-		return ""
-	}
-	return time.Unix(0, nsec).Format(time.RFC3339)
 }
 
 func PathEscape(s string) string {

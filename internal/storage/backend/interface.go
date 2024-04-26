@@ -1,38 +1,82 @@
 package backend
 
 import (
-	"errors"
-	"time"
-
-	"github.com/xmapst/osreapi/internal/storage/types"
+	"github.com/xmapst/osreapi/internal/storage/models"
 )
 
-type ITaskCache interface {
-	TaskList(prefix string) (res types.TaskStates, err error)
-	TaskDetail(task string) (res *types.TaskState, err error)
-	TaskStepList(task string) (res types.TaskStepStates, err error)
-	TaskStepDetail(task, step string) (res *types.TaskStepState, err error)
-	TaskStepLogList(task, step string) (res types.TaskStepLogs, err error)
-	SetTask(task string, val *types.TaskState) error
-	SetTaskStep(task, step string, val *types.TaskStepState) error
-	SetTaskStepLog(task, step string, line int64, val *types.TaskStepLog) error
-	Close() (err error)
+const All = ""
+
+type IStorage interface {
 	Name() string
+	Close() (err error)
+
+	Task(name string) ITask
+	// TaskList 获取所有任务,支持分页
+	TaskList(str string, page, limit int) (res []*models.Task)
 }
 
-type Value struct {
-	TTL   time.Duration
-	Value []byte
+type IBase interface {
+	// ClearAll 清理
+	ClearAll()
+
+	// Delete 删除
+	Delete() (err error)
+	// GetState 获取状态
+	GetState() (state int, err error)
+
+	// Env 环境变量接口
+	Env() IEnv
 }
 
-func SafeCopy(des, src []byte) []byte {
-	if len(des) < len(src) {
-		des = make([]byte, len(src))
-	} else {
-		des = des[:len(src)]
-	}
-	copy(des, src)
-	return des
+type ITask interface {
+	IBase
+
+	// Get 根据名称获取指定任务
+	Get() (res *models.Task, err error)
+	// Create 插入
+	Create(task *models.Task) (err error)
+	// Update 更新
+	Update(value *models.TaskUpdate) (err error)
+
+	// Step 步骤接口
+	Step(name string) IStep
+	// StepList 获取任务下所有步骤,支持分页
+	StepList(str string, page, limit int) (res []*models.Step)
 }
 
-var ErrNotExist = errors.New("does not exist")
+type IStep interface {
+	IBase
+
+	// Get 根据名称获取指定步骤
+	Get() (res *models.Step, err error)
+	// Create 插入
+	Create(step *models.Step) (err error)
+	// Update 更新
+	Update(value *models.StepUpdate) (err error)
+
+	// Depend 依赖接口
+	Depend() IDepend
+	// Log 日志接口
+	Log() ILog
+}
+
+type ILog interface {
+	// List 获取指定任务指定步骤所有日志,支持分页
+	List(page, limit int) (res []*models.Log)
+	// Create 插入
+	Create(log *models.Log) (err error)
+}
+
+type IEnv interface {
+	List(page, limit int) (res []*models.Env)
+	Create(env []*models.Env) (err error)
+	Get(name string) (string, error)
+	Delete(name string) (err error)
+	DeleteAll() (err error)
+}
+
+type IDepend interface {
+	List() (res []string)
+	Create(depends []string) (err error)
+	DeleteAll() (err error)
+}

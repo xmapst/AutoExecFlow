@@ -14,8 +14,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "github.com/xmapst/osreapi/internal/docs"
-	"github.com/xmapst/osreapi/internal/router/api"
 	"github.com/xmapst/osreapi/internal/router/api/v1/pool"
+	"github.com/xmapst/osreapi/internal/router/api/v1/sys"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/step"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/workspace"
@@ -85,15 +85,15 @@ func New(maxRequests int64) *gin.Engine {
 		// worker pool
 		apiGroup.GET("/v1/pool", pool.Detail)
 		apiGroup.POST("/v1/pool", pool.Post)
+
+		// pty
+		apiGroup.GET("/v1/pty", sys.PtyWs)
 	}
 	// V2
 	{
 		// task
 		apiGroup.POST("/v2/task", taskv2.Post)
 	}
-
-	// pty
-	router.GET("/api/pty", api.PtyWs)
 
 	// endpoints
 	router.Any("/api/endpoints", func(c *gin.Context) {
@@ -115,13 +115,13 @@ func New(maxRequests int64) *gin.Engine {
 	// no method
 	router.NoMethod(func(c *gin.Context) {
 		render := base.Gin{Context: c}
-		render.SetError(base.CodeErrNoData, errors.New("method not allowed"))
+		render.SetError(base.CodeNoData, errors.New("method not allowed"))
 	})
 
 	// no route
 	router.NoRoute(func(c *gin.Context) {
 		render := base.Gin{Context: c}
-		render.SetError(base.CodeErrNoData, errors.New("the requested path does not exist"))
+		render.SetError(base.CodeNoData, errors.New("the requested path does not exist"))
 	})
 	return router
 }

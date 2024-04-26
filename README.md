@@ -17,10 +17,10 @@
 - [x] 任务级的Workspace隔离
 - [x] 任务Workspace的浏览与文件上传及下载
 - [x] 自更新
+- [x] WebShell
 - [ ] 延时任务
 - [ ] 任务或步骤执行前/后发送事件
 - [ ] 任务或步骤插件实现
-- [ ] WebShell
 
 ## Help
 ```text
@@ -126,44 +126,44 @@ make
 
 ```shell
 # url参数支持
-id: 自定义任务名称
+name: 自定义任务名称
 timeout: 任务超时时间
-env_vars: 任务全局环境变量注入
+env: 任务全局环境变量注入
 async: 并发执行或自定义编排
 
 # 默认按顺序执行
 curl -X POST -H "Content-Type:application/json" -d '[
   {
-    "command_type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
-    "command_content": "env", # 脚本内容
-    "env_vars": [ # 环境变量注入
-      "TEST_SITE=www.google.com"
-    ]
+    "type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
+    "content": "env", # 脚本内容
+    "env": { # 环境变量注入
+      "TEST_SITE": "www.google.com"
+    }
   },
   {
-    "command_type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
-    "command_content": "curl ${TEST_SITE}", # 脚本内容
-    "env_vars": [ # 环境变量注入
-      "TEST_SITE=www.baidu.com"
-    ]
+    "type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
+    "content": "curl ${TEST_SITE}", # 脚本内容
+    "env": { # 环境变量注入
+      "TEST_SITE": "www.baidu.com"
+    }
   }
 ]' 'http://localhost:2376/api/v1/task' 
 
 # 并发执行
 curl -X POST -H "Content-Type:application/json" -d '[
   {
-    "command_type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
-    "command_content": "env", # 脚本内容
-    "env_vars": [ # 环境变量注入
-      "TEST_SITE=www.google.com"
-    ]
+    "type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
+    "content": "env", # 脚本内容
+    "env": { # 环境变量注入
+      "TEST_SITE": "www.google.com"
+    }
   },
   {
-    "command_type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
-    "command_content": "curl ${TEST_SITE}", # 脚本内容
-    "env_vars": [ # 环境变量注入
-      "TEST_SITE=www.baidu.com"
-    ]
+    "type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
+    "content": "curl ${TEST_SITE}", # 脚本内容
+    "env": { # 环境变量注入
+      "TEST_SITE": "www.baidu.com"
+    }
   }
 ]' 'http://localhost:2376/api/v1/task?async=true'
 
@@ -171,20 +171,20 @@ curl -X POST -H "Content-Type:application/json" -d '[
 curl -X POST -H "Content-Type:application/json" -d '[
   {
     "name": "step0",
-    "command_type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
-    "command_content": "env", # 脚本内容
-    "env_vars": [ # 环境变量注入
-      "TEST_SITE=www.google.com"
-    ]
+    "type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
+    "content": "env", # 脚本内容
+    "env": { # 环境变量注入
+      "TEST_SITE": "www.google.com"
+    }
   },
   {
     "name": "step1",
-    "command_type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
-    "command_content": "curl ${TEST_SITE}", # 脚本内容
-    "env_vars": [ # 环境变量注入
-      "TEST_SITE=www.baidu.com"
-    ],
-    "depends_on": [
+    "type": "bash", # 支持[python2,python3,bash,sh,cmd,powershell]
+    "content": "curl ${TEST_SITE}", # 脚本内容
+    "env": { # 环境变量注入
+      "TEST_SITE": "www.baidu.com"
+    },
+    "depends": [
       "step1"
     ]
   }
@@ -194,11 +194,8 @@ curl -X POST -H "Content-Type:application/json" -d '[
 ### 获取任务列表
 
 ```shell
-# 默认按开始执行时间排序
+# 按开始执行时间排序
 curl -X GET -H "Content-Type:application/json" 'http://localhost:2376/api/v1/task'
-
-# 按完成时间排序
-curl -X GET -H "Content-Type:application/json"'http://localhost:2376/api/v1/task?sort=et'
 ```
 
 ### 获取任务详情
@@ -255,17 +252,9 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
 [注释]  
 + code:  
   - 0: success
-  - 1001: in progress
-  - 1002: execution failed
-  - 1003: data not found or destroyed
+  - 1001: running
+  - 1002: failed
+  - 1003: not found
   - 1004: pending
   - 1005: paused
-+ state:
-  - 0: stop
-  - 1: running
-  - 2: pending
-  - 3: paused
-  - -997: killed
-  - -998: timeout
-  - -999: system error
 

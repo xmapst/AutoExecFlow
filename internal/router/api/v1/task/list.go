@@ -1,8 +1,8 @@
 package task
 
 import (
-	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -12,9 +12,7 @@ import (
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
-	"github.com/xmapst/osreapi/internal/storage/backend"
-	"github.com/xmapst/osreapi/internal/utils"
-	"github.com/xmapst/osreapi/pkg/exec"
+	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
@@ -45,11 +43,7 @@ func List(c *gin.Context) {
 		}
 	}
 	if ws == nil {
-		res, err := list(c)
-		if err != nil && !errors.Is(err, backend.ErrNotExist) {
-			logx.Errorln(err)
-		}
-		render.SetRes(res)
+		render.SetRes(list(c))
 		return
 	}
 	// websocket 方式
@@ -60,18 +54,7 @@ func List(c *gin.Context) {
 	// 使用websocket方式
 	var ticker = time.NewTicker(1 * time.Second)
 	for range ticker.C {
-		res, err := list(c)
-		if err != nil {
-			if !errors.Is(err, backend.ErrNotExist) {
-				logx.Errorln(err)
-			}
-			err = ws.WriteJSON(base.NewRes(res, err, base.CodeSuccess))
-			if err != nil {
-				logx.Errorln(err)
-			}
-			return
-		}
-		err = ws.WriteJSON(base.NewRes(res, nil, base.CodeSuccess))
+		err := ws.WriteJSON(base.NewRes(list(c), nil, base.CodeSuccess))
 		if err != nil {
 			logx.Errorln(err)
 			return
@@ -80,95 +63,64 @@ func List(c *gin.Context) {
 }
 
 // 每次获取全量数据
-func list(c *gin.Context) (*types.TaskListRes, error) {
-	tasksStates, err := storage.TaskList()
-	if err != nil || len(tasksStates) == 0 {
-		return nil, err
+func list(c *gin.Context) *types.TaskListRes {
+	tasks := storage.TaskList("", -1, 0)
+	if tasks == nil {
+		return nil
 	}
 	var res = &types.TaskListRes{
-		Total: len(tasksStates),
+		Total: len(tasks),
 	}
 	var scheme = "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
 	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
-	for _, v := range tasksStates {
-		_res := &types.TaskList{
-			Name:      v.Name,
-			State:     v.State,
-			Manager:   fmt.Sprintf("%s/%s", uriPrefix, v.Name),
-			Workspace: fmt.Sprintf("%s/%s/workspace", uriPrefix, v.Name),
-			EnvVars:   v.EnvVars,
-			Timeout:   v.Timeout.String(),
-			Count:     v.Count,
-			Times: types.StrTimes{
-				ST: utils.TimeStr(v.Times.ST),
-				ET: utils.TimeStr(v.Times.ET),
-			},
-		}
-		if v.State == exec.SystemErr {
-			_res.Code = exec.SystemErr
-			_res.Message = v.Message
-		} else {
-			tasksStepStates, err := storage.TaskStepList(v.Name)
-			if err != nil {
-				logx.Errorln(err)
-				continue
-			}
-			var running, paused, pending, errorStateMsg []string
-			var code int64
-			for _, vv := range tasksStepStates {
-				var state = fmt.Sprintf("Step: %s", vv.Name)
-				if vv.State == exec.Running {
-					running = append(running, state)
-				}
-				if vv.State == exec.Paused {
-					paused = append(paused, state)
-				}
-				if vv.State == exec.Pending {
-					pending = append(pending, state)
-				}
-				if vv.Code != 0 {
-					errorStateMsg = append(errorStateMsg, state)
-				}
-				code += vv.Code
-			}
-			_res.Code = code
-			switch {
-			case v.State == exec.Stop || v.State == exec.Killed || v.State == exec.Timeout || v.State == exec.SystemErr:
-				_res.Message = fmt.Sprintf("execution failed: [%s]", strings.Join(errorStateMsg, "; "))
-				if _res.Code == 0 {
-					_res.Message = "all steps executed successfully"
-				}
-			case v.State == exec.Running:
-				if running != nil {
-					_res.Message = fmt.Sprintf(
-						"currently executing: [%s] ",
-						strings.Join(running, "; "),
-					)
-				}
-				if paused != nil {
-					_res.Message += fmt.Sprintf(
-						"paused:[%s]",
-						strings.Join(paused, "; "),
-					)
-				}
-				if pending != nil {
-					_res.Message += fmt.Sprintf(
-						"pending:[%s]",
-						strings.Join(pending, "; "),
-					)
-				}
-			case v.State == exec.Paused:
-				_res.Message = "task is paused"
-			default:
-				if v.Message != "" {
-					_res.Message = v.Message
-				}
-			}
-		}
-		res.Tasks = append(res.Tasks, _res)
+	for _, task := range tasks {
+		res.Tasks = append(res.Tasks, procTask(uriPrefix, task))
 	}
-	return res, nil
+	return res
+}
+
+func procTask(uriPrefix string, task *models.Task) *types.TaskRes {
+	res := &types.TaskRes{
+		Name:      task.Name,
+		State:     models.StateMap[*task.State],
+		Manager:   fmt.Sprintf("%s/%s", uriPrefix, task.Name),
+		Workspace: fmt.Sprintf("%s/%s/workspace", uriPrefix, task.Name),
+		Message:   task.Message,
+		Env:       make(map[string]string),
+		Timeout:   task.Timeout.String(),
+		Count:     *task.Count,
+		Time: &types.Time{
+			ST: task.STime.Format(time.RFC3339),
+			ET: task.ETime.Format(time.RFC3339),
+		},
+	}
+
+	// 获取任务级所有环境变量
+	envs := storage.Task(task.Name).Env().List(-1, 0)
+	for _, env := range envs {
+		res.Env[env.Name] = env.Value
+	}
+
+	// 获取当前进行到那些步骤
+	steps := storage.Task(task.Name).StepList("", -1, 0)
+	if steps == nil {
+		return res
+	}
+
+	var groups = make(map[int][]string)
+	for _, vv := range steps {
+		groups[*vv.State] = append(groups[*vv.State], vv.Name)
+	}
+	var keys []int
+	for k := range groups {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, key := range keys {
+		res.Message = fmt.Sprintf("%s; %s: [%s]", res.Message, models.StateMap[key], strings.Join(groups[key], ","))
+	}
+	return res
 }

@@ -11,19 +11,6 @@ definitions:
       timestamp:
         type: integer
     type: object
-  types.Notify:
-    properties:
-      action:
-        description: or after
-        example: before
-        type: string
-      type:
-        example: webhook
-        type: string
-    required:
-    - action
-    - type
-    type: object
   types.Pool:
     properties:
       running:
@@ -41,18 +28,30 @@ definitions:
   types.Step:
     properties:
       command_content:
+        description: Deprecated, use Content
         example: sleep 10
         type: string
       command_type:
+        description: Deprecated, use Type
         example: powershell
         type: string
-      depends_on:
+      content:
+        example: sleep 10
+        type: string
+      depends:
         example:
         - ""
         items:
           type: string
         type: array
+      env:
+        additionalProperties:
+          type: string
+        example:
+          key: value;key1:value1
+        type: object
       env_vars:
+        description: Deprecated, use Env
         example:
         - env1=value1
         - env2=value2
@@ -62,23 +61,26 @@ definitions:
       name:
         example: script.ps1
         type: string
-      notify:
-        items:
-          $ref: '#/definitions/types.Notify'
-        type: array
       timeout:
         example: 3m
         type: string
-    required:
-    - command_content
-    - command_type
+      type:
+        example: powershell
+        type: string
     type: object
   types.Task:
     properties:
       async:
         example: false
         type: boolean
+      env:
+        additionalProperties:
+          type: string
+        example:
+          key: value;key1:value1
+        type: object
       env_vars:
+        description: Deprecated, use Env
         example:
         - ""
         items:
@@ -87,10 +89,6 @@ definitions:
       name:
         example: ""
         type: string
-      notify:
-        items:
-          $ref: '#/definitions/types.Notify'
-        type: array
       step:
         items:
           $ref: '#/definitions/types.Step'
@@ -133,7 +131,7 @@ paths:
             $ref: '#/definitions/types.BaseRes'
       summary: terminal
       tags:
-      - Pool
+      - System
   /api/v1/pool:
     get:
       consumes:

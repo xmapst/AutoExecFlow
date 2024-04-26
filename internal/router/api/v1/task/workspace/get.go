@@ -38,38 +38,38 @@ func Get(c *gin.Context) {
 	render := base.Gin{Context: c}
 	task := c.Param("task")
 	if task == "" {
-		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
+		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
 	}
 	prefix := filepath.Join(config.App.WorkSpace, task)
 	if !utils.FileOrPathExist(prefix) {
-		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
+		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
 	}
 	path := filepath.Join(prefix, utils.PathEscape(c.Query("path")))
 	file, err := os.Open(path)
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeErrNoData, err)
+		render.SetError(base.CodeNoData, err)
 		return
 	}
 	fileInfo, err := file.Stat()
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeErrNoData, err)
+		render.SetError(base.CodeNoData, err)
 		return
 	}
 	if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
 		finalPath, err := filepath.EvalSymlinks(path)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeErrNoData, err)
+			render.SetError(base.CodeNoData, err)
 			return
 		}
 		fileInfo, err = os.Lstat(finalPath)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeErrNoData, err)
+			render.SetError(base.CodeNoData, err)
 			return
 		}
 	}
@@ -87,7 +87,7 @@ func Get(c *gin.Context) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeErrNoData, err)
+		render.SetError(base.CodeNoData, err)
 		return
 	}
 	var scheme = "http"

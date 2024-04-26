@@ -115,7 +115,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 			code = SystemErr
 		}
 		if err == nil && code != 0 {
-			err = fmt.Errorf("%s", last(c.stderrBuf.Lines()))
+			err = fmt.Errorf("exit code %d%s", code, last(c.stderrBuf.Lines()))
 		}
 		if err != nil {
 			c.logger.Errorln(c.scriptName, err)

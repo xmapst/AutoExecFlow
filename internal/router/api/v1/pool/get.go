@@ -34,7 +34,7 @@ func Detail(c *gin.Context) {
 		ws, err = base.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeErrNoData, err)
+			render.SetError(base.CodeNoData, err)
 			return
 		}
 	}

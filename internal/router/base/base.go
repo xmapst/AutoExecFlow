@@ -14,19 +14,19 @@ import (
 const (
 	CodeSuccess = 0
 	CodeRunning = iota + 1000
-	CodeExecErr
-	CodeErrNoData
+	CodeFailed
+	CodeNoData
 	CodePending
 	CodePaused
 )
 
 var MsgFlags = map[int]string{
-	CodeRunning:   "running",
-	CodeExecErr:   "exec error",
-	CodeErrNoData: "no data",
-	CodePending:   "pending",
-	CodePaused:    "paused",
-	CodeSuccess:   "success",
+	CodeSuccess: "success",
+	CodeRunning: "running",
+	CodeFailed:  "failed",
+	CodeNoData:  "no data",
+	CodePending: "pending",
+	CodePaused:  "paused",
 }
 
 // GetMsg get error information based on Code
@@ -35,7 +35,7 @@ func GetMsg(code int) string {
 	if ok {
 		return msg
 	}
-	return MsgFlags[CodeErrNoData]
+	return MsgFlags[CodeNoData]
 }
 
 type Gin struct {

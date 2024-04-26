@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -46,6 +47,13 @@ func New() *Program {
 
 func (p *Program) init() error {
 	if err := config.App.Init(); err != nil {
+		logx.Errorln(err)
+		return err
+	}
+
+	if _, err := p.cron.AddFunc("@every 3m", func() {
+		debug.FreeOSMemory()
+	}); err != nil {
 		logx.Errorln(err)
 		return err
 	}
@@ -182,11 +190,13 @@ func (p *Program) Stop(service.Service) error {
 		logx.Infoln("wait for workers to converge")
 		worker.StopWait()
 	}
+	p.cron.Stop()
+	time.Sleep(1 * time.Second)
 	logx.Infoln("put data to disk and close data storage")
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)
 	}
-	p.cron.Stop()
 	logx.CloseLogger()
+	time.Sleep(1 * time.Second)
 	return nil
 }

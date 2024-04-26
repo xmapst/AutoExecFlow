@@ -1,14 +1,11 @@
 package router
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/xmapst/osreapi/internal/worker"
-	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 var taskMetrics = &Metrics{
@@ -50,13 +47,11 @@ func (m *Metrics) Collect(ch chan<- prometheus.Metric) {
 	)
 }
 
+func init() {
+	prometheus.MustRegister(taskMetrics)
+}
+
 func metrics(c *gin.Context) {
-	reg := prometheus.NewRegistry()
-	reg.MustRegister(taskMetrics)
-	h := promhttp.HandlerFor(reg, promhttp.HandlerOpts{
-		ErrorLog:      logx.GetSubLogger(),      // If an error occurs during the collection process, record the log
-		ErrorHandling: promhttp.ContinueOnError, // If an error occurs during the collection process, continue to collect other data without interrupting the work of the collector
-		Timeout:       60 * time.Second,         // Timeout
-	})
+	h := promhttp.Handler()
 	h.ServeHTTP(c.Writer, c.Request)
 }

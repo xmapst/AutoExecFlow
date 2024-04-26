@@ -37,7 +37,7 @@ const docTemplate = `{
                     "application/toml"
                 ],
                 "tags": [
-                    "Pool"
+                    "System"
                 ],
                 "summary": "terminal",
                 "responses": {
@@ -675,24 +675,6 @@ const docTemplate = `{
                 }
             }
         },
-        "types.Notify": {
-            "type": "object",
-            "required": [
-                "action",
-                "type"
-            ],
-            "properties": {
-                "action": {
-                    "description": "or after",
-                    "type": "string",
-                    "example": "before"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "webhook"
-                }
-            }
-        },
         "types.Pool": {
             "type": "object",
             "required": [
@@ -716,20 +698,22 @@ const docTemplate = `{
         },
         "types.Step": {
             "type": "object",
-            "required": [
-                "command_content",
-                "command_type"
-            ],
             "properties": {
                 "command_content": {
+                    "description": "Deprecated, use Content",
                     "type": "string",
                     "example": "sleep 10"
                 },
                 "command_type": {
+                    "description": "Deprecated, use Type",
                     "type": "string",
                     "example": "powershell"
                 },
-                "depends_on": {
+                "content": {
+                    "type": "string",
+                    "example": "sleep 10"
+                },
+                "depends": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -738,7 +722,17 @@ const docTemplate = `{
                         ""
                     ]
                 },
+                "env": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "key": "value;key1:value1"
+                    }
+                },
                 "env_vars": {
+                    "description": "Deprecated, use Env",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -752,15 +746,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "script.ps1"
                 },
-                "notify": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.Notify"
-                    }
-                },
                 "timeout": {
                     "type": "string",
                     "example": "3m"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "powershell"
                 }
             }
         },
@@ -771,7 +763,17 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "env": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "key": "value;key1:value1"
+                    }
+                },
                 "env_vars": {
+                    "description": "Deprecated, use Env",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -783,12 +785,6 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": ""
-                },
-                "notify": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.Notify"
-                    }
                 },
                 "step": {
                     "type": "array",

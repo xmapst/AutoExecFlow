@@ -7,8 +7,8 @@ import (
 
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/storage"
+	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/dag"
-	"github.com/xmapst/osreapi/pkg/exec"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
@@ -32,57 +32,66 @@ import (
 // @Router /api/v1/task/{task}/step/{step} [put]
 func Manager(c *gin.Context) {
 	render := base.Gin{Context: c}
-	task := c.Param("task")
-	if task == "" {
-		render.SetError(base.CodeErrNoData, errors.New("task does not exist"))
+	taskName := c.Param("task")
+	if taskName == "" {
+		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
 	}
-	step := c.Param("step")
-	if step == "" {
-		render.SetError(base.CodeErrNoData, errors.New("step does not exist"))
+	stepName := c.Param("step")
+	if stepName == "" {
+		render.SetError(base.CodeNoData, errors.New("step does not exist"))
 		return
 	}
 	action := c.DefaultQuery("action", "paused")
 	duration := c.Query("duration")
-	manager, err := dag.VertexManager(task, step)
+	manager, err := dag.VertexManager(taskName, stepName)
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeErrNoData, err)
+		render.SetError(base.CodeNoData, err)
 		return
 	}
-	stepDetail, err := storage.TaskStepDetail(task, step)
+	step, err := storage.Task(taskName).Step(stepName).Get()
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeErrNoData, err)
+		render.SetError(base.CodeNoData, err)
 		return
 	}
 	switch action {
 	case "kill":
 		err = manager.Kill()
 		if err == nil {
-			stepDetail.State = exec.Killed
-			err = storage.SetTaskStep(task, step, stepDetail)
+			err = storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
+				State:    models.Pointer(models.Failed),
+				OldState: step.State,
+				Message:  "has been killed",
+			})
 		}
 	case "pause":
-		if stepDetail.State == exec.Running {
-			render.SetError(base.CodeExecErr, dag.ErrRunning)
+		if *step.State == models.Running {
+			render.SetError(base.CodeFailed, dag.ErrRunning)
 			return
 		}
 		if !manager.Paused() {
 			_ = manager.Pause(duration)
-			stepDetail.State = exec.Paused
-			err = storage.SetTaskStep(task, step, stepDetail)
+			err = storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
+				State:    models.Pointer(models.Paused),
+				OldState: step.State,
+				Message:  "has been paused",
+			})
 		}
 	case "resume":
 		if manager.Paused() {
 			manager.Resume()
-			stepDetail.State = exec.Pending
-			err = storage.SetTaskStep(task, step, stepDetail)
+			err = storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
+				State:    step.OldState,
+				OldState: step.State,
+				Message:  "has been resumed",
+			})
 		}
 	}
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeExecErr, err)
+		render.SetError(base.CodeFailed, err)
 		return
 	}
 	render.SetRes(nil)
