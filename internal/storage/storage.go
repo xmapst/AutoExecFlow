@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/xmapst/osreapi/internal/storage/backend"
+	"github.com/xmapst/osreapi/internal/storage/backend/bbolt"
 	"github.com/xmapst/osreapi/internal/storage/backend/sqlite"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/logx"
@@ -11,6 +12,8 @@ var db backend.IStorage
 
 func New(t, d string) (err error) {
 	switch t {
+	case "bbolt":
+		db, err = bbolt.New(d)
 	default:
 		db, err = sqlite.New(d)
 	}
