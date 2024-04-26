@@ -20,7 +20,7 @@ type Sqlite struct {
 	*gorm.DB
 }
 
-func New(path string) (*Sqlite, error) {
+func New(path string) (backend.IStorage, error) {
 	option := "?cache=shared&mode=rwc&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
 	dialector := sqlite.Open(filepath.Join(path, "osreapi.db3"+option))
 	gdb, err := gorm.Open(dialector, &gorm.Config{
