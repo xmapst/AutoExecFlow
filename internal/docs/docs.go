@@ -666,7 +666,7 @@ const docTemplate = `{
                     "example": 255
                 },
                 "data": {},
-                "message": {
+                "msg": {
                     "type": "string",
                     "example": "message"
                 },
