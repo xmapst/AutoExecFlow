@@ -98,12 +98,12 @@ func (s *Sqlite) Task(name string) backend.ITask {
 	}
 }
 
-func (s *Sqlite) TaskList(str string, page, limit int) (res []*models.Task) {
+func (s *Sqlite) TaskList(str string) (res []*models.Task) {
 	if str != "" {
-		s.Model(&tables.Task{}).Where("name LIKE ?", "%s"+str+"%").Order("s_time DESC, id DESC").Scopes(paginate(page, limit)).Find(&res)
+		s.Model(&tables.Task{}).Where("name LIKE ?", "%s"+str+"%").Order("s_time DESC, id DESC").Find(&res)
 		return
 	}
-	s.Model(&tables.Task{}).Order("s_time DESC, id DESC").Scopes(paginate(page, limit)).Find(&res)
+	s.Model(&tables.Task{}).Order("s_time DESC, id DESC").Find(&res)
 	return
 }
 
@@ -120,24 +120,5 @@ func (s *Sqlite) Log(taskName string, stepName string) backend.ILog {
 		db:       s.DB,
 		taskName: taskName,
 		stepName: stepName,
-	}
-}
-
-func paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		if page < 0 {
-			return db
-		}
-		if page == 0 {
-			page = 1
-		}
-		switch {
-		case pageSize > 100:
-			pageSize = 100
-		case pageSize <= 0:
-			pageSize = 10
-		}
-		offset := (page - 1) * pageSize
-		return db.Offset(offset).Limit(pageSize)
 	}
 }

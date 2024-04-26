@@ -117,8 +117,8 @@ type stepEnv struct {
 	stepName string
 }
 
-func (s *stepEnv) List(page, limit int) (res []*models.Env) {
-	s.db.Model(&tables.StepEnv{}).Where("task_name = ? AND step_name = ?", s.taskName, s.stepName).Scopes(paginate(page, limit)).Order("id ASC").Find(&res)
+func (s *stepEnv) List() (res []*models.Env) {
+	s.db.Model(&tables.StepEnv{}).Where("task_name = ? AND step_name = ?", s.taskName, s.stepName).Order("id ASC").Find(&res)
 	return
 }
 

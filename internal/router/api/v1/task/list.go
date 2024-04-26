@@ -64,7 +64,7 @@ func List(c *gin.Context) {
 
 // 每次获取全量数据
 func list(c *gin.Context) *types.TaskListRes {
-	tasks := storage.TaskList("", -1, 0)
+	tasks := storage.TaskList("")
 	if tasks == nil {
 		return nil
 	}
@@ -99,13 +99,13 @@ func procTask(uriPrefix string, task *models.Task) *types.TaskRes {
 	}
 
 	// 获取任务级所有环境变量
-	envs := storage.Task(task.Name).Env().List(-1, 0)
+	envs := storage.Task(task.Name).Env().List()
 	for _, env := range envs {
 		res.Env[env.Name] = env.Value
 	}
 
 	// 获取当前进行到那些步骤
-	steps := storage.Task(task.Name).StepList("", -1, 0)
+	steps := storage.Task(task.Name).StepList("")
 	if steps == nil {
 		return res
 	}

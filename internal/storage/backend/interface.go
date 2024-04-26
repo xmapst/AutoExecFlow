@@ -12,7 +12,7 @@ type IStorage interface {
 
 	Task(name string) ITask
 	// TaskList 获取所有任务,支持分页
-	TaskList(str string, page, limit int) (res []*models.Task)
+	TaskList(str string) (res []*models.Task)
 }
 
 type IBase interface {
@@ -41,7 +41,7 @@ type ITask interface {
 	// Step 步骤接口
 	Step(name string) IStep
 	// StepList 获取任务下所有步骤,支持分页
-	StepList(str string, page, limit int) (res []*models.Step)
+	StepList(str string) (res []*models.Step)
 }
 
 type IStep interface {
@@ -62,13 +62,13 @@ type IStep interface {
 
 type ILog interface {
 	// List 获取指定任务指定步骤所有日志,支持分页
-	List(page, limit int) (res []*models.Log)
+	List() (res []*models.Log)
 	// Create 插入
 	Create(log *models.Log) (err error)
 }
 
 type IEnv interface {
-	List(page, limit int) (res []*models.Env)
+	List() (res []*models.Env)
 	Create(env []*models.Env) (err error)
 	Get(name string) (string, error)
 	Delete(name string) (err error)

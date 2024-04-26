@@ -13,8 +13,8 @@ type log struct {
 	stepName string
 }
 
-func (l *log) List(page, limit int) (res []*models.Log) {
-	l.db.Model(&tables.Log{}).Where("task_name = ? AND step_name = ?", l.taskName, l.stepName).Order("id ASC").Scopes(paginate(page, limit)).Find(&res)
+func (l *log) List() (res []*models.Log) {
+	l.db.Model(&tables.Log{}).Where("task_name = ? AND step_name = ?", l.taskName, l.stepName).Order("id ASC").Find(&res)
 	return
 }
 

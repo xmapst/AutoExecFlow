@@ -149,11 +149,11 @@ func (s *Step) execStep(ctx context.Context, globalEnv backend.IEnv, workspace, 
 	var logCh = make(chan string, 65535)
 	// 动态获取环境变量
 	var envs = make([]string, 0)
-	taskEnv := globalEnv.List(-1, 0)
+	taskEnv := globalEnv.List()
 	for _, env := range taskEnv {
 		envs = append(envs, fmt.Sprintf("%s=%s", env.Name, env.Value))
 	}
-	stepEnv := s.Env().List(-1, 0)
+	stepEnv := s.Env().List()
 	for _, env := range stepEnv {
 		envs = append(envs, fmt.Sprintf("%s=%s", env.Name, env.Value))
 	}

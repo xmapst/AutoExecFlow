@@ -86,7 +86,7 @@ func get(c *gin.Context) ([]types.StepRes, error, int) {
 	c.Request.Header.Set(types.XTaskState, state)
 	c.Writer.Header().Set(types.XTaskState, state)
 	c.Set(types.XTaskState, state)
-	steps := storage.Task(taskName).StepList("", -1, 0)
+	steps := storage.Task(taskName).StepList("")
 	if steps == nil {
 		return nil, err, base.CodeNoData
 	}
@@ -146,14 +146,14 @@ func procStep(uriPrefix string, step *models.Step) types.StepRes {
 	}
 
 	res.Depends = storage.Task(step.TaskName).Step(step.Name).Depend().List()
-	envs := storage.Task(step.TaskName).Step(step.Name).Env().List(-1, 0)
+	envs := storage.Task(step.TaskName).Step(step.Name).Env().List()
 	for _, env := range envs {
 		res.Env[env.Name] = env.Value
 	}
 
 	var output []string
 	if *step.State == models.Stop || *step.State == models.Failed {
-		logs := storage.Task(step.TaskName).Step(step.Name).Log().List(-1, 0)
+		logs := storage.Task(step.TaskName).Step(step.Name).Log().List()
 		for _, o := range logs {
 			if o.Content == worker.ConsoleStart || o.Content == worker.ConsoleDone {
 				continue

@@ -18,7 +18,7 @@ type task struct {
 func (t *task) ClearAll() {
 	_ = t.Delete()
 	_ = t.Env().DeleteAll()
-	list := t.StepList("", -1, 0)
+	list := t.StepList("")
 	for _, v := range list {
 		t.Step(v.Name).ClearAll()
 	}
@@ -75,8 +75,8 @@ type taskEnv struct {
 	taskName string
 }
 
-func (t *taskEnv) List(page, limit int) (res []*models.Env) {
-	t.db.Model(&tables.TaskEnv{}).Where("task_name = ?", t.taskName).Scopes(paginate(page, limit)).Order("id ASC").Find(&res)
+func (t *taskEnv) List() (res []*models.Env) {
+	t.db.Model(&tables.TaskEnv{}).Where("task_name = ?", t.taskName).Order("id ASC").Find(&res)
 	return
 }
 
@@ -126,11 +126,11 @@ func (t *task) Step(name string) backend.IStep {
 	}
 }
 
-func (t *task) StepList(str string, page, limit int) (res []*models.Step) {
+func (t *task) StepList(str string) (res []*models.Step) {
 	if str != "" {
-		t.db.Model(&tables.Step{}).Where("task_name = ? AND name LIKE ?", t.name, "%s"+str+"%s").Order("id ASC").Scopes(paginate(page, limit)).Find(&res)
+		t.db.Model(&tables.Step{}).Where("task_name = ? AND name LIKE ?", t.name, "%s"+str+"%s").Order("id ASC").Find(&res)
 		return
 	}
-	t.db.Model(&tables.Step{}).Where("task_name = ?", t.name).Order("id ASC").Scopes(paginate(page, limit)).Find(&res)
+	t.db.Model(&tables.Step{}).Where("task_name = ?", t.name).Order("id ASC").Find(&res)
 	return
 }

@@ -219,7 +219,7 @@ func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
 }
 
 func getTaskStepLog(task, step string, latest *int64) (res []*types.LogRes, done bool) {
-	logs := storage.Task(task).Step(step).Log().List(-1, 0)
+	logs := storage.Task(task).Step(step).Log().List()
 	for k, v := range logs {
 		if v.Content == worker.ConsoleStart {
 			continue
