@@ -123,7 +123,7 @@ func Submit(task *Task) (err error) {
 			Message:  "waiting for dispatch",
 			State:    models.Pointer(models.Pending),
 			OldState: models.Pointer(models.Pending),
-			STime:    time.Now(),
+			STime:    models.Pointer(time.Now()),
 		},
 	}); err != nil {
 		logx.Errorln(task.Name, task.workspace, task.scriptDir, err)
@@ -171,7 +171,7 @@ func (t *Task) run(ctx context.Context) error {
 	if err := t.Update(&models.TaskUpdate{
 		State:    models.Pointer(models.Running),
 		OldState: models.Pointer(models.Pending),
-		STime:    time.Now(),
+		STime:    models.Pointer(time.Now()),
 		Message:  "task is running",
 	}); err != nil {
 		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
@@ -183,7 +183,7 @@ func (t *Task) run(ctx context.Context) error {
 		// 清理工作目录
 		t.clear()
 		// 结束时间
-		res.ETime = time.Now()
+		res.ETime = models.Pointer(time.Now())
 		res.OldState = models.Pointer(models.Running)
 		// 更新数据
 		if err := t.Update(res); err != nil {

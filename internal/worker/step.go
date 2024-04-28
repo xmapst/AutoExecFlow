@@ -98,7 +98,7 @@ func (s *Step) build(globalEnv backend.IEnv) (dag.VertexFunc, error) {
 				OldState: models.Pointer(models.Running),
 				Code:     models.Pointer(exec.SystemErr),
 				Message:  fmt.Sprint(_err),
-				ETime:    time.Now(),
+				ETime:    models.Pointer(time.Now()),
 			}); err != nil {
 				logx.Errorln(s.TaskName, s.Name, s.workspace, s.scriptDir, err)
 			}
@@ -127,7 +127,7 @@ func (s *Step) execStep(ctx context.Context, globalEnv backend.IEnv, workspace, 
 		State:    models.Pointer(models.Running),
 		OldState: models.Pointer(models.Pending),
 		Message:  "step is running",
-		STime:    time.Now(),
+		STime:    models.Pointer(time.Now()),
 	}); err != nil {
 		logx.Errorln(err)
 		return err
@@ -140,7 +140,7 @@ func (s *Step) execStep(ctx context.Context, globalEnv backend.IEnv, workspace, 
 			res.Code = models.Pointer(exec.SystemErr)
 			res.Message = fmt.Sprint(_err)
 		}
-		res.ETime = time.Now()
+		res.ETime = models.Pointer(time.Now())
 		res.OldState = models.Pointer(models.Running)
 		if _err := s.Update(res); _err != nil {
 			logx.Errorln(_err)
