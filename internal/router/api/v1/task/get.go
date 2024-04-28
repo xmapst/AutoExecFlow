@@ -140,8 +140,8 @@ func procStep(uriPrefix string, step *models.Step) types.StepRes {
 		Type:      step.Type,
 		Content:   step.Content,
 		Time: &types.Time{
-			ST: step.STime.Format(time.RFC3339),
-			ET: step.ETime.Format(time.RFC3339),
+			StartTime: step.STimeStr(),
+			EndTime:   step.ETimeStr(),
 		},
 	}
 

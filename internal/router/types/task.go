@@ -28,12 +28,12 @@ type StepRes struct {
 	Manager   string            `json:"manager" yaml:"Manager" toml:"manager"`
 	Workspace string            `json:"workspace" yaml:"Workspace" toml:"workspace"`
 	Message   string            `json:"msg" yaml:"Message" toml:"message"`
-	Timeout   string            `json:"timeout" yaml:"Timeout" toml:"timeout"`
-	Depends   []string          `json:"depends" yaml:"Depends" toml:"depends"`
-	Env       map[string]string `json:"env" yaml:"Env" toml:"env"`
-	Type      string            `json:"type" yaml:"Type" toml:"type"`
-	Content   string            `json:"content" yaml:"Content" toml:"content"`
-	Time      *Time             `json:"time" yaml:"Time" toml:"time"`
+	Timeout   string            `json:"timeout,omitempty" yaml:"Timeout,omitempty" toml:"timeout,omitempty"`
+	Depends   []string          `json:"depends,omitempty" yaml:"Depends,omitempty" toml:"depends,omitempty"`
+	Env       map[string]string `json:"env,omitempty" yaml:"Env,omitempty" toml:"env,omitempty"`
+	Type      string            `json:"type,omitempty" yaml:"Type,omitempty" toml:"type,omitempty"`
+	Content   string            `json:"content,omitempty" yaml:"Content,omitempty" toml:"content,omitempty"`
+	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
 }
 
 type TaskListRes struct {
@@ -47,15 +47,15 @@ type TaskRes struct {
 	Manager   string            `json:"manager" yaml:"Manager" toml:"manager"`
 	Workspace string            `json:"workspace" yaml:"Workspace" toml:"workspace"`
 	Message   string            `json:"msg" yaml:"Message" toml:"message"`
-	Env       map[string]string `json:"env" yaml:"Env" toml:"env"`
-	Timeout   string            `json:"timeout" yaml:"Timeout" toml:"timeout"`
 	Count     int               `json:"count" yaml:"Count" toml:"count"`
-	Time      *Time             `json:"time" yaml:"Time" toml:"time"`
+	Env       map[string]string `json:"env,omitempty" yaml:"Env,omitempty" toml:"env,omitempty"`
+	Timeout   string            `json:"timeout,omitempty" yaml:"Timeout,omitempty" toml:"timeout,omitempty"`
+	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
 }
 
 type Time struct {
-	ST string `json:"st" yaml:"ST" toml:"st"` // 开始时间
-	ET string `json:"et" yaml:"ET" toml:"et"` // 结束时间
+	StartTime string `json:"start_time,omitempty" yaml:"StartTime,omitempty" toml:"start_time,omitempty"` // 开始时间
+	EndTime   string `json:"end_time,omitempty" yaml:"EndTime,omitempty" toml:"end_time,omitempty"`       // 结束时间
 }
 
 type LogRes struct {

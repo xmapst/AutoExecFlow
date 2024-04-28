@@ -19,6 +19,20 @@ type TaskUpdate struct {
 	ETime    *time.Time `json:"e_time,omitempty" gorm:"comment:结束时间"`
 }
 
+func (t *TaskUpdate) STimeStr() string {
+	if t.STime == nil {
+		return ""
+	}
+	return t.STime.Format(time.RFC3339)
+}
+
+func (t *TaskUpdate) ETimeStr() string {
+	if t.ETime == nil {
+		return ""
+	}
+	return t.ETime.Format(time.RFC3339)
+}
+
 type TaskEnv struct {
 	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
 	Env

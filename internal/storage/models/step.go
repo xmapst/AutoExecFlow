@@ -22,6 +22,20 @@ type StepUpdate struct {
 	ETime    *time.Time `json:"e_time,omitempty" gorm:"comment:结束时间"`
 }
 
+func (s *StepUpdate) STimeStr() string {
+	if s.STime == nil {
+		return ""
+	}
+	return s.STime.Format(time.RFC3339)
+}
+
+func (s *StepUpdate) ETimeStr() string {
+	if s.ETime == nil {
+		return ""
+	}
+	return s.ETime.Format(time.RFC3339)
+}
+
 type StepEnv struct {
 	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`
