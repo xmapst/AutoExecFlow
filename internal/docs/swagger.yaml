@@ -343,7 +343,7 @@ paths:
       - application/toml
       - application/x-yaml
       - multipart/form-data
-      description: detail task step
+      description: detail task step log
       parameters:
       - description: task name
         in: path
@@ -368,7 +368,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.BaseRes'
-      summary: task step detail
+      summary: task step log
       tags:
       - Task
     put:

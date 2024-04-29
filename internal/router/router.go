@@ -80,7 +80,7 @@ func New(maxRequests int64) *gin.Engine {
 		apiGroup.DELETE("/v1/task/:task/workspace", workspace.Delete)
 		apiGroup.POST("/v1/task/:task/workspace", workspace.Post)
 		// step
-		apiGroup.GET("/v1/task/:task/step/:step", step.Get)
+		apiGroup.GET("/v1/task/:task/step/:step", step.Log)
 		apiGroup.PUT("/v1/task/:task/step/:step", step.Manager)
 		// worker pool
 		apiGroup.GET("/v1/pool", pool.Detail)

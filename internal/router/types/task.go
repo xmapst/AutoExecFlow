@@ -54,8 +54,8 @@ type TaskRes struct {
 }
 
 type Time struct {
-	StartTime string `json:"start_time,omitempty" yaml:"StartTime,omitempty" toml:"start_time,omitempty"` // 开始时间
-	EndTime   string `json:"end_time,omitempty" yaml:"EndTime,omitempty" toml:"end_time,omitempty"`       // 结束时间
+	Start string `json:"start,omitempty" yaml:"Start,omitempty" toml:"start,omitempty"` // 开始时间
+	End   string `json:"end,omitempty" yaml:"End,omitempty" toml:"end,omitempty"`       // 结束时间
 }
 
 type LogRes struct {

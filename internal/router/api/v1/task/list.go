@@ -93,8 +93,8 @@ func procTask(uriPrefix string, task *models.Task) *types.TaskRes {
 		Timeout:   task.Timeout.String(),
 		Count:     *task.Count,
 		Time: &types.Time{
-			StartTime: task.STimeStr(),
-			EndTime:   task.ETimeStr(),
+			Start: task.STimeStr(),
+			End:   task.ETimeStr(),
 		},
 	}
 

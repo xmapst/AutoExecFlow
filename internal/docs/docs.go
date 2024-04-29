@@ -348,7 +348,7 @@ const docTemplate = `{
         },
         "/api/v1/task/{task}/step/{step}": {
             "get": {
-                "description": "detail task step",
+                "description": "detail task step log",
                 "consumes": [
                     "application/json",
                     "application/toml",
@@ -363,7 +363,7 @@ const docTemplate = `{
                 "tags": [
                     "Task"
                 ],
-                "summary": "task step detail",
+                "summary": "task step log",
                 "parameters": [
                     {
                         "type": "string",

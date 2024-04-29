@@ -17,9 +17,9 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Get
-// @Summary task step detail
-// @description detail task step
+// Log
+// @Summary task step log
+// @description detail task step log
 // @Tags Task
 // @Accept application/json
 // @Accept application/toml
@@ -33,7 +33,7 @@ import (
 // @Success 200 {object} types.BaseRes
 // @Failure 500 {object} types.BaseRes
 // @Router /api/v1/task/{task}/step/{step} [get]
-func Get(c *gin.Context) {
+func Log(c *gin.Context) {
 	var render = base.Gin{Context: c}
 	var ws *websocket.Conn
 	if websocket.IsWebSocketUpgrade(c.Request) {
