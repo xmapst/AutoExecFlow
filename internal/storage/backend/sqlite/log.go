@@ -13,7 +13,7 @@ type log struct {
 	stepName string
 }
 
-func (l *log) List() (res []*models.Log) {
+func (l *log) List() (res models.Logs) {
 	l.db.Model(&tables.Log{}).Where("task_name = ? AND step_name = ?", l.taskName, l.stepName).Order("id ASC").Find(&res)
 	return
 }

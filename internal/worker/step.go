@@ -77,6 +77,7 @@ func (s *Step) build(globalEnv backend.IEnv) (dag.VertexFunc, error) {
 		Content: s.Content,
 		Timeout: s.Timeout,
 		StepUpdate: models.StepUpdate{
+			Code:     models.Pointer(int64(0)),
 			State:    models.Pointer(models.Pending),
 			OldState: models.Pointer(models.Pending),
 			Message:  "The current step only proceeds if the previous step succeeds.",
@@ -176,6 +177,12 @@ func (s *Step) execStep(ctx context.Context, globalEnv backend.IEnv, workspace, 
 		res.Code = models.Pointer(exec.SystemErr)
 		return err
 	}
+
+	defer func() {
+		// clear tmp script
+		cmd.Clear()
+	}()
+
 	go s.writeLog(logCh)
 	res.Message = "execution succeed"
 	code, err := cmd.Run(ctx)

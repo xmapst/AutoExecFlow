@@ -23,6 +23,8 @@ type Env struct {
 	Value string `json:"value,omitempty" gorm:"comment:值"`
 }
 
+type Envs []*Env
+
 func Pointer[T any](v T) *T {
 	return &v
 }

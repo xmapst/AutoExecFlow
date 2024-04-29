@@ -39,9 +39,9 @@ dev:
 windows:
 	go mod tidy
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=386 go build -trimpath -ldflags $(LDFLAGS) -o bin/windows-remote_executor-386.exe cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm go build -trimpath -ldflags $(LDFLAGS) -o bin/windows-remote_executor-386.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm go build -trimpath -ldflags $(LDFLAGS) -o bin/windows-remote_executor-arm.exe cmd/osreapi.go
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -o bin/windows-remote_executor-amd64.exe cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -o bin/windows-remote_executor-amd64.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -o bin/windows-remote_executor-arm64.exe cmd/osreapi.go
 
 linux:
 	go mod tidy

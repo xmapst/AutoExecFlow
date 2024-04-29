@@ -3,11 +3,23 @@ package bbolt
 import (
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"go.etcd.io/bbolt"
 
 	"github.com/xmapst/osreapi/internal/storage/backend"
+	"github.com/xmapst/osreapi/internal/storage/backend/bbolt/utils"
 	"github.com/xmapst/osreapi/internal/storage/models"
+)
+
+const (
+	bucketPrefix = "Obj#"
+	taskPrefix   = bucketPrefix + "Task#"
+	stepPrefix   = bucketPrefix + "Step#"
+	envPrefix    = bucketPrefix + "Env#"
+	dependPrefix = bucketPrefix + "Dep#"
+	logPrefix    = bucketPrefix + "Log#"
 )
 
 type Bolt struct {
@@ -43,7 +55,22 @@ func (b *Bolt) Task(name string) backend.ITask {
 	}
 }
 
-func (b *Bolt) TaskList(str string) (res []*models.Task) {
-	//TODO implement me
-	panic("implement me")
+func (b *Bolt) TaskList(str string) (res models.Tasks) {
+	str = taskPrefix + str
+	_ = b.View(func(tx *bbolt.Tx) error {
+		return tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
+			if !strings.HasPrefix(string(name), str) {
+				return nil
+			}
+			var data = &models.Task{}
+			err := utils.NewHelper(b).Read(data)
+			if err != nil {
+				return nil
+			}
+			res = append(res, data)
+			return nil
+		})
+	})
+	sort.Sort(res)
+	return res
 }

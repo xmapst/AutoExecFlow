@@ -84,14 +84,10 @@ func (c *Cmd) scriptSuffix() string {
 	return c.selfScriptSuffix()
 }
 
-func (c *Cmd) clear() {
+func (c *Cmd) Clear() {
 	// clear tmp script
 	c.logger.Infoln(c.scriptName, "cleanup script")
 	if err := os.Remove(c.scriptName); err != nil {
-		c.logger.Errorln(c.scriptName, err)
-	}
-	c.logger.Infoln(c.scriptName, "cleanup script dir")
-	if err := os.RemoveAll(c.scriptDir); err != nil {
 		c.logger.Errorln(c.scriptName, err)
 	}
 }

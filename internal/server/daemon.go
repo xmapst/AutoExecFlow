@@ -191,7 +191,6 @@ func (p *Program) Stop(service.Service) error {
 		worker.StopWait()
 	}
 	p.cron.Stop()
-	time.Sleep(1 * time.Second)
 	logx.Infoln("put data to disk and close data storage")
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)

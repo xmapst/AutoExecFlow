@@ -36,6 +36,25 @@ func (s *StepUpdate) ETimeStr() string {
 	return s.ETime.Format(time.RFC3339)
 }
 
+type Steps []*Step
+
+func (s Steps) Len() int {
+	return len(s)
+}
+
+func (s Steps) Less(i, j int) bool {
+	if s[i].STime == nil || s[j].STime == nil {
+		return s[i].Name < s[j].Name
+	}
+	iTime := s[i].STime.Nanosecond()
+	jTime := s[j].STime.Nanosecond()
+	return iTime < jTime
+}
+
+func (s Steps) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
 type StepEnv struct {
 	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`

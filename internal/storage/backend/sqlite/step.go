@@ -32,7 +32,7 @@ func (s *step) Get() (res *models.Step, err error) {
 }
 
 func (s *step) Delete() (err error) {
-	err = s.db.Where("task_name = ? AND name = ?", s.taskName, s.name).Delete(&tables.Step{}).Error
+	s.ClearAll()
 	return
 }
 
@@ -117,12 +117,12 @@ type stepEnv struct {
 	stepName string
 }
 
-func (s *stepEnv) List() (res []*models.Env) {
+func (s *stepEnv) List() (res models.Envs) {
 	s.db.Model(&tables.StepEnv{}).Where("task_name = ? AND step_name = ?", s.taskName, s.stepName).Order("id ASC").Find(&res)
 	return
 }
 
-func (s *stepEnv) Create(env []*models.Env) (err error) {
+func (s *stepEnv) Create(env models.Envs) (err error) {
 	if len(env) == 0 {
 		return
 	}

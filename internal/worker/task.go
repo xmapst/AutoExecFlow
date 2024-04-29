@@ -79,7 +79,7 @@ func Submit(task *Task) (err error) {
 	for _, step := range task.Steps {
 		step.IStep = task.Step(step.Name)
 		step.workspace = task.workspace
-		step.scriptDir = filepath.Join(task.workspace)
+		step.scriptDir = task.scriptDir
 		stepFn, err := step.build(task.Env())
 		if err != nil {
 			logx.Errorln(err)
@@ -180,8 +180,8 @@ func (t *Task) run(ctx context.Context) error {
 
 	var res = new(models.TaskUpdate)
 	defer func() {
-		// 清理工作目录
-		t.clear()
+		// 清理
+		t.clearDir()
 		// 结束时间
 		res.ETime = models.Pointer(time.Now())
 		res.OldState = models.Pointer(models.Running)
@@ -191,7 +191,7 @@ func (t *Task) run(ctx context.Context) error {
 		}
 	}()
 
-	if err := t.init(); err != nil {
+	if err := t.initDir(); err != nil {
 		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		res.State = models.Pointer(models.Failed)
 		res.Message = err.Error()
@@ -217,7 +217,7 @@ func (t *Task) run(ctx context.Context) error {
 	return nil
 }
 
-func (t *Task) init() error {
+func (t *Task) initDir() error {
 	if err := utils.EnsureDirExist(t.workspace); err != nil {
 		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 		return err
@@ -229,7 +229,7 @@ func (t *Task) init() error {
 	return nil
 }
 
-func (t *Task) clear() {
+func (t *Task) clearDir() {
 	if err := os.RemoveAll(t.scriptDir); err != nil {
 		logx.Errorln(t.Name, t.workspace, t.scriptDir, err)
 	}

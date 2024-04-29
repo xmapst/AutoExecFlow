@@ -12,7 +12,7 @@ var db backend.IStorage
 
 func New(t, d string) (err error) {
 	switch t {
-	case "bbolt":
+	case "bolt":
 		db, err = bbolt.New(d)
 	default:
 		db, err = sqlite.New(d)

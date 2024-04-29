@@ -34,7 +34,7 @@ func (t *task) Get() (res *models.Task, err error) {
 }
 
 func (t *task) Delete() (err error) {
-	err = t.db.Where("name = ?", t.name).Delete(&tables.Task{}).Error
+	t.ClearAll()
 	return
 }
 
@@ -75,12 +75,12 @@ type taskEnv struct {
 	taskName string
 }
 
-func (t *taskEnv) List() (res []*models.Env) {
+func (t *taskEnv) List() (res models.Envs) {
 	t.db.Model(&tables.TaskEnv{}).Where("task_name = ?", t.taskName).Order("id ASC").Find(&res)
 	return
 }
 
-func (t *taskEnv) Create(env []*models.Env) (err error) {
+func (t *taskEnv) Create(env models.Envs) (err error) {
 	if len(env) == 0 {
 		return
 	}
@@ -126,7 +126,7 @@ func (t *task) Step(name string) backend.IStep {
 	}
 }
 
-func (t *task) StepList(str string) (res []*models.Step) {
+func (t *task) StepList(str string) (res models.Steps) {
 	if str != "" {
 		t.db.Model(&tables.Step{}).Where("task_name = ? AND name LIKE ?", t.name, "%s"+str+"%s").Order("id ASC").Find(&res)
 		return

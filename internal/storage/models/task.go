@@ -33,6 +33,25 @@ func (t *TaskUpdate) ETimeStr() string {
 	return t.ETime.Format(time.RFC3339)
 }
 
+type Tasks []*Task
+
+func (t Tasks) Len() int {
+	return len(t)
+}
+
+func (t Tasks) Less(i, j int) bool {
+	if t[i].STime == nil || t[j].STime == nil {
+		return t[i].Name < t[j].Name
+	}
+	iTime := t[i].STime.Nanosecond()
+	jTime := t[j].STime.Nanosecond()
+	return iTime < jTime
+}
+
+func (t Tasks) Swap(i, j int) {
+	t[i], t[j] = t[j], t[i]
+}
+
 type TaskEnv struct {
 	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
 	Env

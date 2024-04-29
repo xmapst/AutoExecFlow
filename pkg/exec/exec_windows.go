@@ -65,7 +65,6 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 
 	c.newCmd()
 	defer func() {
-		c.clear()
 		c.cancel()
 		if err != nil {
 			c.logger.Errorln(c.scriptName, "exit code", code, err)

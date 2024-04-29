@@ -100,7 +100,7 @@ func (s *Sqlite) Task(name string) backend.ITask {
 	}
 }
 
-func (s *Sqlite) TaskList(str string) (res []*models.Task) {
+func (s *Sqlite) TaskList(str string) (res models.Tasks) {
 	if str != "" {
 		s.Model(&tables.Task{}).Where("name LIKE ?", "%s"+str+"%").Order("s_time DESC, id DESC").Find(&res)
 		return

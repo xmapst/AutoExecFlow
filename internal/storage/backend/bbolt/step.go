@@ -1,9 +1,14 @@
 package bbolt
 
 import (
+	"encoding/json"
+	"errors"
+	"strings"
+
 	"go.etcd.io/bbolt"
 
 	"github.com/xmapst/osreapi/internal/storage/backend"
+	"github.com/xmapst/osreapi/internal/storage/backend/bbolt/utils"
 	"github.com/xmapst/osreapi/internal/storage/models"
 )
 
@@ -14,18 +19,42 @@ type step struct {
 }
 
 func (s *step) ClearAll() {
-	//TODO implement me
-	panic("implement me")
+	_ = s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return nil
+		}
+		return taskBucket.DeleteBucket([]byte(stepPrefix + s.name))
+	})
 }
 
 func (s *step) Delete() (err error) {
-	//TODO implement me
-	panic("implement me")
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return nil
+		}
+		return taskBucket.DeleteBucket([]byte(stepPrefix + s.name))
+	})
 }
 
 func (s *step) GetState() (state int, err error) {
-	//TODO implement me
-	panic("implement me")
+	err = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.name))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		v := stepBucket.Get([]byte("state"))
+		if v == nil {
+			return nil
+		}
+		return json.Unmarshal(v, &state)
+	})
+	return state, err
 }
 
 func (s *step) Env() backend.IEnv {
@@ -37,18 +66,49 @@ func (s *step) Env() backend.IEnv {
 }
 
 func (s *step) Get() (res *models.Step, err error) {
-	//TODO implement me
-	panic("implement me")
+	res = new(models.Step)
+	err = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.name))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		return utils.NewHelper(stepBucket).Read(res)
+	})
+	return res, err
 }
 
-func (s *step) Create(step *models.Step) (err error) {
-	//TODO implement me
-	panic("implement me")
+func (s *step) Create(step *models.Step) error {
+	step.TaskName = s.taskName
+	step.Name = s.name
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + s.taskName))
+		if err != nil {
+			return err
+		}
+		stepBucket, err := taskBucket.CreateBucketIfNotExists([]byte(stepPrefix + s.name))
+		if err != nil {
+			return err
+		}
+		return utils.NewHelper(stepBucket).Write(step)
+	})
 }
 
 func (s *step) Update(value *models.StepUpdate) (err error) {
-	//TODO implement me
-	panic("implement me")
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + s.taskName))
+		if err != nil {
+			return err
+		}
+		stepBucket, err := taskBucket.CreateBucketIfNotExists([]byte(stepPrefix + s.name))
+		if err != nil {
+			return err
+		}
+		return utils.NewHelper(stepBucket).Write(value)
+	})
 }
 
 func (s *step) Depend() backend.IDepend {
@@ -73,29 +133,116 @@ type stepEnv struct {
 	stepName string
 }
 
-func (s *stepEnv) List() (res []*models.Env) {
-	//TODO implement me
-	panic("implement me")
+func (s *stepEnv) List() (res models.Envs) {
+	_ = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return nil
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.stepName))
+		if stepBucket == nil {
+			return nil
+		}
+		return stepBucket.ForEach(func(k, v []byte) error {
+			if !strings.HasPrefix(string(k), envPrefix) {
+				return nil
+			}
+			envBucket := stepBucket.Bucket(k)
+			if envBucket == nil {
+				return nil
+			}
+			var data = new(models.Env)
+			err := utils.NewHelper(envBucket).Read(data)
+			if err != nil {
+				return nil
+			}
+			res = append(res, data)
+			return nil
+		})
+	})
+	return res
 }
 
-func (s *stepEnv) Create(env []*models.Env) (err error) {
-	//TODO implement me
-	panic("implement me")
+func (s *stepEnv) Create(envs models.Envs) error {
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + s.taskName))
+		if err != nil {
+			return err
+		}
+		stepBucket, err := taskBucket.CreateBucketIfNotExists([]byte(stepPrefix + s.stepName))
+		if err != nil {
+			return err
+		}
+		for _, env := range envs {
+			envBucket, err := stepBucket.CreateBucketIfNotExists([]byte(envPrefix + env.Name))
+			if err != nil {
+				return err
+			}
+			if err = utils.NewHelper(envBucket).Write(env); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (s *stepEnv) Get(name string) (string, error) {
-	//TODO implement me
-	panic("implement me")
+	var value string
+	err := s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.stepName))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		envBucket := stepBucket.Bucket([]byte(envPrefix + name))
+		if envBucket == nil {
+			return errors.New("not found")
+		}
+		var data = new(models.Env)
+		err := utils.NewHelper(envBucket).Read(data)
+		if err != nil {
+			return err
+		}
+		value = data.Value
+		return nil
+	})
+	return value, err
 }
 
 func (s *stepEnv) Delete(name string) (err error) {
-	//TODO implement me
-	panic("implement me")
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.stepName))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		return stepBucket.DeleteBucket([]byte(envPrefix + name))
+	})
 }
 
 func (s *stepEnv) DeleteAll() (err error) {
-	//TODO implement me
-	panic("implement me")
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.stepName))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		return stepBucket.ForEach(func(k, v []byte) error {
+			if !strings.HasPrefix(string(k), envPrefix) {
+				return nil
+			}
+			return stepBucket.DeleteBucket(k)
+		})
+	})
 }
 
 type stepDepend struct {
@@ -105,16 +252,73 @@ type stepDepend struct {
 }
 
 func (s *stepDepend) List() (res []string) {
-	//TODO implement me
-	panic("implement me")
+	_ = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return nil
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.stepName))
+		if stepBucket == nil {
+			return nil
+		}
+		return stepBucket.ForEach(func(k, v []byte) error {
+			if !strings.HasPrefix(string(k), dependPrefix) {
+				return nil
+			}
+			depBucket := stepBucket.Bucket(k)
+			if depBucket == nil {
+				return nil
+			}
+			value := depBucket.Get([]byte("name"))
+			if value == nil {
+				return nil
+			}
+			res = append(res, string(value))
+			return nil
+		})
+	})
+	return res
 }
 
-func (s *stepDepend) Create(depends []string) (err error) {
-	//TODO implement me
-	panic("implement me")
+func (s *stepDepend) Create(depends []string) error {
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + s.taskName))
+		if err != nil {
+			return err
+		}
+		stepBucket, err := taskBucket.CreateBucketIfNotExists([]byte(stepPrefix + s.stepName))
+		if err != nil {
+			return err
+		}
+		for _, depend := range depends {
+			dependBucket, err := stepBucket.CreateBucketIfNotExists([]byte(dependPrefix + depend))
+			if err != nil {
+				return err
+			}
+			err = dependBucket.Put([]byte("name"), []byte(depend))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (s *stepDepend) DeleteAll() (err error) {
-	//TODO implement me
-	panic("implement me")
+	return s.db.Update(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.stepName))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		return stepBucket.ForEach(func(k, v []byte) error {
+			if !strings.HasPrefix(string(k), dependPrefix) {
+				return nil
+			}
+			return stepBucket.DeleteBucket(k)
+		})
+	})
 }

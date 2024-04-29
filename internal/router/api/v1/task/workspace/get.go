@@ -36,12 +36,12 @@ import (
 // @Router /api/v1/task/{task}/workspace [get]
 func Get(c *gin.Context) {
 	render := base.Gin{Context: c}
-	task := c.Param("task")
-	if task == "" {
+	taskName := c.Param("task")
+	if taskName == "" {
 		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
 	}
-	prefix := filepath.Join(config.App.WorkSpace, task)
+	prefix := filepath.Join(config.App.WorkSpace, taskName)
 	if !utils.FileOrPathExist(prefix) {
 		render.SetError(base.CodeNoData, errors.New("task does not exist"))
 		return
