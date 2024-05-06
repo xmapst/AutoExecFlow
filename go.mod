@@ -27,7 +27,7 @@ require (
 	github.com/swaggo/swag v1.16.3
 	github.com/traefik/yaegi v0.16.1
 	github.com/yuin/gopher-lua v1.1.1
-	go.etcd.io/bbolt v1.3.9
+	go.etcd.io/bbolt v1.3.10
 	go.starlark.net v0.0.0-20240411212711-9b43f0afd521
 	go.uber.org/zap v1.27.0
 	golang.org/x/sys v0.19.0
