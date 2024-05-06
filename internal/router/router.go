@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -24,6 +23,7 @@ import (
 	"github.com/xmapst/osreapi/internal/router/middleware/limiter"
 	"github.com/xmapst/osreapi/internal/router/middleware/zap"
 	"github.com/xmapst/osreapi/internal/router/types"
+	"github.com/xmapst/osreapi/pkg/info"
 )
 
 // @title           OS Remote Executor API
@@ -45,11 +45,8 @@ func New(maxRequests int64) *gin.Engine {
 		func(c *gin.Context) {
 			c.Header("Server", "Gin")
 			c.Header("X-Server", "Gin")
-			c.Header("X-Powered-By", "XMapst")
-			c.Header("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, value")
-			c.Header("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
-			c.Header("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
-			c.Header("Pragma", "no-cache")
+			c.Header("X-Version", info.Version)
+			c.Header("X-Powered-By", info.UserEmail)
 		},
 		zap.Logger,
 		zap.Recovery,
