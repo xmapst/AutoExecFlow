@@ -8,7 +8,7 @@ require (
 	github.com/creack/pty v1.1.21
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-contrib/gzip v1.0.1
-	github.com/gin-contrib/pprof v1.4.0
+	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-cmd/cmd v1.4.2
@@ -30,8 +30,8 @@ require (
 	go.etcd.io/bbolt v1.3.9
 	go.starlark.net v0.0.0-20240411212711-9b43f0afd521
 	go.uber.org/zap v1.27.0
-	golang.org/x/sys v0.19.0
-	golang.org/x/text v0.14.0
+	golang.org/x/sys v0.20.0
+	golang.org/x/text v0.15.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/gorm v1.25.10
 	layeh.com/gopher-luar v1.0.11
@@ -86,7 +86,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.mongodb.org/mongo-driver v1.15.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/arch v0.7.0 // indirect
+	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/tools v0.20.0 // indirect

@@ -81,8 +81,8 @@ github.com/gin-contrib/cors
 # github.com/gin-contrib/gzip v1.0.1
 ## explicit; go 1.18
 github.com/gin-contrib/gzip
-# github.com/gin-contrib/pprof v1.4.0
-## explicit; go 1.14
+# github.com/gin-contrib/pprof v1.5.0
+## explicit; go 1.18
 github.com/gin-contrib/pprof
 # github.com/gin-contrib/sse v0.1.0
 ## explicit; go 1.12
@@ -347,7 +347,7 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/internal/pool
 go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/zapcore
-# golang.org/x/arch v0.7.0
+# golang.org/x/arch v0.8.0
 ## explicit; go 1.18
 golang.org/x/arch/x86/x86asm
 # golang.org/x/crypto v0.22.0
@@ -366,7 +366,7 @@ golang.org/x/net/internal/socks
 golang.org/x/net/proxy
 golang.org/x/net/webdav
 golang.org/x/net/webdav/internal/xml
-# golang.org/x/sys v0.19.0
+# golang.org/x/sys v0.20.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
@@ -375,7 +375,7 @@ golang.org/x/sys/windows/registry
 golang.org/x/sys/windows/svc
 golang.org/x/sys/windows/svc/eventlog
 golang.org/x/sys/windows/svc/mgr
-# golang.org/x/text v0.14.0
+# golang.org/x/text v0.15.0
 ## explicit; go 1.18
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal
