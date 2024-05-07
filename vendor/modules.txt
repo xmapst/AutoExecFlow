@@ -11,7 +11,7 @@ github.com/Microsoft/go-winio/internal/fs
 github.com/Microsoft/go-winio/internal/socket
 github.com/Microsoft/go-winio/internal/stringbuffer
 github.com/Microsoft/go-winio/pkg/guid
-# github.com/PuerkitoBio/goquery v1.9.1
+# github.com/PuerkitoBio/goquery v1.9.2
 ## explicit; go 1.18
 github.com/PuerkitoBio/goquery
 # github.com/andybalholm/cascadia v1.3.2
@@ -350,10 +350,10 @@ go.uber.org/zap/zapcore
 # golang.org/x/arch v0.8.0
 ## explicit; go 1.18
 golang.org/x/arch/x86/x86asm
-# golang.org/x/crypto v0.22.0
+# golang.org/x/crypto v0.23.0
 ## explicit; go 1.18
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.24.0
+# golang.org/x/net v0.25.0
 ## explicit; go 1.18
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -389,14 +389,14 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.20.0
+# golang.org/x/tools v0.21.0
 ## explicit; go 1.19
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
 golang.org/x/tools/internal/versions
-# google.golang.org/protobuf v1.34.0
+# google.golang.org/protobuf v1.34.1
 ## explicit; go 1.17
 google.golang.org/protobuf/encoding/protodelim
 google.golang.org/protobuf/encoding/prototext
@@ -447,7 +447,7 @@ gorm.io/gorm/utils
 # layeh.com/gopher-luar v1.0.11
 ## explicit; go 1.12
 layeh.com/gopher-luar
-# modernc.org/libc v1.50.3
+# modernc.org/libc v1.50.5
 ## explicit; go 1.20
 modernc.org/libc
 modernc.org/libc/errno
@@ -481,6 +481,6 @@ modernc.org/mathutil
 # modernc.org/memory v1.8.0
 ## explicit; go 1.18
 modernc.org/memory
-# modernc.org/sqlite v1.29.8
+# modernc.org/sqlite v1.29.9
 ## explicit; go 1.20
 modernc.org/sqlite/lib
