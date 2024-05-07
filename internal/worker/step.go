@@ -2,12 +2,10 @@ package worker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
-
-	"go.uber.org/zap"
 
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/backend"
@@ -19,8 +17,10 @@ import (
 
 type Step struct {
 	backend.IStep
+	wg        *sync.WaitGroup
 	scriptDir string
 	workspace string
+	logChan   chan string
 
 	TaskName string
 	Name     string
@@ -88,7 +88,12 @@ func (s *Step) build(globalEnv backend.IEnv) (dag.VertexFunc, error) {
 	}
 	// build step
 	return func(ctx context.Context, taskName, stepName string) error {
+		s.logChan = make(chan string, 65535)
 		defer func() {
+			go func() {
+				s.wg.Wait()
+				close(s.logChan)
+			}()
 			_err := recover()
 			if _err == nil {
 				return
@@ -105,104 +110,54 @@ func (s *Step) build(globalEnv backend.IEnv) (dag.VertexFunc, error) {
 			}
 		}()
 		var err error
-		// TODO: 执行前
-		logx.Infoln(s.TaskName, s.Name, s.workspace, s.scriptDir, "started")
+		// Asynchronous processing of log output
+		go s.writeLog()
+
+		s.before()
 		defer func() {
-			// TODO: 执行后
-			logx.Infoln(s.TaskName, s.Name, s.workspace, s.scriptDir, "end")
+			s.after()
 		}()
 
-		if err = s.execStep(ctx, globalEnv, s.workspace, s.scriptDir); err != nil {
+		if err = s.Update(&models.StepUpdate{
+			State:    models.Pointer(models.Running),
+			OldState: models.Pointer(models.Pending),
+			Message:  "step is running",
+			STime:    models.Pointer(time.Now()),
+		}); err != nil {
 			logx.Errorln(err)
 			return err
+		}
+
+		switch s.Type {
+		// TODO: other type
+		default:
+			if err = s.execStep(ctx, globalEnv); err != nil {
+				logx.Errorln(err)
+				return err
+			}
 		}
 		return nil
 	}, nil
 }
 
+func (s *Step) before() {
+	s.wg.Add(1)
+	defer s.wg.Done()
+	logx.Infoln(s.TaskName, s.Name, s.workspace, s.scriptDir, "started")
+	return
+}
+
+func (s *Step) after() {
+	s.wg.Add(1)
+	defer s.wg.Done()
+	logx.Infoln(s.TaskName, s.Name, s.workspace, s.scriptDir, "end")
+	return
+}
+
 const ConsoleStart = "OSREAPI::CONSOLE::START"
 const ConsoleDone = "OSREAPI::CONSOLE::DONE"
 
-func (s *Step) execStep(ctx context.Context, globalEnv backend.IEnv, workspace, scriptDir string) error {
-	if err := s.Update(&models.StepUpdate{
-		State:    models.Pointer(models.Running),
-		OldState: models.Pointer(models.Pending),
-		Message:  "step is running",
-		STime:    models.Pointer(time.Now()),
-	}); err != nil {
-		logx.Errorln(err)
-		return err
-	}
-
-	var res = new(models.StepUpdate)
-	defer func() {
-		if _err := recover(); _err != nil {
-			logx.Errorln(_err)
-			res.Code = models.Pointer(exec.SystemErr)
-			res.Message = fmt.Sprint(_err)
-		}
-		res.ETime = models.Pointer(time.Now())
-		res.OldState = models.Pointer(models.Running)
-		if _err := s.Update(res); _err != nil {
-			logx.Errorln(_err)
-		}
-	}()
-	var logCh = make(chan string, 65535)
-	// 动态获取环境变量
-	var envs = make([]string, 0)
-	taskEnv := globalEnv.List()
-	for _, env := range taskEnv {
-		envs = append(envs, fmt.Sprintf("%s=%s", env.Name, env.Value))
-	}
-	stepEnv := s.Env().List()
-	for _, env := range stepEnv {
-		envs = append(envs, fmt.Sprintf("%s=%s", env.Name, env.Value))
-	}
-	var cmd, err = exec.New(
-		exec.WithLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))),
-		exec.WithEnv(append(envs,
-			fmt.Sprintf("TASK_NAME=%s", s.TaskName),
-			fmt.Sprintf("TASK_STEP_NAME=%s", s.Name)),
-		),
-		exec.WithShell(s.Type),
-		exec.WithScript(s.Content),
-		exec.WithWorkspace(workspace),
-		exec.WithScriptDir(scriptDir),
-		exec.WithTimeout(s.Timeout),
-		exec.WithConsoleCh(logCh),
-	)
-	if err != nil {
-		logx.Errorln(s.TaskName, s.Name, workspace, scriptDir, err)
-		res.Message = err.Error()
-		res.Code = models.Pointer(exec.SystemErr)
-		return err
-	}
-
-	defer func() {
-		// clear tmp script
-		cmd.Clear()
-	}()
-
-	go s.writeLog(logCh)
-	res.Message = "execution succeed"
-	code, err := cmd.Run(ctx)
-	res.Code = models.Pointer(code)
-	res.State = models.Pointer(models.Stop)
-	if err != nil {
-		fmt.Println(err.Error())
-		res.State = models.Pointer(models.Failed)
-		res.Message = err.Error()
-		return err
-	}
-	if code != 0 {
-		res.State = models.Pointer(models.Failed)
-		res.Message = fmt.Sprintf("execution failed with code: %d", code)
-		return errors.New(res.Message)
-	}
-	return nil
-}
-
-func (s *Step) writeLog(logCh chan string) {
+func (s *Step) writeLog() {
 	var num int64
 	// start
 	if err := s.Log().Create(&models.Log{
@@ -224,7 +179,8 @@ func (s *Step) writeLog(logCh chan string) {
 		}
 	}()
 	// content
-	for log := range logCh {
+	for log := range s.logChan {
+		logx.Debugln(log)
 		// TODO: 从输出中获取内容设置到环境变量中心
 
 		num += 1

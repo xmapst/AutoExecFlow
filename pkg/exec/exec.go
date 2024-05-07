@@ -3,7 +3,6 @@ package exec
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,7 +29,6 @@ type Cmd struct {
 	stderrBuf  *cmd.OutputBuffer
 	ctx        context.Context
 	cancel     context.CancelFunc
-	logger     Ilogger
 	env        []string
 	shell      string
 	content    string
@@ -45,7 +43,6 @@ func New(options ...Option) (*Cmd, error) {
 	var c = &Cmd{
 		ctx:       context.Background(),
 		stderrBuf: cmd.NewOutputBuffer(),
-		logger:    stdDebugLogger{},
 		timeout:   30 * time.Minute,
 		workspace: filepath.Join(os.TempDir(), "workspace"),
 		scriptDir: filepath.Join(os.TempDir(), "script"),
@@ -62,15 +59,12 @@ func New(options ...Option) (*Cmd, error) {
 	c.scriptName = filepath.Join(c.scriptDir, ksuid.New().String())
 	c.scriptName = c.scriptName + c.scriptSuffix()
 	if err := os.MkdirAll(c.scriptDir, os.ModePerm); err != nil {
-		c.logger.Errorln(c.scriptName, err)
 		return nil, err
 	}
-	c.logger.Infoln(c.scriptName, "create script")
 	if c.shell == "cmd" || c.shell == "powershell" {
 		c.content = c.utf8ToGb2312(c.content)
 	}
 	if err := os.WriteFile(c.scriptName, []byte(c.content), os.ModePerm); err != nil {
-		c.logger.Errorln(c.scriptName, err)
 		return nil, err
 	}
 	return c, nil
@@ -84,12 +78,8 @@ func (c *Cmd) scriptSuffix() string {
 	return c.selfScriptSuffix()
 }
 
-func (c *Cmd) Clear() {
-	// clear tmp script
-	c.logger.Infoln(c.scriptName, "cleanup script")
-	if err := os.Remove(c.scriptName); err != nil {
-		c.logger.Errorln(c.scriptName, err)
-	}
+func (c *Cmd) Clear() error {
+	return os.Remove(c.scriptName)
 }
 
 func (c *Cmd) newCmd() {
@@ -104,27 +94,25 @@ func (c *Cmd) newCmd() {
 	}
 
 	// inject env
-	c.logger.Infoln(c.scriptName, "inject customize env", c.env)
-	c.cmd.Env = append(append(os.Environ(), c.env...),
-		fmt.Sprintf("TASK_WORKSPACE=%s", c.workspace),
-		fmt.Sprintf("TASK_STEP_SCRIPT_DIR=%s", c.scriptDir),
-		fmt.Sprintf("TASK_STEP_SCRIPT_PATH=%s", c.scriptName),
-	)
-
+	c.cmd.Env = append(os.Environ(), c.env...)
 	// set workspace
 	c.cmd.Dir = c.workspace
 }
 
 func (c *Cmd) consoleOutput() {
 	defer func() {
-		close(c.consoleCh)
-		c.logger.Debugln("stop console print")
+		if c.consoleCh != nil {
+			close(c.consoleCh)
+		}
 	}()
 	for {
 		var line string
 		var open bool
 		select {
 		case <-c.ctx.Done():
+			if c.cmd.Stdout != nil || c.cmd.Stderr != nil {
+				continue
+			}
 			return
 		case line, open = <-c.cmd.Stdout:
 			if !open {
@@ -145,7 +133,6 @@ func (c *Cmd) consoleOutput() {
 		}
 		line = c.transform(line)
 
-		c.logger.Infoln(c.scriptName, line)
 		if c.consoleCh != nil {
 			c.consoleCh <- line
 		}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -78,6 +79,7 @@ func Submit(task *Task) (err error) {
 	var stepFnMap = make(map[string]*dag.Vertex)
 	for _, step := range task.Steps {
 		step.IStep = task.Step(step.Name)
+		step.wg = new(sync.WaitGroup)
 		step.workspace = task.workspace
 		step.scriptDir = task.scriptDir
 		stepFn, err := step.build(task.Env())

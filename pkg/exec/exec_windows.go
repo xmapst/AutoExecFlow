@@ -66,11 +66,6 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	c.newCmd()
 	defer func() {
 		c.cancel()
-		if err != nil {
-			c.logger.Errorln(c.scriptName, "exit code", code, err)
-			return
-		}
-		c.logger.Infoln(c.scriptName, "exit code", code)
 	}()
 
 	// Print STDOUT and STDERR lines streaming from Cmd
@@ -80,9 +75,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	// 人工强制终止
 	case <-ctx.Done():
 		if c.cmd.Status().PID != 0 {
-			if err = KillAll(c.cmd.Status().PID); err != nil {
-				c.logger.Errorln(c.scriptName, err)
-			}
+			_ = KillAll(c.cmd.Status().PID)
 		}
 		err = ErrManual
 		code = Killed
@@ -100,9 +93,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		// 如果直接使用cmd.Process.Kill()并不能杀死主进程下的所有子进程
 		// _ = cmd.Process.Kill()
 		if c.cmd.Status().PID != 0 {
-			if err = KillAll(c.cmd.Status().PID); err != nil {
-				c.logger.Errorln(c.scriptName, err)
-			}
+			_ = KillAll(c.cmd.Status().PID)
 		}
 		err = ErrTimeOut
 		code = Timeout
@@ -115,9 +106,6 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		}
 		if err == nil && code != 0 {
 			err = fmt.Errorf("exit code %d%s", code, last(c.stderrBuf.Lines()))
-		}
-		if err != nil {
-			c.logger.Errorln(c.scriptName, err)
 		}
 	}
 	return
@@ -132,15 +120,11 @@ func (c *Cmd) transform(line string) string {
 
 func (c *Cmd) gbkToUtf8(s []byte) []byte {
 	defer func() {
-		err := recover()
-		if err != nil {
-			c.logger.Errorln(c.workspace, c.scriptDir, c.scriptName, c.shell, err)
-		}
+		recover()
 	}()
 	reader := transform.NewReader(bytes.NewReader(s), simplifiedchinese.GBK.NewDecoder())
 	b, err := io.ReadAll(reader)
 	if err != nil {
-		c.logger.Errorln(c.scriptName, err)
 		return s
 	}
 	return b
@@ -148,15 +132,11 @@ func (c *Cmd) gbkToUtf8(s []byte) []byte {
 
 func (c *Cmd) utf8ToGb2312(s string) string {
 	defer func() {
-		err := recover()
-		if err != nil {
-			c.logger.Errorln(c.scriptName, err)
-		}
+		recover()
 	}()
 	reader := transform.NewReader(strings.NewReader(s), simplifiedchinese.GBK.NewEncoder())
 	d, err := io.ReadAll(reader)
 	if err != nil {
-		c.logger.Errorln(c.scriptName, err)
 		return s
 	}
 
@@ -165,10 +145,7 @@ func (c *Cmd) utf8ToGb2312(s string) string {
 
 func (c *Cmd) isGBK(data string) bool {
 	defer func() {
-		err := recover()
-		if err != nil {
-			c.logger.Errorln(c.scriptName, err)
-		}
+		recover()
 	}()
 	length := len(data)
 	var i = 0

@@ -81,11 +81,6 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	c.newCmd()
 	defer func() {
 		c.cancel()
-		if err != nil {
-			c.logger.Errorln(c.scriptName, "exit code", code, err)
-			return
-		}
-		c.logger.Infoln(c.scriptName, "exit code", code)
 	}()
 
 	// Print STDOUT and STDERR lines streaming from Cmd
@@ -94,9 +89,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	select {
 	// 人工强制终止
 	case <-ctx.Done():
-		if err = c.cmd.Stop(); err != nil {
-			c.logger.Errorln(c.scriptName, err)
-		}
+		_ = c.cmd.Stop()
 		err = ErrManual
 		code = Killed
 		if context.Cause(ctx) != nil {
@@ -110,13 +103,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		}
 	// 执行超时信号
 	case <-c.ctx.Done():
-		// err = errors.New("exec time out")
-		// If you use cmd.Process.Kill() directly, only the child process is killed,
-		// but the grandchild process is not killed
-		// err := cmd.Process.Kill()
-		if err = c.cmd.Stop(); err != nil {
-			c.logger.Errorln(c.scriptName, err)
-		}
+		_ = c.cmd.Stop()
 		err = ErrTimeOut
 		code = Timeout
 	// 执行结果
@@ -128,9 +115,6 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		}
 		if err == nil && code != 0 {
 			err = fmt.Errorf("exit code %d%s", code, last(c.stderrBuf.Lines()))
-		}
-		if err != nil {
-			c.logger.Errorln(c.scriptName, err)
 		}
 	}
 	return

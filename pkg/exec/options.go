@@ -6,12 +6,6 @@ import (
 
 type Option func(*Cmd)
 
-func WithLogger(logger Ilogger) Option {
-	return func(cmd *Cmd) {
-		cmd.logger = logger
-	}
-}
-
 func WithEnv(env []string) Option {
 	return func(cmd *Cmd) {
 		cmd.env = env
