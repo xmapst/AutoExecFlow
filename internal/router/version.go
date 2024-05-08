@@ -18,7 +18,7 @@ func version(c *gin.Context) {
 	var ws *websocket.Conn
 	if websocket.IsWebSocketUpgrade(c.Request) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request, nil)
+		ws, err = base.Upgrade(c.Writer, c.Request)
 		if err != nil {
 			logx.Errorln(err)
 			render.SetError(base.CodeNoData, err)

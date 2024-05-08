@@ -5,23 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
+	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/pkg/logx"
 	"github.com/xmapst/osreapi/pkg/pty"
 )
-
-var upGrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024 * 1024 * 10,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 var WebsocketMessageType = map[int]string{
 	websocket.BinaryMessage: "binary",
@@ -53,7 +45,7 @@ type TTYSize struct {
 // @Failure 500 {object} types.BaseRes
 // @Router /api/pty [get]
 func PtyWs(c *gin.Context) {
-	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+	ws, err := base.Upgrade(c.Writer, c.Request)
 	if err != nil {
 		logx.Errorln(err)
 		return
