@@ -30,20 +30,6 @@ type TTYSize struct {
 	Y    uint16 `json:"y"`
 }
 
-// PtyWs
-// @Summary terminal
-// @description terminal pty
-// @Tags System
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/pty [get]
 func PtyWs(c *gin.Context) {
 	ws, err := base.Upgrade(c.Writer, c.Request)
 	if err != nil {

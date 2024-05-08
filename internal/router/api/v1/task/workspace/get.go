@@ -18,22 +18,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Get
-// @Summary task workspace list
-// @description task workspace list
-// @Tags Task
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Param task path string true "task name"
-// @Param path query string false "dir path"
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/task/{task}/workspace [get]
 func Get(c *gin.Context) {
 	render := base.Gin{Context: c}
 	taskName := c.Param("task")

@@ -17,22 +17,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Log
-// @Summary task step log
-// @description detail task step log
-// @Tags Task
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Param task path string true "task name"
-// @Param step path string true "step name"
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/task/{task}/step/{step} [get]
 func Log(c *gin.Context) {
 	var render = base.Gin{Context: c}
 	var ws *websocket.Conn

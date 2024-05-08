@@ -12,25 +12,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Post
-// @Summary post task
-// @description post task step
-// @Tags Task
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @param name query string false "task name"
-// @Param async query bool false "task asynchronously" default(false)
-// @Param timeout query string false "task timeout"
-// @Param env_vars query []string false "task envs"
-// @Param scripts body types.Steps true "scripts"
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/task [post]
 func Post(c *gin.Context) {
 	render := base.Gin{Context: c}
 	var req = new(types.Task)
@@ -46,52 +27,21 @@ func Post(c *gin.Context) {
 		return
 	}
 
-	if err := req.Check(); err != nil {
+	if err := req.Save(); err != nil {
 		render.SetError(base.CodeFailed, err)
 		return
-	}
-
-	var task = &worker.Task{
-		Name:    req.Name,
-		Timeout: req.TimeoutDuration,
-	}
-
-	if err := task.SaveEnv(req.Env); err != nil {
-		logx.Errorln(err)
-		render.SetError(base.CodeFailed, err)
-		return
-	}
-	for _, v := range req.Step {
-		step := &worker.Step{
-			TaskName: task.Name,
-			Name:     v.Name,
-			Type:     v.Type,
-			Content:  v.Content,
-			Timeout:  v.TimeoutDuration,
-		}
-		if err := step.SaveEnv(v.Env); err != nil {
-			logx.Errorln(err)
-			render.SetError(base.CodeFailed, err)
-			return
-		}
-		if err := step.SaveDepends(v.Depends); err != nil {
-			logx.Errorln(err)
-			render.SetError(base.CodeFailed, err)
-			return
-		}
-		task.Steps = append(task.Steps, step)
 	}
 
 	// 提交任务
-	if err := worker.Submit(task); err != nil {
+	if err := worker.Submit(req.Name); err != nil {
 		logx.Errorln(err)
 		render.SetError(base.CodeFailed, err)
 		return
 	}
 
-	c.Request.Header.Set(types.XTaskName, task.Name)
-	c.Writer.Header().Set(types.XTaskName, task.Name)
-	c.Set(types.XTaskName, task.Name)
+	c.Request.Header.Set(types.XTaskName, req.Name)
+	c.Writer.Header().Set(types.XTaskName, req.Name)
+	c.Set(types.XTaskName, req.Name)
 
 	var scheme = "http"
 	if c.Request.TLS != nil {

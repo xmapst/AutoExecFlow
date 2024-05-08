@@ -28,9 +28,6 @@ fmt:
 vet:
 	go vet ./...
 
-swag:
-	swag init -d internal/router -g router.go -o internal/docs
-
 dev:
 	go mod tidy
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -o bin/linux-remote_executor-amd64 cmd/osreapi.go

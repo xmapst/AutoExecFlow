@@ -9,10 +9,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "github.com/xmapst/osreapi/internal/docs"
 	"github.com/xmapst/osreapi/internal/router/api/v1/pool"
 	"github.com/xmapst/osreapi/internal/router/api/v1/sys"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task"
@@ -25,16 +22,6 @@ import (
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/pkg/info"
 )
-
-// @title           OS Remote Executor API
-// @version         1.0
-// @description     Operating system remote execution interface.
-
-// @contact.name   osreapi
-// @contact.url    https://github.com/xmapst/osreapi/issues
-
-// @license.name  GPL-3.0
-// @license.url   https://github.com/xmapst/osreapi/blob/main/LICENSE
 
 func New(maxRequests int64) *gin.Engine {
 	gin.DisableConsoleColor()
@@ -54,9 +41,6 @@ func New(maxRequests int64) *gin.Engine {
 
 	// debug pprof
 	pprof.Register(router)
-
-	// swagger docs
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// base
 	router.GET("/version", version)

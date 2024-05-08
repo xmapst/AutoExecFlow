@@ -51,10 +51,9 @@ func New(options ...Option) (*Cmd, error) {
 		option(c)
 	}
 	c.ops = cmd.Options{
-		Buffered:       false,
-		Streaming:      true,
-		BeforeExec:     c.beforeExec(),
-		LineBufferSize: 491520,
+		Buffered:   false,
+		Streaming:  true,
+		BeforeExec: c.beforeExec(),
 	}
 	c.scriptName = filepath.Join(c.scriptDir, ksuid.New().String())
 	c.scriptName = c.scriptName + c.scriptSuffix()

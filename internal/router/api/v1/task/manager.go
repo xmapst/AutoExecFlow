@@ -12,23 +12,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Manager
-// @Summary task manager
-// @description manager task
-// @Tags Task
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Param task path string true "task name"
-// @Param action query string false "management action" Enums(paused,kill,pause,resume) default(paused)
-// @Param duration query string false "how long to pause; if empty, manual continuation is required" default(1m)
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/task/{task} [put]
 func Manager(c *gin.Context) {
 	render := base.Gin{Context: c}
 	taskName := c.Param("task")

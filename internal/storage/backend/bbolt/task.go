@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"go.etcd.io/bbolt"
 
@@ -51,6 +52,25 @@ func (t *task) Env() backend.IEnv {
 		db:       t.db,
 		taskName: t.name,
 	}
+}
+
+func (t *task) Name() string {
+	return t.name
+}
+
+func (t *task) Timeout() (res time.Duration, err error) {
+	err = t.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte(taskPrefix + t.name))
+		if bucket == nil {
+			return nil
+		}
+		v := bucket.Get([]byte("timeout"))
+		if v == nil {
+			return nil
+		}
+		return json.Unmarshal(v, &res)
+	})
+	return
 }
 
 func (t *task) Get() (res *models.Task, err error) {
@@ -154,7 +174,7 @@ func (t *taskEnv) List() (res models.Envs) {
 	return res
 }
 
-func (t *taskEnv) Create(envs models.Envs) error {
+func (t *taskEnv) Create(envs ...*models.Env) error {
 	return t.db.Update(func(tx *bbolt.Tx) error {
 		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + t.taskName))
 		if err != nil {

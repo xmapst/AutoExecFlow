@@ -11,21 +11,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Post
-// @Summary pool setting
-// @description post task step
-// @Tags Pool
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Param setting body types.Pool true "pool setting"
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/pool [post]
 func Post(c *gin.Context) {
 	render := base.Gin{Context: c}
 	var req types.Pool

@@ -31,68 +31,68 @@ func NewVertex(name string, fn VertexFunc) *Vertex {
 }
 
 // Name 获取名称
-func (g *Vertex) Name() string {
-	return g.ctx.name
+func (v *Vertex) Name() string {
+	return v.ctx.name
 }
 
 // Kill 强杀
-func (g *Vertex) Kill() error {
-	if g.ctx.baseCancel == nil {
+func (v *Vertex) Kill() error {
+	if v.ctx.baseCancel == nil {
 		return ErrKill
 	}
 
-	g.ctx.baseCancel()
+	v.ctx.baseCancel()
 
 	return nil
 }
 
 // Pause 挂起
-func (g *Vertex) Pause(duration string) error {
-	g.ctx.Lock()
-	defer g.ctx.Unlock()
+func (v *Vertex) Pause(duration string) error {
+	v.ctx.Lock()
+	defer v.ctx.Unlock()
 
-	if g.ctx.controlCtx != nil {
+	if v.ctx.controlCtx != nil {
 		// 重复挂起, 直接返回
 		return nil
 	}
 
-	g.ctx.controlCtx, g.ctx.controlCancel = context.WithCancel(context.Background())
+	v.ctx.controlCtx, v.ctx.controlCancel = context.WithCancel(context.Background())
 	d, err := time.ParseDuration(duration)
 	if err == nil && d > 0 {
-		g.ctx.controlCtx, g.ctx.controlCancel = context.WithTimeout(context.Background(), d)
+		v.ctx.controlCtx, v.ctx.controlCancel = context.WithTimeout(context.Background(), d)
 	}
 
 	return nil
 }
 
 // Resume 解挂
-func (g *Vertex) Resume() {
-	g.ctx.Lock()
-	defer g.ctx.Unlock()
-	if g.ctx.controlCancel == nil {
+func (v *Vertex) Resume() {
+	v.ctx.Lock()
+	defer v.ctx.Unlock()
+	if v.ctx.controlCancel == nil {
 		// 没有挂起不需要恢复,直接返回
 		return
 	}
 
 	// 解除挂起
-	g.ctx.controlCancel()
+	v.ctx.controlCancel()
 }
 
 // WaitResume 等待解挂
-func (g *Vertex) WaitResume() {
-	g.ctx.Lock()
-	defer g.ctx.Unlock()
+func (v *Vertex) WaitResume() {
+	v.ctx.Lock()
+	defer v.ctx.Unlock()
 
-	if g.ctx.controlCtx == nil {
+	if v.ctx.controlCtx == nil {
 		// 没有挂起不需要d等待,直接返回
 		return
 	}
-	<-g.ctx.controlCtx.Done()
+	<-v.ctx.controlCtx.Done()
 }
 
 // Paused 是否挂起
-func (g *Vertex) Paused() bool {
-	return g.ctx.controlCtx != nil
+func (v *Vertex) Paused() bool {
+	return v.ctx.controlCtx != nil
 }
 
 // WithDeps 为顶点添加依赖顶点。它会检查依赖顶点是否已经在图形中存在，如果不存在，则将依赖顶点添加到图型中

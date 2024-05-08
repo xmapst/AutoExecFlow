@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"time"
 
 	"go.etcd.io/bbolt"
 
@@ -26,6 +27,71 @@ func (s *step) ClearAll() {
 		}
 		return taskBucket.DeleteBucket([]byte(stepPrefix + s.name))
 	})
+}
+
+func (s *step) Name() string {
+	return s.name
+}
+
+func (s *step) TaskName() string {
+	return s.taskName
+}
+
+func (s *step) Timeout() (res time.Duration, err error) {
+	err = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.name))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		v := stepBucket.Get([]byte("timeout"))
+		if v == nil {
+			return nil
+		}
+		return json.Unmarshal(v, &res)
+	})
+	return
+}
+
+func (s *step) Type() (res string, err error) {
+	err = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.name))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		v := stepBucket.Get([]byte("type"))
+		if v == nil {
+			return nil
+		}
+		return json.Unmarshal(v, &res)
+	})
+	return
+}
+
+func (s *step) Content() (res string, err error) {
+	err = s.db.View(func(tx *bbolt.Tx) error {
+		taskBucket := tx.Bucket([]byte(taskPrefix + s.taskName))
+		if taskBucket == nil {
+			return errors.New("not found")
+		}
+		stepBucket := taskBucket.Bucket([]byte(stepPrefix + s.name))
+		if stepBucket == nil {
+			return errors.New("not found")
+		}
+		v := stepBucket.Get([]byte("content"))
+		if v == nil {
+			return nil
+		}
+		return json.Unmarshal(v, &res)
+	})
+	return
 }
 
 func (s *step) Delete() (err error) {
@@ -163,7 +229,7 @@ func (s *stepEnv) List() (res models.Envs) {
 	return res
 }
 
-func (s *stepEnv) Create(envs models.Envs) error {
+func (s *stepEnv) Create(envs ...*models.Env) error {
 	return s.db.Update(func(tx *bbolt.Tx) error {
 		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + s.taskName))
 		if err != nil {
@@ -280,7 +346,7 @@ func (s *stepDepend) List() (res []string) {
 	return res
 }
 
-func (s *stepDepend) Create(depends []string) error {
+func (s *stepDepend) Create(depends ...string) error {
 	return s.db.Update(func(tx *bbolt.Tx) error {
 		taskBucket, err := tx.CreateBucketIfNotExists([]byte(taskPrefix + s.taskName))
 		if err != nil {

@@ -12,20 +12,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Post
-// @Summary task workspace upload
-// @description task workspace upload file or dir
-// @Tags Task
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Param task path string true "task name"
-// @Param path query string false "dir path"
-// @Param files formData file true "files"
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/task/{task}/workspace [post]
 func Post(c *gin.Context) {
 	render := base.Gin{Context: c}
 	task := c.Param("task")

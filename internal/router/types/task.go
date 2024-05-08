@@ -9,6 +9,8 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/osreapi/internal/server/config"
+	"github.com/xmapst/osreapi/internal/storage"
+	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/pkg/dag"
 	"github.com/xmapst/osreapi/pkg/logx"
@@ -21,19 +23,14 @@ const (
 
 var reg = regexp.MustCompile("[^a-zA-Z\\p{Han}0-9]")
 
-type StepRes struct {
-	Name      string            `json:"name" yaml:"Name" toml:"name"`
-	Code      int64             `json:"code" yaml:"Code" toml:"code"`
-	State     string            `json:"state" yaml:"State" toml:"state"`
-	Manager   string            `json:"manager" yaml:"Manager" toml:"manager"`
-	Workspace string            `json:"workspace" yaml:"Workspace" toml:"workspace"`
-	Message   string            `json:"msg" yaml:"Message" toml:"message"`
-	Timeout   string            `json:"timeout,omitempty" yaml:"Timeout,omitempty" toml:"timeout,omitempty"`
-	Depends   []string          `json:"depends,omitempty" yaml:"Depends,omitempty" toml:"depends,omitempty"`
-	Env       map[string]string `json:"env,omitempty" yaml:"Env,omitempty" toml:"env,omitempty"`
-	Type      string            `json:"type,omitempty" yaml:"Type,omitempty" toml:"type,omitempty"`
-	Content   string            `json:"content,omitempty" yaml:"Content,omitempty" toml:"content,omitempty"`
-	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
+// Response struct
+
+type TaskCreateRes struct {
+	URL   string `json:"url" yaml:"URL" toml:"url"`
+	Name  string `json:"name" form:"name" yaml:"name" toml:"name"`
+	Count int    `json:"count" yaml:"Count" toml:"count"`
+	// Deprecated, use Name
+	ID string `json:"id" form:"id" yaml:"ID" toml:"id"`
 }
 
 type TaskListRes struct {
@@ -53,6 +50,21 @@ type TaskRes struct {
 	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
 }
 
+type StepRes struct {
+	Name      string            `json:"name" yaml:"Name" toml:"name"`
+	Code      int64             `json:"code" yaml:"Code" toml:"code"`
+	State     string            `json:"state" yaml:"State" toml:"state"`
+	Manager   string            `json:"manager" yaml:"Manager" toml:"manager"`
+	Workspace string            `json:"workspace" yaml:"Workspace" toml:"workspace"`
+	Message   string            `json:"msg" yaml:"Message" toml:"message"`
+	Timeout   string            `json:"timeout,omitempty" yaml:"Timeout,omitempty" toml:"timeout,omitempty"`
+	Depends   []string          `json:"depends,omitempty" yaml:"Depends,omitempty" toml:"depends,omitempty"`
+	Env       map[string]string `json:"env,omitempty" yaml:"Env,omitempty" toml:"env,omitempty"`
+	Type      string            `json:"type,omitempty" yaml:"Type,omitempty" toml:"type,omitempty"`
+	Content   string            `json:"content,omitempty" yaml:"Content,omitempty" toml:"content,omitempty"`
+	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
+}
+
 type Time struct {
 	Start string `json:"start,omitempty" yaml:"Start,omitempty" toml:"start,omitempty"` // 开始时间
 	End   string `json:"end,omitempty" yaml:"End,omitempty" toml:"end,omitempty"`       // 结束时间
@@ -63,6 +75,8 @@ type LogRes struct {
 	Line      int64  `json:"line" yaml:"Line" toml:"line"`
 	Content   string `json:"content" yaml:"Content" toml:"content"`
 }
+
+// Request struct
 
 type Step struct {
 	Name    string            `json:"name" form:"name" yaml:"Name" toml:"name" example:"script.ps1"`
@@ -79,12 +93,12 @@ type Step struct {
 	// Deprecated, use Content
 	CommandContent string `json:"command_content" form:"command_content" yaml:"CommandContent" toml:"command_content" example:"sleep 10"`
 
-	TimeoutDuration time.Duration `json:"-" form:"-" yaml:"-" toml:"-"`
+	timeoutDuration time.Duration
 }
 
 type Steps []*Step
 
-func (s Steps) Check(timeout time.Duration, async bool) error {
+func (s Steps) review(timeout time.Duration, async bool) error {
 	for k, v := range s {
 		if v.CommandType != "" && v.Type == "" {
 			v.Type = v.CommandType
@@ -172,7 +186,7 @@ func (s Steps) parseDuration(t time.Duration) {
 		if timeout > t || timeout <= 0 {
 			timeout = t
 		}
-		s[k].TimeoutDuration = timeout
+		s[k].timeoutDuration = timeout
 	}
 }
 
@@ -186,10 +200,10 @@ type Task struct {
 	// Deprecated, use Env
 	EnvVars []string `query:"env_vars" json:"env_vars" form:"env_vars" yaml:"EnvVars" toml:"env_vars" example:""`
 
-	TimeoutDuration time.Duration `json:"-" form:"-" yaml:"-"`
+	timeoutDuration time.Duration
 }
 
-func (t *Task) Check() error {
+func (t *Task) review() error {
 	if t.Step == nil || len(t.Step) == 0 {
 		return errors.New("key: 'Task.Step' Error:Field validation for 'Step' failed on the 'required' tag")
 	}
@@ -206,24 +220,124 @@ func (t *Task) Check() error {
 	if t.Name == "" {
 		t.Name = ksuid.New().String()
 	}
-	if _, err := dag.GraphManager(t.Name); err == nil {
-		return errors.New("task is running")
-	}
+
 	timeout, err := time.ParseDuration(t.Timeout)
 	if err != nil {
 		timeout = config.App.ExecTimeOut
 	}
-	t.TimeoutDuration = timeout
-	if err = t.Step.Check(t.TimeoutDuration, t.Async); err != nil {
+	t.timeoutDuration = timeout
+	if err = t.Step.review(t.timeoutDuration, t.Async); err != nil {
 		return err
 	}
 	return nil
 }
 
-type TaskCreateRes struct {
-	URL   string `json:"url" yaml:"URL" toml:"url"`
-	Name  string `json:"name" form:"name" yaml:"name" toml:"name"`
-	Count int    `json:"count" yaml:"Count" toml:"count"`
-	// Deprecated, use Name
-	ID string `json:"id" form:"id" yaml:"ID" toml:"id"`
+func (t *Task) Save() (err error) {
+	// 检查请求内容
+	if err = t.review(); err != nil {
+		return err
+	}
+
+	// 检查任务是否在运行
+	if _, err = dag.GraphManager(t.Name); err == nil {
+		return errors.New("task is running")
+	}
+
+	// 校验dag图形
+	// 创建假的顶点
+	var stepFnMap = make(map[string]*dag.Vertex)
+	for _, step := range t.Step {
+		stepFnMap[step.Name] = dag.NewVertex(step.Name, nil)
+	}
+	// 创建图形
+	var graph = dag.New(t.Name)
+	for _, step := range t.Step {
+		stepFn, ok := stepFnMap[step.Name]
+		if !ok {
+			continue
+		}
+		var vertex *dag.Vertex
+		vertex, err = graph.AddVertex(stepFn)
+		if err != nil {
+			return err
+		}
+		vertex.WithDeps(func() []*dag.Vertex {
+			var stepFns []*dag.Vertex
+			for _, name := range step.Depends {
+				_stepFn, _ok := stepFnMap[name]
+				if !_ok {
+					continue
+				}
+				stepFns = append(stepFns, _stepFn)
+			}
+			return stepFns
+		}()...)
+	}
+	err = graph.Validator()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			// rollback
+			storage.Task(t.Name).ClearAll()
+		}
+	}()
+	// save task
+	err = storage.Task(t.Name).Create(&models.Task{
+		Count:   models.Pointer(len(t.Step)),
+		Timeout: t.timeoutDuration,
+		TaskUpdate: models.TaskUpdate{
+			Message:  "the task is waiting to be scheduled for execution",
+			State:    models.Pointer(models.Pending),
+			OldState: models.Pointer(models.Pending),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	// save task env
+	for name, value := range t.Env {
+		if err = storage.Task(t.Name).Env().Create(&models.Env{
+			Name:  name,
+			Value: value,
+		}); err != nil {
+			return err
+		}
+	}
+
+	// save step
+	for _, step := range t.Step {
+		err = storage.Task(t.Name).Step(step.Name).Create(&models.Step{
+			Type:    step.Type,
+			Content: step.Content,
+			Timeout: step.timeoutDuration,
+			StepUpdate: models.StepUpdate{
+				Message:  "the step is waiting to be scheduled for execution",
+				Code:     models.Pointer(int64(0)),
+				State:    models.Pointer(models.Pending),
+				OldState: models.Pointer(models.Pending),
+			},
+		})
+		if err != nil {
+			return err
+		}
+		// save step env
+		for name, value := range step.Env {
+			if err = storage.Task(t.Name).Step(step.Name).Env().Create(&models.Env{
+				Name:  name,
+				Value: value,
+			}); err != nil {
+				return err
+			}
+		}
+		// save step depend
+		err = storage.Task(t.Name).Step(step.Name).Depend().Create(step.Depends...)
+		if err != nil {
+			return err
+		}
+	}
+	return
 }

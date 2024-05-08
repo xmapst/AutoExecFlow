@@ -12,20 +12,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// Detail
-// @Summary pool detail
-// @description detail pool
-// @Tags Pool
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/pool [get]
 func Detail(c *gin.Context) {
 	var render = base.Gin{Context: c}
 	var ws *websocket.Conn

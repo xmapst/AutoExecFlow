@@ -16,20 +16,6 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-// List
-// @Summary task list
-// @description get all task
-// @Tags Task
-// @Accept application/json
-// @Accept application/toml
-// @Accept application/x-yaml
-// @Accept multipart/form-data
-// @Produce application/json
-// @Produce application/x-yaml
-// @Produce application/toml
-// @Success 200 {object} types.BaseRes
-// @Failure 500 {object} types.BaseRes
-// @Router /api/v1/task [get]
 func List(c *gin.Context) {
 	render := base.Gin{Context: c}
 	var ws *websocket.Conn
