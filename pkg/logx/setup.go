@@ -28,7 +28,7 @@ var (
 			encoder.AppendString(firstUpper(level.String()))
 		},
 		EncodeCaller: func(caller zapcore.EntryCaller, encoder zapcore.PrimitiveArrayEncoder) {
-			encoder.AppendString("[" + caller.FullPath() + "]")
+			encoder.AppendString("[" + caller.TrimmedPath() + "]")
 		},
 		EncodeDuration:   zapcore.SecondsDurationEncoder,
 		EncodeName:       zapcore.FullNameEncoder,
