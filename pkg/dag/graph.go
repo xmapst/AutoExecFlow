@@ -2,8 +2,10 @@ package dag
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 )
@@ -258,10 +260,10 @@ func (g *Graph) Run(ctx context.Context) error {
 	}()
 
 	var chError = make(chan error, 1)
-	var errs []error
+	var errs []string
 	go func() {
 		for err := range chError {
-			errs = append(errs, err)
+			errs = append(errs, err.Error())
 		}
 	}()
 
@@ -279,7 +281,7 @@ func (g *Graph) Run(ctx context.Context) error {
 	if errs == nil {
 		return nil
 	}
-	return fmt.Errorf("%v", errs)
+	return errors.New(strings.Join(errs, "; "))
 }
 
 func (g *Graph) Validator() error {

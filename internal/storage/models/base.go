@@ -19,8 +19,8 @@ var StateMap = map[int]string{
 }
 
 type Env struct {
-	Name  string `json:"name,omitempty" gorm:"not null;comment:名称"`
-	Value string `json:"value,omitempty" gorm:"comment:值"`
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 type Envs []*Env
