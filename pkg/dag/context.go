@@ -5,10 +5,22 @@ import (
 	"sync"
 )
 
+type State int
+
+const (
+	Unknown State = iota
+	Running
+	Stopped
+	Paused
+	Resume
+)
+
 type iContext struct {
 	sync.Mutex
-	name    string // 名称
-	visited bool   // 编译过或者追踪节点的遍历状态，以防止重复访问或陷入无限循环
+	name     string // 名称
+	visited  bool   // 编译过或者追踪节点的遍历状态，以防止重复访问或陷入无限循环
+	state    State  // 现在状态
+	oldState State  // 上一个状态
 
 	// 基础上下文. 控制未执行或执行中强杀
 	baseCtx    context.Context

@@ -17,7 +17,8 @@ type IManager interface {
 	Kill() error
 	Pause(duration string) error
 	Resume()
-	Paused() bool
+	State() State
+	WaitResume()
 }
 
 func leave(key string) (IManager, error) {

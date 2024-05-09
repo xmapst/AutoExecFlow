@@ -53,7 +53,7 @@ func Manager(c *gin.Context) {
 			render.SetError(base.CodeFailed, dag.ErrRunning)
 			return
 		}
-		if !manager.Paused() {
+		if manager.State() != dag.Paused {
 			_ = manager.Pause(duration)
 			err = storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
 				State:    models.Pointer(models.Paused),
@@ -62,7 +62,7 @@ func Manager(c *gin.Context) {
 			})
 		}
 	case "resume":
-		if manager.Paused() {
+		if manager.State() == dag.Paused {
 			manager.Resume()
 			err = storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
 				State:    step.OldState,

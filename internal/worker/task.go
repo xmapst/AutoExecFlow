@@ -61,11 +61,12 @@ func Submit(taskName string) (err error) {
 				continue
 			}
 			// 添加顶点以及设置依赖关系
-			_vertex, err := _task.graph.AddVertex(stepFn)
+			var _vertex *dag.Vertex
+			_vertex, err = _task.graph.AddVertex(stepFn)
 			if err != nil {
 				return
 			}
-			_vertex.WithDeps(func() []*dag.Vertex {
+			err = _vertex.WithDeps(func() []*dag.Vertex {
 				var stepFns []*dag.Vertex
 				for _, name := range _task.Step(_step.Name).Depend().List() {
 					_stepFn, _ok := stepFnMap[name]
@@ -76,6 +77,9 @@ func Submit(taskName string) (err error) {
 				}
 				return stepFns
 			}()...)
+			if err != nil {
+				return
+			}
 		}
 		// 校验dag图形
 		if err = _task.graph.Validator(); err != nil {
@@ -110,9 +114,8 @@ func (t *task) run(ctx context.Context) error {
 	}()
 
 	// 判断当前图形是否挂起
-	if t.graph.Paused() {
-		t.graph.WaitResume()
-	}
+	t.graph.WaitResume()
+
 	if err := t.Update(&models.TaskUpdate{
 		State:    models.Pointer(models.Running),
 		OldState: models.Pointer(models.Pending),

@@ -53,10 +53,12 @@ func (g *Graph) Pause(duration string) error {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
-	if g.ctx.controlCtx != nil {
+	if g.ctx.state == Paused || g.ctx.controlCtx != nil {
 		// 重复挂起, 直接返回
 		return nil
 	}
+	g.ctx.oldState = g.ctx.state
+	g.ctx.state = Paused
 
 	g.ctx.controlCtx, g.ctx.controlCancel = context.WithCancel(context.Background())
 	d, err := time.ParseDuration(duration)
@@ -71,11 +73,12 @@ func (g *Graph) Pause(duration string) error {
 func (g *Graph) Resume() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
-	if g.ctx.controlCancel == nil {
+	if g.ctx.state != Paused || g.ctx.controlCancel == nil {
 		// 没有挂起不需要恢复,直接返回
 		return
 	}
-
+	g.ctx.oldState = g.ctx.state
+	g.ctx.state = Resume
 	// 解除挂起
 	g.ctx.controlCancel()
 }
@@ -85,16 +88,16 @@ func (g *Graph) WaitResume() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
-	if g.ctx.controlCtx == nil {
+	if g.ctx.state != Paused || g.ctx.controlCtx == nil {
 		// 没有挂起不需要d等待,直接返回
 		return
 	}
 	<-g.ctx.controlCtx.Done()
 }
 
-// Paused 是否挂起
-func (g *Graph) Paused() bool {
-	return g.ctx.controlCtx != nil
+// State 返回当前状态
+func (g *Graph) State() State {
+	return g.ctx.state
 }
 
 // AddVertex 添加顶点
@@ -130,13 +133,19 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 	defer func() {
 		v.ctx.mainCancel()
-		g.wg.Done()
+
+		g.ctx.Lock()
+		v.ctx.oldState = v.ctx.state
+		g.ctx.state = Stopped
+		g.ctx.Unlock()
+
 		remove(fmt.Sprintf(vertexPrefix, g.Name(), v.Name()))
 		debug.FreeOSMemory()
+		g.wg.Done()
 	}()
 
 	// 图形级暂停
-	if g.Paused() {
+	if g.State() == Paused {
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
@@ -147,8 +156,8 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		}
 	}
 
-	// 节点级暂停
-	if v.Paused() {
+	// 节点级执行前控制, 挂起/解卦/强杀
+	if v.State() == Paused {
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
@@ -163,15 +172,23 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		}
 	}
 
-	// 设置运行中
 	v.ctx.Lock()
-	defer v.ctx.Unlock()
-	v.running = true
+	v.ctx.oldState = v.ctx.state
+	v.ctx.state = Running
+	v.ctx.Unlock()
 
 	// 执行顶点函数
 	if err := v.fn(v.ctx.mainCtx, g.Name(), v.Name()); err != nil {
 		errCh <- err
 		return
+	}
+
+	// 节点级执行后控制, 挂起/解卦/强杀
+	if v.State() == Paused {
+		select {
+		case <-v.ctx.controlCtx.Done():
+			// 继续
+		}
 	}
 
 	// 执行后面的顶点
@@ -220,6 +237,11 @@ func (g *Graph) Run(ctx context.Context) error {
 
 	// 设置图形主上下文
 	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancel(ctx, g.ctx.baseCtx)
+	// 设置运行中
+	g.ctx.Lock()
+	g.ctx.oldState = g.ctx.state
+	g.ctx.state = Running
+	g.ctx.Unlock()
 
 	// 设置所有顶点主上下文
 	for k := range g.vertex {
@@ -228,6 +250,10 @@ func (g *Graph) Run(ctx context.Context) error {
 
 	defer func() {
 		g.ctx.mainCancel()
+		g.ctx.Lock()
+		g.ctx.oldState = g.ctx.state
+		g.ctx.state = Stopped
+		g.ctx.Unlock()
 		remove(fmt.Sprintf(graphPrefix, g.Name()))
 	}()
 

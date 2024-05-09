@@ -261,7 +261,7 @@ func (t *Task) Save() (err error) {
 		if err != nil {
 			return err
 		}
-		vertex.WithDeps(func() []*dag.Vertex {
+		err = vertex.WithDeps(func() []*dag.Vertex {
 			var stepFns []*dag.Vertex
 			for _, name := range step.Depends {
 				_stepFn, _ok := stepFnMap[name]
@@ -272,6 +272,9 @@ func (t *Task) Save() (err error) {
 			}
 			return stepFns
 		}()...)
+		if err != nil {
+			return err
+		}
 	}
 	err = graph.Validator()
 	if err != nil {

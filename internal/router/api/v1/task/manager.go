@@ -48,7 +48,7 @@ func Manager(c *gin.Context) {
 			})
 		}
 	case "pause":
-		if !manager.Paused() {
+		if manager.State() != dag.Paused {
 			_ = manager.Pause(duration)
 			err = storage.Task(taskName).Update(&models.TaskUpdate{
 				State:    models.Pointer(models.Paused),
@@ -57,7 +57,7 @@ func Manager(c *gin.Context) {
 			})
 		}
 	case "resume":
-		if manager.Paused() {
+		if manager.State() == dag.Paused {
 			manager.Resume()
 			err = storage.Task(taskName).Update(&models.TaskUpdate{
 				State:    task.OldState,
