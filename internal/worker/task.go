@@ -19,74 +19,55 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-type task struct {
+type Task struct {
 	backend.ITask
 	graph     *dag.Graph
 	workspace string
 	scriptDir string
 }
 
-func Submit(taskName string) (err error) {
+func NewTask(taskName string) *Task {
+	return &Task{
+		ITask:     storage.Task(taskName),
+		graph:     dag.New(taskName),
+		workspace: filepath.Join(config.App.WorkSpace, taskName),
+		scriptDir: filepath.Join(config.App.ScriptDir, taskName),
+	}
+}
+
+func (t *Task) AddVertex(v *dag.Vertex) (*dag.Vertex, error) {
+	return t.graph.AddVertex(v)
+}
+
+func (t *Task) Validator() error {
+	return t.graph.Validator()
+}
+
+func (t *Task) Submit() {
 	atomic.AddInt64(&taskTotal, 1)
 	queue.PushBack(func() {
-		var _task = task{
-			ITask:     storage.Task(taskName),
-			graph:     dag.New(taskName),
-			workspace: filepath.Join(config.App.WorkSpace, taskName),
-			scriptDir: filepath.Join(config.App.ScriptDir, taskName),
+		if err := t.Update(&models.TaskUpdate{
+			State:    models.Pointer(models.Running),
+			OldState: models.Pointer(models.Pending),
+			STime:    models.Pointer(time.Now()),
+			Message:  "task is running",
+		}); err != nil {
+			return
 		}
+		var err error
 		defer func() {
 			if err != nil {
-				logx.Errorln(_task.Name(), err)
-				_ = _task.Update(&models.TaskUpdate{
+				logx.Errorln(t.Name(), err)
+				_ = t.Update(&models.TaskUpdate{
 					State:    models.Pointer(models.Failed),
 					OldState: models.Pointer(models.Running),
-					STime:    models.Pointer(time.Now()),
+					ETime:    models.Pointer(time.Now()),
 					Message:  err.Error(),
 				})
 			}
 		}()
 
-		var _steps = _task.StepList("")
-		// 生成顶点
-		var stepFnMap = make(map[string]*dag.Vertex)
-		for _, _step := range _steps {
-			stepFnMap[_step.Name] = dag.NewVertex(_step.Name, _task.newStepVertexFunc(_task.workspace, _task.scriptDir))
-		}
-
-		// 编排步骤: 图中的每个顶点都是一个作业
-		for _, _step := range _steps {
-			stepFn, ok := stepFnMap[_step.Name]
-			if !ok {
-				continue
-			}
-			// 添加顶点以及设置依赖关系
-			var _vertex *dag.Vertex
-			_vertex, err = _task.graph.AddVertex(stepFn)
-			if err != nil {
-				return
-			}
-			err = _vertex.WithDeps(func() []*dag.Vertex {
-				var stepFns []*dag.Vertex
-				for _, name := range _task.Step(_step.Name).Depend().List() {
-					_stepFn, _ok := stepFnMap[name]
-					if !_ok {
-						continue
-					}
-					stepFns = append(stepFns, _stepFn)
-				}
-				return stepFns
-			}()...)
-			if err != nil {
-				return
-			}
-		}
-		// 校验dag图形
-		if err = _task.graph.Validator(); err != nil {
-			logx.Errorln(_task.Name(), err)
-			return
-		}
-		taskDetail, err := _task.Timeout()
+		taskDetail, err := t.Timeout()
 		if err != nil {
 			logx.Errorln(err)
 			return
@@ -96,16 +77,16 @@ func Submit(taskName string) (err error) {
 			ctx, cancel = context.WithTimeoutCause(context.Background(), (taskDetail*time.Minute)+1, exec.ErrTimeOut)
 		}
 		defer cancel()
-		res := _task.run(ctx)
-		logx.Infoln(_task.Name(), "end of execution")
+		res := t.run(ctx)
+		logx.Infoln(t.Name(), "end of execution")
 		if res != nil {
-			logx.Infoln(_task.Name(), res)
+			logx.Infoln(t.Name(), res)
 		}
 	})
 	return
 }
 
-func (t *task) run(ctx context.Context) error {
+func (t *Task) run(ctx context.Context) error {
 	defer func() {
 		err := recover()
 		if err != nil {
@@ -115,16 +96,6 @@ func (t *task) run(ctx context.Context) error {
 
 	// 判断当前图形是否挂起
 	t.graph.WaitResume()
-
-	if err := t.Update(&models.TaskUpdate{
-		State:    models.Pointer(models.Running),
-		OldState: models.Pointer(models.Pending),
-		STime:    models.Pointer(time.Now()),
-		Message:  "task is running",
-	}); err != nil {
-		logx.Errorln(t.Name(), err)
-		return err
-	}
 
 	var res = new(models.TaskUpdate)
 	defer func() {
@@ -165,7 +136,7 @@ func (t *task) run(ctx context.Context) error {
 	return nil
 }
 
-func (t *task) initDir() error {
+func (t *Task) initDir() error {
 	if err := utils.EnsureDirExist(t.workspace); err != nil {
 		logx.Errorln(t.Name(), t.workspace, t.scriptDir, err)
 		return err
@@ -177,7 +148,7 @@ func (t *task) initDir() error {
 	return nil
 }
 
-func (t *task) clearDir() {
+func (t *Task) clearDir() {
 	if err := os.RemoveAll(t.scriptDir); err != nil {
 		logx.Errorln(t.Name(), err)
 	}

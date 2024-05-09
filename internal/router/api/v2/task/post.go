@@ -8,7 +8,6 @@ import (
 
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
-	"github.com/xmapst/osreapi/internal/worker"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
@@ -22,13 +21,6 @@ func Post(c *gin.Context) {
 	}
 
 	if err := req.Save(); err != nil {
-		render.SetError(base.CodeFailed, err)
-		return
-	}
-
-	// 加入池中异步处理
-	if err := worker.Submit(req.Name); err != nil {
-		logx.Errorln(err)
 		render.SetError(base.CodeFailed, err)
 		return
 	}

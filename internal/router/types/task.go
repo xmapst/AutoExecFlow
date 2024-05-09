@@ -9,9 +9,9 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/osreapi/internal/server/config"
-	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/internal/utils"
+	"github.com/xmapst/osreapi/internal/worker"
 	"github.com/xmapst/osreapi/pkg/dag"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
@@ -243,52 +243,16 @@ func (t *Task) Save() (err error) {
 		return errors.New("task is running")
 	}
 
-	// 校验dag图形
-	// 创建假的顶点
-	var stepFnMap = make(map[string]*dag.Vertex)
-	for _, step := range t.Step {
-		stepFnMap[step.Name] = dag.NewVertex(step.Name, nil)
-	}
-	// 创建图形
-	var graph = dag.New(t.Name)
-	for _, step := range t.Step {
-		stepFn, ok := stepFnMap[step.Name]
-		if !ok {
-			continue
-		}
-		var vertex *dag.Vertex
-		vertex, err = graph.AddVertex(stepFn)
-		if err != nil {
-			return err
-		}
-		err = vertex.WithDeps(func() []*dag.Vertex {
-			var stepFns []*dag.Vertex
-			for _, name := range step.Depends {
-				_stepFn, _ok := stepFnMap[name]
-				if !_ok {
-					continue
-				}
-				stepFns = append(stepFns, _stepFn)
-			}
-			return stepFns
-		}()...)
-		if err != nil {
-			return err
-		}
-	}
-	err = graph.Validator()
-	if err != nil {
-		return err
-	}
-
+	var task = worker.NewTask(t.Name)
 	defer func() {
 		if err != nil {
 			// rollback
-			storage.Task(t.Name).ClearAll()
+			task.ClearAll()
 		}
 	}()
+
 	// save task
-	err = storage.Task(t.Name).Create(&models.Task{
+	err = task.Create(&models.Task{
 		Count:   models.Pointer(len(t.Step)),
 		Timeout: t.timeoutDuration,
 		TaskUpdate: models.TaskUpdate{
@@ -303,7 +267,7 @@ func (t *Task) Save() (err error) {
 
 	// save task env
 	for name, value := range t.Env {
-		if err = storage.Task(t.Name).Env().Create(&models.Env{
+		if err = task.Env().Create(&models.Env{
 			Name:  name,
 			Value: value,
 		}); err != nil {
@@ -311,9 +275,12 @@ func (t *Task) Save() (err error) {
 		}
 	}
 
-	// save step
+	// 校验dag图形
+	// 1. 创建顶点并入库
+	var stepVertex = make(map[string]*dag.Vertex)
 	for _, step := range t.Step {
-		err = storage.Task(t.Name).Step(step.Name).Create(&models.Step{
+		// save step
+		err = task.Step(step.Name).Create(&models.Step{
 			Type:    step.Type,
 			Content: step.Content,
 			Timeout: step.timeoutDuration,
@@ -329,7 +296,7 @@ func (t *Task) Save() (err error) {
 		}
 		// save step env
 		for name, value := range step.Env {
-			if err = storage.Task(t.Name).Step(step.Name).Env().Create(&models.Env{
+			if err = task.Step(step.Name).Env().Create(&models.Env{
 				Name:  name,
 				Value: value,
 			}); err != nil {
@@ -337,10 +304,45 @@ func (t *Task) Save() (err error) {
 			}
 		}
 		// save step depend
-		err = storage.Task(t.Name).Step(step.Name).Depend().Create(step.Depends...)
+		err = task.Step(step.Name).Depend().Create(step.Depends...)
+		if err != nil {
+			return err
+		}
+		stepVertex[step.Name] = dag.NewVertex(step.Name, task.NewStep())
+	}
+	// 2. 创建顶点依赖关系
+	for _, step := range t.Step {
+		vertex, ok := stepVertex[step.Name]
+		if !ok {
+			return fmt.Errorf("%s vertex does not exist", step.Name)
+		}
+
+		vertex, err = task.AddVertex(vertex)
+		if err != nil {
+			return err
+		}
+		err = vertex.WithDeps(func() []*dag.Vertex {
+			var stepFns []*dag.Vertex
+			for _, name := range step.Depends {
+				_stepFn, _ok := stepVertex[name]
+				if !_ok {
+					continue
+				}
+				stepFns = append(stepFns, _stepFn)
+			}
+			return stepFns
+		}()...)
 		if err != nil {
 			return err
 		}
 	}
+	// 3. 校验dag图形
+	err = task.Validator()
+	if err != nil {
+		return err
+	}
+
+	// 提交任务
+	task.Submit()
 	return
 }

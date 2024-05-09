@@ -106,7 +106,6 @@ func (s *step) execStep(ctx context.Context, taskName, stepName string) error {
 	res.Code = models.Pointer(code)
 	res.State = models.Pointer(models.Stop)
 	if err != nil {
-		fmt.Println(err.Error())
 		res.State = models.Pointer(models.Failed)
 		res.Message = err.Error()
 		return err

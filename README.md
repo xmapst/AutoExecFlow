@@ -77,6 +77,7 @@ git clone https://github.com/xmapst/osreapi.git
 cd osreapi
 make
 ```
+
 ## 示例
 
 ### 创建任务
@@ -205,7 +206,6 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
 curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{任务名称}/step/{步骤名称}?action=resume
 ```
 
-
 [注释]  
 + code:  
   - 0: success
@@ -214,4 +214,3 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
   - 1003: not found
   - 1004: pending
   - 1005: paused
-
