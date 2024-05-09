@@ -39,49 +39,6 @@ Flags:
 Use "linux-remote_executor-amd64 [command] --help" for more information about a command.
 ```
 
-## Router
-```text
-[GIN-debug] GET    /debug/pprof/             --> github.com/gin-contrib/pprof.RouteRegister.WrapF.func1 (5 handlers)
-[GIN-debug] GET    /debug/pprof/cmdline      --> github.com/gin-contrib/pprof.RouteRegister.WrapF.func2 (5 handlers)
-[GIN-debug] GET    /debug/pprof/profile      --> github.com/gin-contrib/pprof.RouteRegister.WrapF.func3 (5 handlers)
-[GIN-debug] POST   /debug/pprof/symbol       --> github.com/gin-contrib/pprof.RouteRegister.WrapF.func4 (5 handlers)
-[GIN-debug] GET    /debug/pprof/symbol       --> github.com/gin-contrib/pprof.RouteRegister.WrapF.func5 (5 handlers)
-[GIN-debug] GET    /debug/pprof/trace        --> github.com/gin-contrib/pprof.RouteRegister.WrapF.func6 (5 handlers)
-[GIN-debug] GET    /debug/pprof/allocs       --> github.com/gin-contrib/pprof.RouteRegister.WrapH.func7 (5 handlers)
-[GIN-debug] GET    /debug/pprof/block        --> github.com/gin-contrib/pprof.RouteRegister.WrapH.func8 (5 handlers)
-[GIN-debug] GET    /debug/pprof/goroutine    --> github.com/gin-contrib/pprof.RouteRegister.WrapH.func9 (5 handlers)
-[GIN-debug] GET    /debug/pprof/heap         --> github.com/gin-contrib/pprof.RouteRegister.WrapH.func10 (5 handlers)
-[GIN-debug] GET    /debug/pprof/mutex        --> github.com/gin-contrib/pprof.RouteRegister.WrapH.func11 (5 handlers)
-[GIN-debug] GET    /debug/pprof/threadcreate --> github.com/gin-contrib/pprof.RouteRegister.WrapH.func12 (5 handlers)
-[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (5 handlers)
-[GIN-debug] GET    /version                  --> github.com/xmapst/osreapi/internal/router.version (5 handlers)
-[GIN-debug] GET    /healthyz                 --> github.com/xmapst/osreapi/internal/router.healthyz (5 handlers)
-[GIN-debug] GET    /metrics                  --> github.com/xmapst/osreapi/internal/router.metrics (5 handlers)
-[GIN-debug] GET    /heartbeat                --> github.com/xmapst/osreapi/internal/router.heartbeat (5 handlers)
-[GIN-debug] HEAD   /heartbeat                --> github.com/xmapst/osreapi/internal/router.heartbeat (5 handlers)
-[GIN-debug] GET    /api/v1/task              --> github.com/xmapst/osreapi/internal/router/api/v1/task.List (6 handlers)
-[GIN-debug] POST   /api/v1/task              --> github.com/xmapst/osreapi/internal/router/api/v1/task.Post (6 handlers)
-[GIN-debug] GET    /api/v1/task/:task        --> github.com/xmapst/osreapi/internal/router/api/v1/task.Get (6 handlers)
-[GIN-debug] PUT    /api/v1/task/:task        --> github.com/xmapst/osreapi/internal/router/api/v1/task.Manager (6 handlers)
-[GIN-debug] GET    /api/v1/task/:task/workspace --> github.com/xmapst/osreapi/internal/router/api/v1/task/workspace.Get (6 handlers)
-[GIN-debug] DELETE /api/v1/task/:task/workspace --> github.com/xmapst/osreapi/internal/router/api/v1/task/workspace.Delete (6 handlers)
-[GIN-debug] POST   /api/v1/task/:task/workspace --> github.com/xmapst/osreapi/internal/router/api/v1/task/workspace.Post (6 handlers)
-[GIN-debug] GET    /api/v1/task/:task/step/:step --> github.com/xmapst/osreapi/internal/router/api/v1/task/step.Get (6 handlers)
-[GIN-debug] PUT    /api/v1/task/:task/step/:step --> github.com/xmapst/osreapi/internal/router/api/v1/task/step.Manager (6 handlers)
-[GIN-debug] GET    /api/v1/pool              --> github.com/xmapst/osreapi/internal/router/api/v1/pool.Detail (6 handlers)
-[GIN-debug] POST   /api/v1/pool              --> github.com/xmapst/osreapi/internal/router/api/v1/pool.Post (6 handlers)
-[GIN-debug] POST   /api/v2/task              --> github.com/xmapst/osreapi/internal/router/api/v2/task.Post (6 handlers)
-[GIN-debug] GET    /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] POST   /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] PUT    /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] PATCH  /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] HEAD   /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] OPTIONS /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] DELETE /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] CONNECT /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-[GIN-debug] TRACE  /api/endpoints            --> github.com/xmapst/osreapi/internal/router.New.func2 (5 handlers)
-```
-
 ## 服用方式
 ### Windows
 用管理模式打开powershell执行

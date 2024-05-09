@@ -3,6 +3,7 @@ package dag
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -131,6 +132,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		v.ctx.mainCancel()
 		g.wg.Done()
 		remove(fmt.Sprintf(vertexPrefix, g.Name(), v.Name()))
+		debug.FreeOSMemory()
 	}()
 
 	// 图形级暂停
