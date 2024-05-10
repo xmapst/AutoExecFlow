@@ -4,89 +4,35 @@ import (
 	"context"
 	"errors"
 	"os"
-	"path/filepath"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	_ "github.com/xmapst/osreapi/internal/plugins"
-	"github.com/xmapst/osreapi/internal/server/config"
-	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/backend"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/pkg/dag"
-	"github.com/xmapst/osreapi/pkg/exec"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-type Task struct {
+type task struct {
 	backend.ITask
 	graph     *dag.Graph
 	workspace string
 	scriptDir string
 }
 
-func NewTask(taskName string) *Task {
-	return &Task{
-		ITask:     storage.Task(taskName),
-		graph:     dag.New(taskName),
-		workspace: filepath.Join(config.App.WorkSpace, taskName),
-		scriptDir: filepath.Join(config.App.ScriptDir, taskName),
+func (t *task) newStep() dag.VertexFunc {
+	s := &step{
+		wg:        new(sync.WaitGroup),
+		workspace: t.workspace,
+		scriptDir: t.scriptDir,
+		logChan:   make(chan string, 15),
 	}
+	return s.vertexFunc()
 }
 
-func (t *Task) AddVertex(v *dag.Vertex) (*dag.Vertex, error) {
-	return t.graph.AddVertex(v)
-}
-
-func (t *Task) Validator() error {
-	return t.graph.Validator()
-}
-
-func (t *Task) Submit() {
-	atomic.AddInt64(&taskTotal, 1)
-	queue.PushBack(func() {
-		if err := t.Update(&models.TaskUpdate{
-			State:    models.Pointer(models.Running),
-			OldState: models.Pointer(models.Pending),
-			STime:    models.Pointer(time.Now()),
-			Message:  "task is running",
-		}); err != nil {
-			return
-		}
-		var err error
-		defer func() {
-			if err != nil {
-				logx.Errorln(t.Name(), err)
-				_ = t.Update(&models.TaskUpdate{
-					State:    models.Pointer(models.Failed),
-					OldState: models.Pointer(models.Running),
-					ETime:    models.Pointer(time.Now()),
-					Message:  err.Error(),
-				})
-			}
-		}()
-
-		taskDetail, err := t.Timeout()
-		if err != nil {
-			logx.Errorln(err)
-			return
-		}
-		var ctx, cancel = context.WithCancel(context.Background())
-		if taskDetail > 0 {
-			ctx, cancel = context.WithTimeoutCause(context.Background(), (taskDetail*time.Minute)+1, exec.ErrTimeOut)
-		}
-		defer cancel()
-		res := t.run(ctx)
-		logx.Infoln(t.Name(), "end of execution")
-		if res != nil {
-			logx.Infoln(t.Name(), res)
-		}
-	})
-	return
-}
-
-func (t *Task) run(ctx context.Context) error {
+func (t *task) run(ctx context.Context) error {
 	defer func() {
 		err := recover()
 		if err != nil {
@@ -136,7 +82,7 @@ func (t *Task) run(ctx context.Context) error {
 	return nil
 }
 
-func (t *Task) initDir() error {
+func (t *task) initDir() error {
 	if err := utils.EnsureDirExist(t.workspace); err != nil {
 		logx.Errorln(t.Name(), t.workspace, t.scriptDir, err)
 		return err
@@ -148,7 +94,7 @@ func (t *Task) initDir() error {
 	return nil
 }
 
-func (t *Task) clearDir() {
+func (t *task) clearDir() {
 	if err := os.RemoveAll(t.scriptDir); err != nil {
 		logx.Errorln(t.Name(), err)
 	}

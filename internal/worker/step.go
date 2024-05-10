@@ -23,16 +23,6 @@ type step struct {
 	logChan   chan string
 }
 
-func (t *Task) NewStep() dag.VertexFunc {
-	s := &step{
-		wg:        new(sync.WaitGroup),
-		workspace: t.workspace,
-		scriptDir: t.scriptDir,
-		logChan:   make(chan string, 15),
-	}
-	return s.vertexFunc()
-}
-
 func (s *step) vertexFunc() dag.VertexFunc {
 	// build step
 	return func(ctx context.Context, taskName, stepName string) error {

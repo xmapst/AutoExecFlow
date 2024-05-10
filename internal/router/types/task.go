@@ -9,6 +9,7 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/osreapi/internal/server/config"
+	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/internal/worker"
@@ -243,7 +244,7 @@ func (t *Task) Save() (err error) {
 		return errors.New("task is running")
 	}
 
-	var task = worker.NewTask(t.Name)
+	var task = storage.Task(t.Name)
 	defer func() {
 		if err != nil {
 			// rollback
@@ -275,9 +276,6 @@ func (t *Task) Save() (err error) {
 		}
 	}
 
-	// 校验dag图形
-	// 1. 创建顶点并入库
-	var stepVertex = make(map[string]*dag.Vertex)
 	for _, step := range t.Step {
 		// save step
 		err = task.Step(step.Name).Create(&models.Step{
@@ -308,41 +306,8 @@ func (t *Task) Save() (err error) {
 		if err != nil {
 			return err
 		}
-		stepVertex[step.Name] = dag.NewVertex(step.Name, task.NewStep())
 	}
-	// 2. 创建顶点依赖关系
-	for _, step := range t.Step {
-		vertex, ok := stepVertex[step.Name]
-		if !ok {
-			return fmt.Errorf("%s vertex does not exist", step.Name)
-		}
-
-		vertex, err = task.AddVertex(vertex)
-		if err != nil {
-			return err
-		}
-		err = vertex.WithDeps(func() []*dag.Vertex {
-			var stepFns []*dag.Vertex
-			for _, name := range step.Depends {
-				_stepFn, _ok := stepVertex[name]
-				if !_ok {
-					continue
-				}
-				stepFns = append(stepFns, _stepFn)
-			}
-			return stepFns
-		}()...)
-		if err != nil {
-			return err
-		}
-	}
-	// 3. 校验dag图形
-	err = task.Validator()
-	if err != nil {
-		return err
-	}
-
 	// 提交任务
-	task.Submit()
+	worker.Submit(t.Name)
 	return
 }
