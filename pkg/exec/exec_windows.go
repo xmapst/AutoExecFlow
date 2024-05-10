@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -75,9 +76,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	select {
 	// 人工强制终止
 	case <-ctx.Done():
-		if c.cmd.Status().PID != 0 {
-			_ = KillAll(c.cmd.Status().PID)
-		}
+		_ = c.kill()
 		err = ErrManual
 		code = Killed
 		if context.Cause(ctx) != nil {
@@ -93,9 +92,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	case <-c.ctx.Done():
 		// 如果直接使用cmd.Process.Kill()并不能杀死主进程下的所有子进程
 		// _ = cmd.Process.Kill()
-		if c.cmd.Status().PID != 0 {
-			_ = KillAll(c.cmd.Status().PID)
-		}
+		_ = c.kill()
 		err = ErrTimeOut
 		code = Timeout
 	// 执行结果
@@ -110,6 +107,14 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		}
 	}
 	return
+}
+
+func (c *Cmd) kill() error {
+	if c.cmd.Status().PID == 0 {
+		return nil
+	}
+	kill := exec.Command("TASKKILL.exe", "/T", "/F", "/PID", strconv.Itoa(c.cmd.Status().PID))
+	return kill.Run()
 }
 
 func (c *Cmd) transform(line string) string {
