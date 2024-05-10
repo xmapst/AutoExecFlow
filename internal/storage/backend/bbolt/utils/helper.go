@@ -2,12 +2,12 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 
+	"github.com/goccy/go-json"
 	"go.etcd.io/bbolt"
 )
 

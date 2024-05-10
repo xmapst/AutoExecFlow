@@ -3,11 +3,11 @@ package sys
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"

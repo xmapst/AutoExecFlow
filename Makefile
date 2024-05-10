@@ -30,24 +30,24 @@ vet:
 
 dev:
 	go mod tidy
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/linux-remote_executor-amd64 cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/windows-remote_executor-amd64.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/linux-remote_executor-amd64 cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/windows-remote_executor-amd64.exe cmd/osreapi.go
 
 windows:
 	go mod tidy
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=386 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/windows-remote_executor-386.exe cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/windows-remote_executor-arm.exe cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/windows-remote_executor-amd64.exe cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/windows-remote_executor-arm64.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=386 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/windows-remote_executor-386.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/windows-remote_executor-arm.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/windows-remote_executor-amd64.exe cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/windows-remote_executor-arm64.exe cmd/osreapi.go
 
 linux:
 	go mod tidy
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=386 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/linux-remote_executor-386 cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/linux-remote_executor-amd64 cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/linux-remote_executor-arm cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/linux-remote_executor-arm64 cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=386 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/linux-remote_executor-386 cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/linux-remote_executor-amd64 cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/linux-remote_executor-arm cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/linux-remote_executor-arm64 cmd/osreapi.go
 
 darwin:
 	go mod tidy
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/darwin-remote_executor-amd64 cmd/osreapi.go
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -tags=jsoniter -o bin/darwin-remote_executor-arm64 cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/darwin-remote_executor-amd64 cmd/osreapi.go
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags $(LDFLAGS) -tags=go_json -o bin/darwin-remote_executor-arm64 cmd/osreapi.go

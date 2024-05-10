@@ -1,13 +1,13 @@
 package bbolt
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/goccy/go-json"
 	"go.etcd.io/bbolt"
 
 	"github.com/xmapst/osreapi/internal/storage/backend"
