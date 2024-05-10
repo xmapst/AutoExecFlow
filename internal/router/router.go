@@ -25,6 +25,7 @@ import (
 
 func New(maxRequests int64) *gin.Engine {
 	gin.DisableConsoleColor()
+	gin.EnableJsonDecoderUseNumber()
 	router := gin.New()
 	router.Use(
 		cors.Default(),

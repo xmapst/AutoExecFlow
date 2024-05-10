@@ -19,6 +19,14 @@ func Post(c *gin.Context) {
 		render.SetError(base.CodeFailed, err)
 		return
 	}
+	if req.Size == 0 {
+		render.SetRes(&types.Pool{
+			Size:    worker.GetSize(),
+			Running: worker.Running(),
+			Waiting: worker.Waiting(),
+		})
+		return
+	}
 	if (worker.Running() != 0 || worker.Waiting() != 0) && req.Size <= worker.GetSize() {
 		render.SetError(base.CodeFailed, errors.New("there are still tasks running, scaling down is not allowed"))
 		return

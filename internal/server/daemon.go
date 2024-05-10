@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -46,6 +47,13 @@ func New() *Program {
 
 func (p *Program) init() error {
 	if err := config.App.Init(); err != nil {
+		logx.Errorln(err)
+		return err
+	}
+
+	if _, err := p.cron.AddFunc("@every 3m", func() {
+		debug.FreeOSMemory()
+	}); err != nil {
 		logx.Errorln(err)
 		return err
 	}
