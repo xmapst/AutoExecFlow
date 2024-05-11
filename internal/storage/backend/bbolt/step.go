@@ -1,6 +1,7 @@
 package bbolt
 
 import (
+	"bytes"
 	"errors"
 	"strings"
 	"time"
@@ -328,18 +329,10 @@ func (s *stepDepend) List() (res []string) {
 			return nil
 		}
 		return stepBucket.ForEach(func(k, v []byte) error {
-			if !strings.HasPrefix(string(k), dependPrefix) {
+			if !bytes.HasPrefix(k, []byte(dependPrefix)) {
 				return nil
 			}
-			depBucket := stepBucket.Bucket(k)
-			if depBucket == nil {
-				return nil
-			}
-			value := depBucket.Get([]byte("name"))
-			if value == nil {
-				return nil
-			}
-			res = append(res, string(value))
+			res = append(res, string(bytes.TrimPrefix(k, []byte(dependPrefix))))
 			return nil
 		})
 	})
@@ -357,11 +350,7 @@ func (s *stepDepend) Create(depends ...string) error {
 			return err
 		}
 		for _, depend := range depends {
-			dependBucket, err := stepBucket.CreateBucketIfNotExists([]byte(dependPrefix + depend))
-			if err != nil {
-				return err
-			}
-			err = dependBucket.Put([]byte("name"), []byte(depend))
+			_, err = stepBucket.CreateBucketIfNotExists([]byte(dependPrefix + depend))
 			if err != nil {
 				return err
 			}
@@ -381,7 +370,7 @@ func (s *stepDepend) DeleteAll() (err error) {
 			return errors.New("not found")
 		}
 		return stepBucket.ForEach(func(k, v []byte) error {
-			if !strings.HasPrefix(string(k), dependPrefix) {
+			if !bytes.HasPrefix(k, []byte(dependPrefix)) {
 				return nil
 			}
 			return stepBucket.DeleteBucket(k)
