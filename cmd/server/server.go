@@ -53,7 +53,6 @@ func New() *cobra.Command {
 	cmd.Flags().StringVarP(&config.App.ListenAddress, "addr", "a", "tcp://0.0.0.0:2376", "listening address.")
 	cmd.Flags().BoolVarP(&config.App.Normal, "normal", "n", false, "wait for all task execution to complete.")
 	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", 30, "set the size of the execution work pool.")
-	cmd.Flags().Int64Var(&config.App.MaxRequests, "max_requests", 0, "max number of concurrent requests. 0 to disable.")
 	cmd.Flags().StringVarP(&config.App.SelfUpdateURL, "self_url", "s", "https://oss.yfdou.com/tools/osreapi", "self Update URL")
 	cmd.Flags().DurationVarP(&config.App.WebTimeout, "timeout", "t", 120*time.Second, "maximum duration before timing out read/write/idle.")
 	cmd.Flags().StringVar(&config.App.DataDir, "data_dir", filepath.Join(os.TempDir(), config.App.ServiceName, "data"), "database directory")

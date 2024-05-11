@@ -1,9 +1,10 @@
 package router
 
 import (
+	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -11,24 +12,24 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func healthyz(c *gin.Context) {
-	var render = base.Gin{Context: c}
+func healthyz(w http.ResponseWriter, r *http.Request) {
 	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(c.Request) {
+	if websocket.IsWebSocketUpgrade(r) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request)
+		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 	}
+	data := &types.Healthyz{
+		Server: r.Host,
+		Client: r.RemoteAddr,
+		State:  "Running",
+	}
 	if ws == nil {
-		render.SetRes(&types.Healthyz{
-			Server: c.Request.Host,
-			Client: c.ClientIP(),
-			State:  "Running",
-		})
+		render.JSON(w, r, types.New().WithData(data))
 		return
 	}
 	// websocket 方式
@@ -38,12 +39,7 @@ func healthyz(c *gin.Context) {
 	}()
 	ticker := time.NewTicker(1 * time.Second)
 	for range ticker.C {
-		res := &types.Healthyz{
-			Server: c.Request.Host,
-			Client: c.ClientIP(),
-			State:  "Running",
-		}
-		err := ws.WriteJSON(base.NewRes(res, nil, base.CodeSuccess))
+		err := ws.WriteJSON(types.New().WithData(data))
 		if err != nil {
 			logx.Errorln(err)
 			return

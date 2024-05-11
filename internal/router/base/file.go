@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -15,13 +16,12 @@ import (
 )
 
 // SaveToTarFile 保存为tar压缩文件
-func (g *Gin) SaveToTarFile(path string) error {
-	form, err := g.MultipartForm()
-	if err != nil {
-		logx.Errorln(err)
+func SaveToTarFile(r *http.Request, path string) error {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		return err
 	}
-	files := form.File["files"]
+
+	files := r.MultipartForm.File["files"]
 	if len(files) == 0 {
 		return fmt.Errorf("files is null")
 	}
@@ -41,7 +41,7 @@ func (g *Gin) SaveToTarFile(path string) error {
 		// RFC 7578, Section 4.2 requires that if a filename is provided, the
 		// directory path information must not be used.
 		// 🙂🙂🙂🙂🙂🙂
-		v := f.Header.Get("Content-Disposition")
+		v := r.Header.Get("Content-Disposition")
 		_, dispositionParams, err := mime.ParseMediaType(v)
 		if err != nil {
 			logx.Errorln(err)
@@ -74,12 +74,12 @@ func (g *Gin) SaveToTarFile(path string) error {
 	return nil
 }
 
-func (g *Gin) SaveFiles(path string) error {
-	form, err := g.MultipartForm()
-	if err != nil {
+func SaveFiles(r *http.Request, path string) error {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		return err
 	}
-	files := form.File["files"]
+
+	files := r.MultipartForm.File["files"]
 	if len(files) == 0 {
 		return fmt.Errorf("files is null")
 	}
@@ -88,7 +88,7 @@ func (g *Gin) SaveFiles(path string) error {
 	var lock sync.Mutex
 
 	// ensure dir exist
-	if err = utils.EnsureDirExist(path); err != nil {
+	if err := utils.EnsureDirExist(path); err != nil {
 		logx.Errorln(err)
 		return err
 	}
@@ -125,9 +125,8 @@ func (g *Gin) SaveFiles(path string) error {
 					return
 				}
 			}
-
 			// save file to local in _tp
-			if err = g.SaveUploadedFile(file, filepath.Join(path, uploadFileName)); err != nil {
+			if err = saveUploadedFile(file, filepath.Join(path, uploadFileName)); err != nil {
 				lock.Lock()
 				defer lock.Unlock()
 				errs = append(errs, fmt.Errorf("%s %v", file.Filename, err))
@@ -139,4 +138,25 @@ func (g *Gin) SaveFiles(path string) error {
 		return nil
 	}
 	return fmt.Errorf("%v", errs)
+}
+
+func saveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	if err = os.MkdirAll(filepath.Dir(dst), 0750); err != nil {
+		return err
+	}
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
 }

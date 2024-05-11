@@ -1,4 +1,4 @@
-package example
+package main
 
 import (
 	"bytes"
@@ -11,15 +11,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/pkg/logx"
 	"github.com/xmapst/osreapi/pkg/pty"
 )
 
-func init() {
+func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGTERM)
 	go func() {
@@ -27,18 +27,22 @@ func init() {
 		os.Exit(0)
 	}()
 
-	r := gin.Default()
-	r.Use(cors.Default())
-	r.LoadHTMLFiles("ui/index.html")
-	r.Static("/js", "./ui/js")
-	r.Static("/css", "./ui/css")
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"title": "demo",
+	r := chi.NewRouter()
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
+	r.Group(func(r chi.Router) {
+		fs := http.StripPrefix("/", http.FileServer(http.Dir("ui")))
+		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+			fs.ServeHTTP(w, r)
 		})
 	})
-	r.GET("/ws", tty)
-	_ = r.Run(":8081")
+	r.Get("/ws", tty)
+	_ = http.ListenAndServe(":8081", r)
 }
 
 var upGrader = websocket.Upgrader{
@@ -64,8 +68,8 @@ type TTYSize struct {
 	Y    uint16 `json:"y"`
 }
 
-func tty(c *gin.Context) {
-	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+func tty(w http.ResponseWriter, r *http.Request) {
+	ws, err := upGrader.Upgrade(w, r, nil)
 	if err != nil {
 		logx.Errorln(err)
 		return

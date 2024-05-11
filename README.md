@@ -43,9 +43,9 @@ Use "linux-remote_executor-amd64 [command] --help" for more information about a 
 ### Windows
 用管理模式打开powershell执行
 ```powershell
-New-Service -Name remote_executor -BinaryPathName "C:\remote_executor.exe server" -DisplayName  "Remote Executor " -StartupType Automatic
-sc.exe failure remote_executor reset= 0 actions= restart/0/restart/0/restart/0
-sc.exe start remote_executor
+New-Service -Name osreapi -BinaryPathName "C:\osreapi\windows-remote_executor-amd64.exe server" -DisplayName  "Remote Executor " -StartupType Automatic
+sc.exe failure osreapi reset= 0 actions= restart/0/restart/0/restart/0
+sc.exe start osreapi
 ```
 
 ### Linux

@@ -2,11 +2,12 @@ package task
 
 import (
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -16,20 +17,19 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func List(c *gin.Context) {
-	render := base.Gin{Context: c}
+func List(w http.ResponseWriter, r *http.Request) {
 	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(c.Request) {
+	if websocket.IsWebSocketUpgrade(r) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request)
+		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetNegotiate(&types.TaskListRes{}, err, base.CodeSuccess)
+			render.JSON(w, r, types.New().WithError(err))
 			return
 		}
 	}
 	if ws == nil {
-		render.SetRes(list(c))
+		render.JSON(w, r, types.New().WithData(list(r)))
 		return
 	}
 	// websocket 方式
@@ -40,7 +40,7 @@ func List(c *gin.Context) {
 	// 使用websocket方式
 	var ticker = time.NewTicker(1 * time.Second)
 	for range ticker.C {
-		err := ws.WriteJSON(base.NewRes(list(c), nil, base.CodeSuccess))
+		err := ws.WriteJSON(types.New().WithData(list(r)))
 		if err != nil {
 			logx.Errorln(err)
 			return
@@ -49,7 +49,7 @@ func List(c *gin.Context) {
 }
 
 // 每次获取全量数据
-func list(c *gin.Context) *types.TaskListRes {
+func list(r *http.Request) *types.TaskListRes {
 	tasks := storage.TaskList("")
 	if tasks == nil {
 		return nil
@@ -58,10 +58,10 @@ func list(c *gin.Context) *types.TaskListRes {
 		Total: len(tasks),
 	}
 	var scheme = "http"
-	if c.Request.TLS != nil {
+	if r.TLS != nil {
 		scheme = "https"
 	}
-	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
+	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, r.Host, strings.TrimSuffix(r.URL.Path, "/"))
 	for _, task := range tasks {
 		res.Tasks = append(res.Tasks, procTask(uriPrefix, task))
 	}

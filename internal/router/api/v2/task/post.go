@@ -2,42 +2,40 @@ package taskv2
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 
-	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Post(c *gin.Context) {
-	render := base.Gin{Context: c}
+func Post(w http.ResponseWriter, r *http.Request) {
 	var req = new(types.Task)
-	if err := c.ShouldBind(req); err != nil {
+	if err := render.DecodeJSON(r.Body, req); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeFailed, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
 		return
 	}
 
 	if err := req.Save(); err != nil {
-		render.SetError(base.CodeFailed, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
 		return
 	}
 
-	c.Request.Header.Set(types.XTaskName, req.Name)
-	c.Writer.Header().Set(types.XTaskName, req.Name)
-	c.Set(types.XTaskName, req.Name)
+	r.Header.Set(types.XTaskName, req.Name)
+	w.Header().Set(types.XTaskName, req.Name)
 
 	var scheme = "http"
-	if c.Request.TLS != nil {
+	if r.TLS != nil {
 		scheme = "https"
 	}
-	path := strings.Replace(strings.TrimSuffix(c.Request.URL.Path, "/"), "v2", "v1", 1)
-	render.SetRes(&types.TaskCreateRes{
-		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, path, req.Name),
+	path := strings.Replace(strings.TrimSuffix(r.URL.Path, "/"), "v2", "v1", 1)
+	render.JSON(w, r, types.New().WithData(&types.TaskCreateRes{
+		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, r.Host, path, req.Name),
 		ID:    req.Name,
 		Name:  req.Name,
 		Count: len(req.Step),
-	})
+	}))
 }

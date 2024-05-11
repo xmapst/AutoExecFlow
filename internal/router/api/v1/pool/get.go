@@ -1,9 +1,10 @@
 package pool
 
 import (
+	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -12,25 +13,24 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Detail(c *gin.Context) {
-	var render = base.Gin{Context: c}
+func Detail(w http.ResponseWriter, r *http.Request) {
 	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(c.Request) {
+	if websocket.IsWebSocketUpgrade(r) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request)
+		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 	}
 	if ws == nil {
-		render.SetRes(&types.Pool{
+		render.JSON(w, r, types.New().WithCode(types.CodeSuccess).WithData(&types.Pool{
 			Size:    worker.GetSize(),
 			Total:   worker.GetTotal(),
 			Running: worker.Running(),
 			Waiting: worker.Waiting(),
-		})
+		}))
 		return
 	}
 	// websocket 方式
@@ -46,7 +46,7 @@ func Detail(c *gin.Context) {
 			Running: worker.Running(),
 			Waiting: worker.Waiting(),
 		}
-		err := ws.WriteJSON(base.NewRes(res, nil, base.CodeSuccess))
+		err := ws.WriteJSON(types.New().WithData(res))
 		if err != nil {
 			logx.Errorln(err)
 			return

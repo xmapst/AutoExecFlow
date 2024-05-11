@@ -27,72 +27,72 @@ var reg = regexp.MustCompile("[^a-zA-Z\\p{Han}0-9]")
 // Response struct
 
 type TaskCreateRes struct {
-	URL   string `json:"url" yaml:"URL" toml:"url"`
-	Name  string `json:"name" form:"name" yaml:"name" toml:"name"`
-	Count int    `json:"count" yaml:"Count" toml:"count"`
+	URL   string `json:"url"`
+	Name  string `json:"name"`
+	Count int    `json:"count"`
 	// Deprecated, use Name
-	ID string `json:"id" form:"id" yaml:"ID" toml:"id"`
+	ID string `json:"id"`
 }
 
 type TaskListRes struct {
-	Total int        `json:"total" yaml:"Total" toml:"total"`
-	Tasks []*TaskRes `json:"tasks" yaml:"Tasks" toml:"tasks"`
+	Total int        `json:"total"`
+	Tasks []*TaskRes `json:"tasks"`
 }
 
 type TaskRes struct {
-	Name      string            `json:"name" yaml:"Name" toml:"name"`
-	State     string            `json:"state" yaml:"State" toml:"state"`
-	Manager   string            `json:"manager" yaml:"Manager" toml:"manager"`
-	Workspace string            `json:"workspace" yaml:"Workspace" toml:"workspace"`
-	Message   string            `json:"msg" yaml:"Message" toml:"message"`
-	Count     int               `json:"count" yaml:"Count" toml:"count"`
-	Env       map[string]string `json:"env,omitempty" yaml:"Env,omitempty" toml:"env,omitempty"`
-	Timeout   string            `json:"timeout,omitempty" yaml:"Timeout,omitempty" toml:"timeout,omitempty"`
-	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
+	Name      string            `json:"name"`
+	State     string            `json:"state"`
+	Manager   string            `json:"manager"`
+	Workspace string            `json:"workspace"`
+	Message   string            `json:"msg"`
+	Count     int               `json:"count"`
+	Env       map[string]string `json:"env,omitempty"`
+	Timeout   string            `json:"timeout,omitempty"`
+	Time      *Time             `json:"time,omitempty"`
 }
 
 type StepRes struct {
-	Name      string            `json:"name" yaml:"Name" toml:"name"`
-	Code      int64             `json:"code" yaml:"Code" toml:"code"`
-	State     string            `json:"state" yaml:"State" toml:"state"`
-	Manager   string            `json:"manager" yaml:"Manager" toml:"manager"`
-	Workspace string            `json:"workspace" yaml:"Workspace" toml:"workspace"`
-	Message   string            `json:"msg" yaml:"Message" toml:"message"`
-	Timeout   string            `json:"timeout,omitempty" yaml:"Timeout,omitempty" toml:"timeout,omitempty"`
-	Depends   []string          `json:"depends,omitempty" yaml:"Depends,omitempty" toml:"depends,omitempty"`
-	Env       map[string]string `json:"env,omitempty" yaml:"Env,omitempty" toml:"env,omitempty"`
-	Type      string            `json:"type,omitempty" yaml:"Type,omitempty" toml:"type,omitempty"`
-	Content   string            `json:"content,omitempty" yaml:"Content,omitempty" toml:"content,omitempty"`
-	Time      *Time             `json:"time,omitempty" yaml:"Time,omitempty" toml:"time,omitempty"`
+	Name      string            `json:"name"`
+	Code      int64             `json:"code"`
+	State     string            `json:"state"`
+	Manager   string            `json:"manager"`
+	Workspace string            `json:"workspace"`
+	Message   string            `json:"msg"`
+	Timeout   string            `json:"timeout,omitempty"`
+	Depends   []string          `json:"depends,omitempty"`
+	Env       map[string]string `json:"env,omitempty"`
+	Type      string            `json:"type,omitempty"`
+	Content   string            `json:"content,omitempty"`
+	Time      *Time             `json:"time,omitempty"`
 }
 
 type Time struct {
-	Start string `json:"start,omitempty" yaml:"Start,omitempty" toml:"start,omitempty"` // 开始时间
-	End   string `json:"end,omitempty" yaml:"End,omitempty" toml:"end,omitempty"`       // 结束时间
+	Start string `json:"start,omitempty"` // 开始时间
+	End   string `json:"end,omitempty"`   // 结束时间
 }
 
 type LogRes struct {
-	Timestamp int64  `json:"timestamp" yaml:"Timestamp" toml:"timestamp"`
-	Line      int64  `json:"line" yaml:"Line" toml:"line"`
-	Content   string `json:"content" yaml:"Content" toml:"content"`
+	Timestamp int64  `json:"timestamp"`
+	Line      int64  `json:"line"`
+	Content   string `json:"content"`
 }
 
 // Request struct
 
 type Step struct {
-	Name    string            `json:"name" form:"name" yaml:"Name" toml:"name" example:"script.ps1"`
-	Type    string            `json:"type" form:"type" yaml:"Type" toml:"type" example:"powershell"`
-	Content string            `json:"content" form:"content" yaml:"Content" toml:"content" example:"sleep 10"`
-	Env     map[string]string `json:"env" query:"env" form:"env" yaml:"Env" toml:"env" example:"key:value;key1:value1"`
-	Depends []string          `json:"depends" form:"depends" yaml:"Depends" toml:"depends" example:""`
-	Timeout string            `json:"timeout" form:"timeout" yaml:"Timeout" toml:"timeout" example:"3m"`
+	Name    string            `json:"name" example:"script.ps1"`
+	Type    string            `json:"type" example:"powershell"`
+	Content string            `json:"content" example:"sleep 10"`
+	Env     map[string]string `json:"env" example:"key:value;key1:value1"`
+	Depends []string          `json:"depends" example:""`
+	Timeout string            `json:"timeout" example:"3m"`
 
 	// Deprecated, use Env
-	EnvVars []string `json:"env_vars" form:"env_vars" yaml:"EnvVars" toml:"env_vars" example:"env1=value1,env2=value2"`
+	EnvVars []string `json:"env_vars" example:"env1=value1,env2=value2"`
 	// Deprecated, use Type
-	CommandType string `json:"command_type" form:"command_type" yaml:"CommandType" toml:"command_type" example:"powershell"`
+	CommandType string `json:"command_type" example:"powershell"`
 	// Deprecated, use Content
-	CommandContent string `json:"command_content" form:"command_content" yaml:"CommandContent" toml:"command_content" example:"sleep 10"`
+	CommandContent string `json:"command_content" example:"sleep 10"`
 
 	timeoutDuration time.Duration
 }
@@ -192,14 +192,14 @@ func (s Steps) parseDuration(t time.Duration) {
 }
 
 type Task struct {
-	Name    string            `query:"name" json:"name" form:"name" yaml:"ID" toml:"name" example:""`
-	Timeout string            `query:"timeout" json:"timeout" form:"timeout" yaml:"Timeout" toml:"timeout" example:""`
-	Env     map[string]string `json:"env" query:"env" form:"env" yaml:"Env" toml:"env" example:"key:value;key1:value1"`
-	Async   bool              `query:"async" json:"async" form:"async" yaml:"Async" toml:"async" example:"false"`
-	Step    Steps             `json:"step" form:"step" yaml:"Step" toml:"step"`
+	Name    string            `json:"name" example:""`
+	Timeout string            `json:"timeout" example:""`
+	Env     map[string]string `json:"env" example:"key:value;key1:value1"`
+	Async   bool              `json:"async" example:"false"`
+	Step    Steps             `json:"step"`
 
 	// Deprecated, use Env
-	EnvVars []string `query:"env_vars" json:"env_vars" form:"env_vars" yaml:"EnvVars" toml:"env_vars" example:""`
+	EnvVars []string `json:"env_vars" example:""`
 
 	timeoutDuration time.Duration
 }

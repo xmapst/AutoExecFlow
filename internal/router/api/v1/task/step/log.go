@@ -3,10 +3,12 @@ package step
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -17,37 +19,36 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Log(c *gin.Context) {
-	var render = base.Gin{Context: c}
+func Log(w http.ResponseWriter, r *http.Request) {
 	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(c.Request) {
+	if websocket.IsWebSocketUpgrade(r) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request)
+		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 	}
 	var latest int64 = -1
 	if ws != nil {
 		// 使用websocket方式
-		stepDetailWebsocket(c, ws, &latest)
+		stepDetailWebsocket(r, ws, &latest)
 		return
 	}
-	var taskName = c.Param("task")
+	var taskName = chi.URLParam(r, "task")
 	if taskName == "" {
-		render.SetError(base.CodeNoData, errors.New("task does not exist"))
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	var stepName = c.Param("step")
+	var stepName = chi.URLParam(r, "step")
 	if stepName == "" {
-		render.SetError(base.CodeNoData, errors.New("step does not exist"))
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("step does not exist")))
 		return
 	}
 	step, err := storage.Task(taskName).Step(stepName).Get()
 	if err != nil {
-		render.SetError(base.CodeNoData, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 		return
 	}
 	var code int
@@ -61,7 +62,7 @@ func Log(c *gin.Context) {
 				Content:   step.Message,
 			},
 		}
-		code = base.CodePending
+		code = types.CodePending
 	case models.Paused:
 		res = []*types.LogRes{
 			{
@@ -70,39 +71,39 @@ func Log(c *gin.Context) {
 				Content:   "step is paused",
 			},
 		}
-		code = base.CodePaused
+		code = types.CodePaused
 	default:
 		res, _ = getTaskStepLog(taskName, stepName, &latest)
 		switch *step.State {
 		case models.Stop:
-			code = base.CodeSuccess
+			code = types.CodeSuccess
 		case models.Running:
-			code = base.CodeRunning
+			code = types.CodeRunning
 		case models.Failed:
-			code = base.CodeFailed
+			code = types.CodeFailed
 		default:
-			code = base.CodeNoData
+			code = types.CodeNoData
 		}
 	}
-	render.SetNegotiate(res, errors.New(step.Message), code)
+	render.JSON(w, r, types.New().WithCode(code).WithData(res).WithError(errors.New(step.Message)))
 }
 
-func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
+func stepDetailWebsocket(r *http.Request, ws *websocket.Conn, latest *int64) {
 	defer func() {
 		_ = ws.WriteControl(websocket.CloseMessage, nil, time.Now())
 		_ = ws.Close()
 	}()
-	var taskName = c.Param("task")
+	var taskName = chi.URLParam(r, "task")
 	if taskName == "" {
-		err := ws.WriteJSON(base.NewRes(nil, errors.New("task does not exist"), base.CodeNoData))
+		err := ws.WriteJSON(types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
 		if err != nil {
 			logx.Errorln(err)
 		}
 		return
 	}
-	var stepName = c.Param("step")
+	var stepName = chi.URLParam(r, "step")
 	if stepName == "" {
-		err := ws.WriteJSON(base.NewRes(nil, errors.New("step does not exist"), base.CodeNoData))
+		err := ws.WriteJSON(types.New().WithCode(types.CodeNoData).WithError(errors.New("step does not exist")))
 		if err != nil {
 			logx.Errorln(err)
 		}
@@ -115,7 +116,7 @@ func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
 	for range ticker.C {
 		step, err := storage.Task(taskName).Step(stepName).Get()
 		if err != nil {
-			err = ws.WriteJSON(base.NewRes(nil, err, base.CodeNoData))
+			err = ws.WriteJSON(types.New().WithCode(types.CodeNoData).WithError(err))
 			if err != nil {
 				logx.Errorln(err)
 			}
@@ -128,13 +129,13 @@ func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
 		case models.Pending:
 			// 只发送一次
 			pendingOnce.Do(func() {
-				err = ws.WriteJSON(base.NewRes([]types.LogRes{
+				err = ws.WriteJSON(types.New().WithCode(types.CodePending).WithData([]types.LogRes{
 					{
 						Timestamp: time.Now().UnixNano(),
 						Line:      1,
 						Content:   step.Message,
 					},
-				}, nil, base.CodePending))
+				}))
 				if err != nil {
 					logx.Errorln(err)
 					return
@@ -144,13 +145,13 @@ func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
 		case models.Paused:
 			// 只发送一次
 			pausedOnce.Do(func() {
-				err = ws.WriteJSON(base.NewRes([]types.LogRes{
+				err = ws.WriteJSON(types.New().WithCode(types.CodePaused).WithData([]types.LogRes{
 					{
 						Timestamp: time.Now().UnixNano(),
 						Line:      1,
 						Content:   "step is paused",
 					},
-				}, nil, base.CodePaused))
+				}))
 				if err != nil {
 					logx.Errorln(err)
 					return
@@ -173,13 +174,13 @@ func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
 				if step.Message != "" {
 					errMsg = fmt.Errorf(step.Message)
 				}
-				err = ws.WriteJSON(base.NewRes(res, errMsg, base.CodeFailed))
+				err = ws.WriteJSON(types.New().WithCode(types.CodeFailed).WithData(res).WithError(errMsg))
 				if err != nil {
 					logx.Errorln(err)
 				}
 				return
 			}
-			err = ws.WriteJSON(base.NewRes(res, nil, base.CodeSuccess))
+			err = ws.WriteJSON(types.New().WithData(res))
 			if err != nil {
 				logx.Errorln(err)
 			}
@@ -190,7 +191,7 @@ func stepDetailWebsocket(c *gin.Context, ws *websocket.Conn, latest *int64) {
 	for range ticker.C {
 		res, done := getTaskStepLog(taskName, stepName, latest)
 		for _, v := range res {
-			if err := ws.WriteJSON(base.NewRes(v, errors.New("in progress"), base.CodeRunning)); err != nil {
+			if err := ws.WriteJSON(types.New().WithCode(types.CodeRunning).WithData(v).WithError(errors.New("in progress"))); err != nil {
 				logx.Errorln(err)
 				return
 			}

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
 
@@ -30,8 +30,8 @@ type TTYSize struct {
 	Y    uint16 `json:"y"`
 }
 
-func PtyWs(c *gin.Context) {
-	ws, err := base.Upgrade(c.Writer, c.Request)
+func PtyWs(w http.ResponseWriter, r *http.Request) {
+	ws, err := base.Upgrade(w, r)
 	if err != nil {
 		logx.Errorln(err)
 		return

@@ -2,40 +2,44 @@ package step
 
 import (
 	"errors"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 
-	"github.com/xmapst/osreapi/internal/router/base"
+	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/dag"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Manager(c *gin.Context) {
-	render := base.Gin{Context: c}
-	taskName := c.Param("task")
+func Manager(w http.ResponseWriter, r *http.Request) {
+	taskName := chi.URLParam(r, "task")
 	if taskName == "" {
-		render.SetError(base.CodeNoData, errors.New("task does not exist"))
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	stepName := c.Param("step")
+	stepName := chi.URLParam(r, "step")
 	if stepName == "" {
-		render.SetError(base.CodeNoData, errors.New("step does not exist"))
+		render.JSON(w, r, types.New().WithData(types.CodeNoData).WithError(errors.New("step does not exist")))
 		return
 	}
-	action := c.DefaultQuery("action", "paused")
-	duration := c.Query("duration")
+	action := r.URL.Query().Get("action")
+	if action == "" {
+		action = "paused"
+	}
+	duration := r.URL.Query().Get("duration")
 	manager, err := dag.VertexManager(taskName, stepName)
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeNoData, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 		return
 	}
 	step, err := storage.Task(taskName).Step(stepName).Get()
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeNoData, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 		return
 	}
 	switch action {
@@ -50,7 +54,7 @@ func Manager(c *gin.Context) {
 		}
 	case "pause":
 		if *step.State == models.Running {
-			render.SetError(base.CodeFailed, dag.ErrRunning)
+			render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(dag.ErrRunning))
 			return
 		}
 		if manager.State() != dag.Paused {
@@ -73,8 +77,8 @@ func Manager(c *gin.Context) {
 	}
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeFailed, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
 		return
 	}
-	render.SetRes(nil)
+	render.JSON(w, r, types.New())
 }

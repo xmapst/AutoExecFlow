@@ -1,10 +1,12 @@
 package router
 
 import (
+	"fmt"
+	"net/http"
 	"runtime"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -13,20 +15,20 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func version(c *gin.Context) {
-	var render = base.Gin{Context: c}
+func version(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("1111")
 	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(c.Request) {
+	if websocket.IsWebSocketUpgrade(r) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request)
+		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 	}
 	if ws == nil {
-		render.SetRes(&types.Version{
+		render.JSON(w, r, types.New().WithData(&types.Version{
 			Version:   info.Version,
 			BuildTime: info.BuildTime,
 			Git: types.VersionGit{
@@ -43,7 +45,7 @@ func version(c *gin.Context) {
 				Name:  info.UserName,
 				Email: info.UserEmail,
 			},
-		})
+		}))
 		return
 	}
 	// websocket 方式
@@ -71,7 +73,7 @@ func version(c *gin.Context) {
 				Email: info.UserEmail,
 			},
 		}
-		err := ws.WriteJSON(base.NewRes(res, nil, base.CodeSuccess))
+		err := ws.WriteJSON(types.New().WithData(res))
 		if err != nil {
 			logx.Errorln(err)
 			return

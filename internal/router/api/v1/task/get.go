@@ -3,11 +3,13 @@ package task
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -18,21 +20,21 @@ import (
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Get(c *gin.Context) {
-	render := base.Gin{Context: c}
+func Get(w http.ResponseWriter, r *http.Request) {
 	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(c.Request) {
+	if websocket.IsWebSocketUpgrade(r) {
 		var err error
-		ws, err = base.Upgrade(c.Writer, c.Request)
+		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 	}
 
 	if ws == nil {
-		render.SetNegotiate(get(c))
+		res, err, code := get(w, r)
+		render.JSON(w, r, types.New().WithCode(code).WithData(res).WithError(err))
 		return
 	}
 	// websocket 方式
@@ -42,46 +44,40 @@ func Get(c *gin.Context) {
 	}()
 	ticker := time.NewTicker(1 * time.Second)
 	for range ticker.C {
-		res, err, code := get(c)
-		if code == base.CodeNoData {
-			err = ws.WriteJSON(base.NewRes(res, err, code))
-			if err != nil {
-				logx.Errorln(err)
-			}
-			return
-		}
-		err = ws.WriteJSON(base.NewRes(res, err, code))
+		res, err, code := get(w, r)
+		err = ws.WriteJSON(types.New().WithCode(code).WithData(res).WithError(err))
 		if err != nil {
 			logx.Errorln(err)
+		}
+		if code == types.CodeNoData {
 			return
 		}
 	}
 }
 
-func get(c *gin.Context) ([]types.StepRes, error, int) {
-	taskName := c.Param("task")
+func get(w http.ResponseWriter, r *http.Request) ([]types.StepRes, error, int) {
+	taskName := chi.URLParam(r, "task")
 	if taskName == "" {
-		return nil, errors.New("task does not exist"), base.CodeNoData
+		return nil, errors.New("task does not exist"), types.CodeNoData
 	}
 	task, err := storage.Task(taskName).Get()
 	if err != nil {
-		return nil, err, base.CodeNoData
+		return nil, err, types.CodeNoData
 	}
 	state := models.StateMap[*task.State]
-	c.Request.Header.Set(types.XTaskState, state)
-	c.Writer.Header().Set(types.XTaskState, state)
-	c.Set(types.XTaskState, state)
+	r.Header.Set(types.XTaskState, state)
+	w.Header().Set(types.XTaskState, state)
 	steps := storage.Task(taskName).StepList("")
 	if steps == nil {
-		return nil, err, base.CodeNoData
+		return nil, err, types.CodeNoData
 	}
 	var scheme = "http"
-	if c.Request.TLS != nil {
+	if r.TLS != nil {
 		scheme = "https"
 	}
 	var res []types.StepRes
 	var groups = make(map[int][]string)
-	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
+	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, r.Host, strings.TrimSuffix(r.URL.Path, "/"))
 	for _, v := range steps {
 		groups[*v.State] = append(groups[*v.State], v.Name)
 		res = append(res, procStep(uriPrefix, v))
@@ -98,17 +94,17 @@ func get(c *gin.Context) ([]types.StepRes, error, int) {
 	var code int
 	switch *task.State {
 	case models.Stop:
-		code = base.CodeSuccess
+		code = types.CodeSuccess
 	case models.Running:
-		code = base.CodeRunning
+		code = types.CodeRunning
 	case models.Pending:
-		code = base.CodePending
+		code = types.CodePending
 	case models.Paused:
-		code = base.CodePaused
+		code = types.CodePaused
 	case models.Failed:
-		code = base.CodeFailed
+		code = types.CodeFailed
 	default:
-		code = base.CodeNoData
+		code = types.CodeNoData
 	}
 	return res, fmt.Errorf(task.Message), code
 }

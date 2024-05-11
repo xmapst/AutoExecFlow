@@ -5,55 +5,55 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 
-	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/server/config"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Get(c *gin.Context) {
-	render := base.Gin{Context: c}
-	taskName := c.Param("task")
+func Get(w http.ResponseWriter, r *http.Request) {
+	taskName := chi.URLParam(r, "task")
 	if taskName == "" {
-		render.SetError(base.CodeNoData, errors.New("task does not exist"))
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	prefix := filepath.Join(config.App.WorkSpace, taskName)
 	if !utils.FileOrPathExist(prefix) {
-		render.SetError(base.CodeNoData, errors.New("task does not exist"))
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	path := filepath.Join(prefix, utils.PathEscape(c.Query("path")))
+	path := filepath.Join(prefix, utils.PathEscape(r.URL.Query().Get("path")))
 	file, err := os.Open(path)
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeNoData, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 		return
 	}
 	fileInfo, err := file.Stat()
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeNoData, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 		return
 	}
 	if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
 		finalPath, err := filepath.EvalSymlinks(path)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 		fileInfo, err = os.Lstat(finalPath)
 		if err != nil {
 			logx.Errorln(err)
-			render.SetError(base.CodeNoData, err)
+			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 			return
 		}
 	}
@@ -62,25 +62,25 @@ func Get(c *gin.Context) {
 		if ctype == "" {
 			ctype = "application/octet-stream"
 		}
-		c.Header("Content-Type", ctype)
-		c.Header("Transfer-Encoding", "chunked")
-		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
-		_, _ = io.Copy(c.Writer, file)
+		w.Header().Set("Content-Type", ctype)
+		w.Header().Set("Transfer-Encoding", "chunked")
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileInfo.Name()))
+		_, _ = io.Copy(w, file)
 		return
 	}
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeNoData, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
 		return
 	}
 	var scheme = "http"
-	if c.Request.TLS != nil {
+	if r.TLS != nil {
 		scheme = "https"
 	}
 
 	var infos = new(types.FileListRes)
-	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
+	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, r.Host, strings.TrimSuffix(r.URL.Path, "/"))
 	for _, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
@@ -108,5 +108,5 @@ func Get(c *gin.Context) {
 		})
 	}
 	infos.Total = len(infos.Files)
-	render.SetRes(infos)
+	render.JSON(w, r, types.New().WithData(infos))
 }

@@ -19,7 +19,6 @@ type Config struct {
 	Debug         bool
 	Normal        bool
 	ListenAddress string
-	MaxRequests   int64
 	PoolSize      int
 	ExecTimeOut   time.Duration
 	WebTimeout    time.Duration

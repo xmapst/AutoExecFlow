@@ -2,47 +2,63 @@ package task
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/render"
 
-	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
-func Post(c *gin.Context) {
-	render := base.Gin{Context: c}
+func Post(w http.ResponseWriter, r *http.Request) {
 	var req = new(types.Task)
-	if err := c.ShouldBindQuery(req); err != nil {
-		logx.Errorln(err)
-		render.SetError(base.CodeFailed, err)
-		return
+	for k, v := range r.URL.Query() {
+		switch k {
+		case "name":
+			req.Name = v[0]
+		case "timeout":
+			req.Timeout = v[0]
+		case "async":
+			req.Async = v[0] == "true"
+		case "env_vars":
+			req.EnvVars = v
+		case "env":
+			if req.Env == nil {
+				req.Env = make(map[string]string)
+			}
+			for _, str := range v {
+				before, after, found := strings.Cut(str, ":")
+				if !found {
+					continue
+				}
+				req.Env[before] = after
+			}
+		}
 	}
 
-	if err := c.ShouldBind(&req.Step); err != nil {
+	if err := render.DecodeJSON(r.Body, &req.Step); err != nil {
 		logx.Errorln(err)
-		render.SetError(base.CodeFailed, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
 		return
 	}
 
 	if err := req.Save(); err != nil {
-		render.SetError(base.CodeFailed, err)
+		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
 		return
 	}
 
-	c.Request.Header.Set(types.XTaskName, req.Name)
-	c.Writer.Header().Set(types.XTaskName, req.Name)
-	c.Set(types.XTaskName, req.Name)
+	r.Header.Set(types.XTaskName, req.Name)
+	w.Header().Set(types.XTaskName, req.Name)
 
 	var scheme = "http"
-	if c.Request.TLS != nil {
+	if r.TLS != nil {
 		scheme = "https"
 	}
-	render.SetRes(&types.TaskCreateRes{
-		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"), req.Name),
+	render.JSON(w, r, types.New().WithData(&types.TaskCreateRes{
+		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, r.Host, strings.TrimSuffix(r.URL.Path, "/"), req.Name),
 		ID:    req.Name,
 		Name:  req.Name,
 		Count: len(req.Step),
-	})
+	}))
 }
