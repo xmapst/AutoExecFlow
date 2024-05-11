@@ -6,10 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 
 	"github.com/xmapst/osreapi/internal/router/base"
-	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/server/config"
 	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/pkg/logx"
@@ -18,19 +16,19 @@ import (
 func Post(w http.ResponseWriter, r *http.Request) {
 	task := chi.URLParam(r, "task")
 	if task == "" {
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	prefix := filepath.Join(config.App.WorkSpace, task)
 	if !utils.FileOrPathExist(prefix) {
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	path := filepath.Join(prefix, utils.PathEscape(r.URL.Query().Get("path")))
 	if err := base.SaveFiles(r, path); err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(err))
 		return
 	}
-	render.JSON(w, r, types.New())
+	base.SendJson(w, base.New())
 }

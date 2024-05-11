@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 
-	"github.com/xmapst/osreapi/internal/router/types"
+	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/dag"
@@ -17,12 +16,12 @@ import (
 func Manager(w http.ResponseWriter, r *http.Request) {
 	taskName := chi.URLParam(r, "task")
 	if taskName == "" {
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	stepName := chi.URLParam(r, "step")
 	if stepName == "" {
-		render.JSON(w, r, types.New().WithData(types.CodeNoData).WithError(errors.New("step does not exist")))
+		base.SendJson(w, base.New().WithData(base.CodeNoData).WithError(errors.New("step does not exist")))
 		return
 	}
 	action := r.URL.Query().Get("action")
@@ -33,13 +32,13 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 	manager, err := dag.VertexManager(taskName, stepName)
 	if err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 		return
 	}
 	step, err := storage.Task(taskName).Step(stepName).Get()
 	if err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 		return
 	}
 	switch action {
@@ -54,7 +53,7 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 		}
 	case "pause":
 		if *step.State == models.Running {
-			render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(dag.ErrRunning))
+			base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(dag.ErrRunning))
 			return
 		}
 		if manager.State() != dag.Paused {
@@ -77,8 +76,8 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(err))
 		return
 	}
-	render.JSON(w, r, types.New())
+	base.SendJson(w, base.New())
 }

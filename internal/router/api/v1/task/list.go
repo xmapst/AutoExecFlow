@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -24,12 +23,12 @@ func List(w http.ResponseWriter, r *http.Request) {
 		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.JSON(w, r, types.New().WithError(err))
+			base.SendJson(w, base.New().WithError(err))
 			return
 		}
 	}
 	if ws == nil {
-		render.JSON(w, r, types.New().WithData(list(r)))
+		base.SendJson(w, base.New().WithData(list(r)))
 		return
 	}
 	// websocket 方式
@@ -40,7 +39,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 	// 使用websocket方式
 	var ticker = time.NewTicker(1 * time.Second)
 	for range ticker.C {
-		err := ws.WriteJSON(types.New().WithData(list(r)))
+		err := ws.WriteJSON(base.New().WithData(list(r)))
 		if err != nil {
 			logx.Errorln(err)
 			return

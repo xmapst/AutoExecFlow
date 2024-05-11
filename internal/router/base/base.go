@@ -1,14 +1,34 @@
-package types
+package base
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/goccy/go-json"
-
 	"github.com/xmapst/osreapi/internal/utils"
 )
+
+func DecodeJson(r io.Reader, v interface{}) error {
+	defer io.Copy(io.Discard, r) //nolint:errcheck
+	return json.NewDecoder(r).Decode(v)
+}
+
+func SendJson(w http.ResponseWriter, v interface{}) {
+	buf := &bytes.Buffer{}
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(true)
+	if err := enc.Encode(v); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(buf.Bytes()) //nolint:errcheck
+}
 
 type Base interface {
 	WithCode(code int) Base
@@ -116,7 +136,15 @@ func (r *res) WithError(err error) Base {
 	if err == nil {
 		return r
 	}
-	r.Message = append(r.Message, strings.TrimSpace(err.Error()))
+	// clear old code message
+	var msg Message
+	for _, v := range r.Message {
+		if r.isExistCode(v) {
+			continue
+		}
+		msg = append(msg, v)
+	}
+	r.Message = append(msg, strings.TrimSpace(err.Error()))
 	r.Timestamp = time.Now().UnixNano()
 	return r
 }

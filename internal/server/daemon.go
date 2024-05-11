@@ -50,7 +50,7 @@ func (p *Program) init() error {
 		return err
 	}
 
-	if _, err := p.cron.AddFunc("@every 3m", func() {
+	if _, err := p.cron.AddFunc("@every 1m", func() {
 		debug.FreeOSMemory()
 	}); err != nil {
 		logx.Errorln(err)

@@ -8,9 +8,7 @@ require (
 	github.com/creack/pty v1.1.21
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/cors v1.2.1
-	github.com/go-chi/render v1.0.3
 	github.com/go-cmd/cmd v1.4.2
-	github.com/goccy/go-json v0.10.2
 	github.com/gorilla/websocket v1.5.1
 	github.com/kardianos/service v1.2.2
 	github.com/pires/go-proxyproto v0.7.0
@@ -33,7 +31,6 @@ require (
 require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1 // indirect
 	github.com/PuerkitoBio/goquery v1.9.2 // indirect
-	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/dustmop/soup v1.1.2-0.20190516214245-38228baa104e // indirect
 	github.com/google/go-cmp v0.6.0 // indirect

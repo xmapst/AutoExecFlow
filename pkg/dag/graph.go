@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -142,7 +141,6 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		g.ctx.Unlock()
 
 		remove(fmt.Sprintf(vertexPrefix, g.Name(), v.Name()))
-		debug.FreeOSMemory()
 		g.wg.Done()
 	}()
 

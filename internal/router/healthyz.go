@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -19,7 +18,7 @@ func healthyz(w http.ResponseWriter, r *http.Request) {
 		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+			base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 			return
 		}
 	}
@@ -29,7 +28,7 @@ func healthyz(w http.ResponseWriter, r *http.Request) {
 		State:  "Running",
 	}
 	if ws == nil {
-		render.JSON(w, r, types.New().WithData(data))
+		base.SendJson(w, base.New().WithData(data))
 		return
 	}
 	// websocket 方式
@@ -39,7 +38,7 @@ func healthyz(w http.ResponseWriter, r *http.Request) {
 	}()
 	ticker := time.NewTicker(1 * time.Second)
 	for range ticker.C {
-		err := ws.WriteJSON(types.New().WithData(data))
+		err := ws.WriteJSON(base.New().WithData(data))
 		if err != nil {
 			logx.Errorln(err)
 			return

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -27,14 +26,14 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+			base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 			return
 		}
 	}
 
 	if ws == nil {
 		res, err, code := get(w, r)
-		render.JSON(w, r, types.New().WithCode(code).WithData(res).WithError(err))
+		base.SendJson(w, base.New().WithCode(code).WithData(res).WithError(err))
 		return
 	}
 	// websocket 方式
@@ -45,11 +44,11 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	ticker := time.NewTicker(1 * time.Second)
 	for range ticker.C {
 		res, err, code := get(w, r)
-		err = ws.WriteJSON(types.New().WithCode(code).WithData(res).WithError(err))
+		err = ws.WriteJSON(base.New().WithCode(code).WithData(res).WithError(err))
 		if err != nil {
 			logx.Errorln(err)
 		}
-		if code == types.CodeNoData {
+		if code == base.CodeNoData {
 			return
 		}
 	}
@@ -58,18 +57,18 @@ func Get(w http.ResponseWriter, r *http.Request) {
 func get(w http.ResponseWriter, r *http.Request) ([]types.StepRes, error, int) {
 	taskName := chi.URLParam(r, "task")
 	if taskName == "" {
-		return nil, errors.New("task does not exist"), types.CodeNoData
+		return nil, errors.New("task does not exist"), base.CodeNoData
 	}
 	task, err := storage.Task(taskName).Get()
 	if err != nil {
-		return nil, err, types.CodeNoData
+		return nil, err, base.CodeNoData
 	}
 	state := models.StateMap[*task.State]
 	r.Header.Set(types.XTaskState, state)
 	w.Header().Set(types.XTaskState, state)
 	steps := storage.Task(taskName).StepList("")
 	if steps == nil {
-		return nil, err, types.CodeNoData
+		return nil, err, base.CodeNoData
 	}
 	var scheme = "http"
 	if r.TLS != nil {
@@ -94,17 +93,17 @@ func get(w http.ResponseWriter, r *http.Request) ([]types.StepRes, error, int) {
 	var code int
 	switch *task.State {
 	case models.Stop:
-		code = types.CodeSuccess
+		code = base.CodeSuccess
 	case models.Running:
-		code = types.CodeRunning
+		code = base.CodeRunning
 	case models.Pending:
-		code = types.CodePending
+		code = base.CodePending
 	case models.Paused:
-		code = types.CodePaused
+		code = base.CodePaused
 	case models.Failed:
-		code = types.CodeFailed
+		code = base.CodeFailed
 	default:
-		code = types.CodeNoData
+		code = base.CodeNoData
 	}
 	return res, fmt.Errorf(task.Message), code
 }

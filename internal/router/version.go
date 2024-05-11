@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -23,12 +22,12 @@ func version(w http.ResponseWriter, r *http.Request) {
 		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+			base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 			return
 		}
 	}
 	if ws == nil {
-		render.JSON(w, r, types.New().WithData(&types.Version{
+		base.SendJson(w, base.New().WithData(&types.Version{
 			Version:   info.Version,
 			BuildTime: info.BuildTime,
 			Git: types.VersionGit{
@@ -73,7 +72,7 @@ func version(w http.ResponseWriter, r *http.Request) {
 				Email: info.UserEmail,
 			},
 		}
-		err := ws.WriteJSON(types.New().WithData(res))
+		err := ws.WriteJSON(base.New().WithData(res))
 		if err != nil {
 			logx.Errorln(err)
 			return

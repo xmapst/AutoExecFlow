@@ -23,7 +23,7 @@ var (
 	// DefaultSize 默认worker数为cpu核心数的两倍
 	DefaultSize = runtime.NumCPU() * 2
 	pool        = tunny.NewCallback(DefaultSize)
-	queue       = deque.New[func()](65535, DefaultSize)
+	queue       = deque.New[func()]()
 	taskTotal   int64
 )
 

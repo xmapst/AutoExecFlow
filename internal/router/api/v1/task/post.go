@@ -5,8 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/render"
-
+	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
@@ -37,14 +36,14 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := render.DecodeJSON(r.Body, &req.Step); err != nil {
+	if err := base.DecodeJson(r.Body, &req.Step); err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(err))
 		return
 	}
 
 	if err := req.Save(); err != nil {
-		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(err))
 		return
 	}
 
@@ -55,7 +54,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	if r.TLS != nil {
 		scheme = "https"
 	}
-	render.JSON(w, r, types.New().WithData(&types.TaskCreateRes{
+	base.SendJson(w, base.New().WithData(&types.TaskCreateRes{
 		URL:   fmt.Sprintf("%s://%s%s/%s", scheme, r.Host, strings.TrimSuffix(r.URL.Path, "/"), req.Name),
 		ID:    req.Name,
 		Name:  req.Name,

@@ -11,9 +11,6 @@ github.com/Microsoft/go-winio/pkg/guid
 # github.com/PuerkitoBio/goquery v1.9.2
 ## explicit; go 1.18
 github.com/PuerkitoBio/goquery
-# github.com/ajg/form v1.5.1
-## explicit
-github.com/ajg/form
 # github.com/andybalholm/cascadia v1.3.2
 ## explicit; go 1.16
 github.com/andybalholm/cascadia
@@ -33,23 +30,9 @@ github.com/go-chi/chi/v5/middleware
 # github.com/go-chi/cors v1.2.1
 ## explicit; go 1.14
 github.com/go-chi/cors
-# github.com/go-chi/render v1.0.3
-## explicit; go 1.16
-github.com/go-chi/render
 # github.com/go-cmd/cmd v1.4.2
 ## explicit; go 1.20
 github.com/go-cmd/cmd
-# github.com/goccy/go-json v0.10.2
-## explicit; go 1.12
-github.com/goccy/go-json
-github.com/goccy/go-json/internal/decoder
-github.com/goccy/go-json/internal/encoder
-github.com/goccy/go-json/internal/encoder/vm
-github.com/goccy/go-json/internal/encoder/vm_color
-github.com/goccy/go-json/internal/encoder/vm_color_indent
-github.com/goccy/go-json/internal/encoder/vm_indent
-github.com/goccy/go-json/internal/errors
-github.com/goccy/go-json/internal/runtime
 # github.com/google/go-cmp v0.6.0
 ## explicit; go 1.13
 # github.com/gorilla/websocket v1.5.1

@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 
-	"github.com/xmapst/osreapi/internal/router/types"
+	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/dag"
@@ -17,7 +16,7 @@ import (
 func Manager(w http.ResponseWriter, r *http.Request) {
 	taskName := chi.URLParam(r, "task")
 	if taskName == "" {
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	action := r.URL.Query().Get("action")
@@ -28,17 +27,17 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 	manager, err := dag.GraphManager(taskName)
 	if err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 		return
 	}
 	task, err := storage.Task(taskName).Get()
 	if err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 		return
 	}
 	if *task.State <= models.Stop || *task.State >= models.Failed {
-		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(errors.New("task is no running")))
+		base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(errors.New("task is no running")))
 		return
 	}
 	switch action {
@@ -72,8 +71,8 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logx.Errorln(err)
-		render.JSON(w, r, types.New().WithCode(types.CodeFailed).WithError(err))
+		base.SendJson(w, base.New().WithCode(base.CodeFailed).WithError(err))
 		return
 	}
-	render.JSON(w, r, types.New())
+	base.SendJson(w, base.New())
 }

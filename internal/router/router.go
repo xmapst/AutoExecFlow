@@ -9,7 +9,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/go-chi/render"
 
 	"github.com/xmapst/osreapi/internal/router/api/v1/pool"
 	"github.com/xmapst/osreapi/internal/router/api/v1/sys"
@@ -17,7 +16,7 @@ import (
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/step"
 	"github.com/xmapst/osreapi/internal/router/api/v1/task/workspace"
 	taskv2 "github.com/xmapst/osreapi/internal/router/api/v2/task"
-	"github.com/xmapst/osreapi/internal/router/types"
+	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/pkg/info"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
@@ -93,12 +92,12 @@ func New() *chi.Mux {
 
 	// no method
 	router.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("method not allowed")))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("method not allowed")))
 	})
 
 	// no route
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(errors.New("the requested path does not exist")))
+		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("the requested path does not exist")))
 	})
 	return router
 }

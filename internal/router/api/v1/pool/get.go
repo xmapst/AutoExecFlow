@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/render"
 	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -20,12 +19,12 @@ func Detail(w http.ResponseWriter, r *http.Request) {
 		ws, err = base.Upgrade(w, r)
 		if err != nil {
 			logx.Errorln(err)
-			render.JSON(w, r, types.New().WithCode(types.CodeNoData).WithError(err))
+			base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 			return
 		}
 	}
 	if ws == nil {
-		render.JSON(w, r, types.New().WithCode(types.CodeSuccess).WithData(&types.Pool{
+		base.SendJson(w, base.New().WithCode(base.CodeSuccess).WithData(&types.Pool{
 			Size:    worker.GetSize(),
 			Total:   worker.GetTotal(),
 			Running: worker.Running(),
@@ -46,7 +45,7 @@ func Detail(w http.ResponseWriter, r *http.Request) {
 			Running: worker.Running(),
 			Waiting: worker.Waiting(),
 		}
-		err := ws.WriteJSON(types.New().WithData(res))
+		err := ws.WriteJSON(base.New().WithData(res))
 		if err != nil {
 			logx.Errorln(err)
 			return
