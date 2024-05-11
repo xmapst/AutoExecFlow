@@ -53,7 +53,7 @@ const (
 	CodePaused
 )
 
-var MsgFlags = map[int]string{
+var msgFlags = map[int]string{
 	CodeSuccess: "success",
 	CodeRunning: "running",
 	CodeFailed:  "failed",
@@ -64,9 +64,9 @@ var MsgFlags = map[int]string{
 
 // getMsg get error information based on Code
 func (r *res) getMsg() string {
-	msg, ok := MsgFlags[r.Code]
+	msg, ok := msgFlags[r.Code]
 	if !ok {
-		msg = MsgFlags[CodeNoData]
+		msg = msgFlags[CodeNoData]
 	}
 	return msg
 }
@@ -79,13 +79,29 @@ func New() Base {
 	return r
 }
 
+func (r *res) isExistCode(s string) bool {
+	for _, v := range msgFlags {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *res) WithCode(code int) Base {
 	if code == http.StatusOK {
 		code = 0
 	}
-
+	// clear old code message
+	var msg Message
+	for _, v := range r.Message {
+		if r.isExistCode(v) {
+			continue
+		}
+		msg = append(msg, v)
+	}
 	r.Code = code
-	r.Message = append(r.Message, r.getMsg())
+	r.Message = append(msg, r.getMsg())
 	r.Timestamp = time.Now().UnixNano()
 	return r
 }
