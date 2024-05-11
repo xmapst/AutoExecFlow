@@ -36,8 +36,7 @@ func (c *Cmd) beforeExec() []func(cmd *exec.Cmd) {
 	return []func(cmd *exec.Cmd){
 		func(cmd *exec.Cmd) {
 			cmd.SysProcAttr = &syscall.SysProcAttr{
-				HideWindow:    true,
-				CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP,
+				HideWindow: true,
 			}
 		},
 	}
