@@ -72,9 +72,6 @@ func (p *Program) init() error {
 	// clear old workspace
 	utils.ClearDir(config.App.WorkSpace)
 
-	// clear old database
-	utils.ClearDir(config.App.DataDir)
-
 	// 创建临时内存数据库
 	if err := storage.New(config.App.DBType, config.App.DataDir); err != nil {
 		logx.Fatalln(err)

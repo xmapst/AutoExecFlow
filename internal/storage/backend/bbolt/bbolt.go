@@ -5,7 +5,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	"go.etcd.io/bbolt"
 
 	"github.com/xmapst/osreapi/internal/storage/backend"
@@ -27,12 +29,49 @@ type Bolt struct {
 }
 
 func New(path string) (backend.IStorage, error) {
-	db, err := bbolt.Open(filepath.Join(path, "database.db"), os.ModePerm, &bbolt.Options{})
+	var b = new(Bolt)
+	err := retry.Do(func() (err error) {
+		b.DB, err = bbolt.Open(filepath.Join(path, "database.db"), os.ModePerm, &bbolt.Options{})
+		if err != nil {
+			// 尝试删除后重建
+			_ = os.RemoveAll(path)
+			_ = os.MkdirAll(path, os.ModeDir)
+			return err
+		}
+		return
+	},
+		retry.Attempts(3),
+		retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
+			_max := time.Duration(n)
+			if _max > 8 {
+				_max = 8
+			}
+			duration := time.Second * _max * _max
+			return duration
+		}),
+	)
 	if err != nil {
 		return nil, err
 	}
-	b := &Bolt{
-		DB: db,
+	for _, t := range b.TaskList(backend.All) {
+		if *t.State != models.Running {
+			continue
+		}
+		_ = b.Task(t.Name).Update(&models.TaskUpdate{
+			State:   models.Pointer(models.Failed),
+			ETime:   models.Pointer(time.Now()),
+			Message: "unexpected ending",
+		})
+		for _, s := range b.Task(t.Name).StepList(backend.All) {
+			if *s.State != models.Running {
+				continue
+			}
+			_ = b.Task(t.Name).Step(s.Name).Update(&models.StepUpdate{
+				State:   models.Pointer(models.Failed),
+				ETime:   models.Pointer(time.Now()),
+				Message: "unexpected ending",
+			})
+		}
 	}
 	return b, nil
 }

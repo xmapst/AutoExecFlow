@@ -245,6 +245,9 @@ func (t *Task) Save() (err error) {
 	}
 
 	var task = storage.Task(t.Name)
+	// 清理旧数据
+	task.ClearAll()
+
 	defer func() {
 		if err != nil {
 			// rollback
