@@ -18,14 +18,14 @@ type IStorage interface {
 }
 
 type IBase interface {
-	// ClearAll 清理
-	ClearAll()
 	// Name 名称
 	Name() string
+	// ClearAll 清理
+	ClearAll()
 	// Delete 删除
 	Delete() (err error)
-	// GetState 获取状态
-	GetState() (state int, err error)
+	// State 获取状态
+	State() (state int, err error)
 
 	// Env 环境变量接口
 	Env() IEnv
@@ -53,12 +53,12 @@ type IStep interface {
 	IBase
 	// TaskName 任务名称
 	TaskName() string
+	// Timeout 超时时间
+	Timeout() (res time.Duration, err error)
 	// Type 类型
 	Type() (res string, err error)
 	// Content 内容
 	Content() (res string, err error)
-	// Timeout 超时时间
-	Timeout() (res time.Duration, err error)
 	// Get 根据名称获取指定步骤
 	Get() (res *models.Step, err error)
 	// Create 插入

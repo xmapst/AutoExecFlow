@@ -18,13 +18,6 @@ var StateMap = map[int]string{
 	Paused:  "paused",
 }
 
-type Env struct {
-	Name  string `json:"name,omitempty"`
-	Value string `json:"value,omitempty"`
-}
-
-type Envs []*Env
-
 func Pointer[T any](v T) *T {
 	return &v
 }

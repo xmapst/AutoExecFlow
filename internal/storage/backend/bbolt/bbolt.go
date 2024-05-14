@@ -1,10 +1,10 @@
 package bbolt
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -15,13 +15,13 @@ import (
 	"github.com/xmapst/osreapi/internal/storage/models"
 )
 
-const (
-	bucketPrefix = "Obj#"
-	taskPrefix   = bucketPrefix + "Task#"
-	stepPrefix   = bucketPrefix + "Step#"
-	envPrefix    = bucketPrefix + "Env#"
-	dependPrefix = bucketPrefix + "Dep#"
-	logPrefix    = bucketPrefix + "Log#"
+var (
+	bucketPrefix = []byte("Obj")
+	taskPrefix   = []byte("Task")
+	stepPrefix   = []byte("Step")
+	envPrefix    = []byte("Env")
+	dependPrefix = []byte("Dep")
+	logPrefix    = []byte("Log")
 )
 
 type Bolt struct {
@@ -30,16 +30,17 @@ type Bolt struct {
 
 func New(path string) (backend.IStorage, error) {
 	var b = new(Bolt)
-	err := retry.Do(func() (err error) {
-		b.DB, err = bbolt.Open(filepath.Join(path, "database.db"), os.ModePerm, &bbolt.Options{})
-		if err != nil {
-			// 尝试删除后重建
-			_ = os.RemoveAll(path)
-			_ = os.MkdirAll(path, os.ModeDir)
-			return err
-		}
-		return
-	},
+	err := retry.Do(
+		func() (err error) {
+			b.DB, err = bbolt.Open(filepath.Join(path, "database.db"), os.ModePerm, &bbolt.Options{})
+			if err != nil {
+				// 尝试删除后重建
+				_ = os.RemoveAll(path)
+				_ = os.MkdirAll(path, os.ModeDir)
+				return err
+			}
+			return
+		},
 		retry.Attempts(3),
 		retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
 			_max := time.Duration(n)
@@ -69,6 +70,7 @@ func New(path string) (backend.IStorage, error) {
 			_ = b.Task(t.Name).Step(s.Name).Update(&models.StepUpdate{
 				State:   models.Pointer(models.Failed),
 				ETime:   models.Pointer(time.Now()),
+				Code:    models.Pointer(int64(-999)),
 				Message: "unexpected ending",
 			})
 		}
@@ -89,16 +91,16 @@ func (b *Bolt) Close() error {
 
 func (b *Bolt) Task(name string) backend.ITask {
 	return &task{
-		db:   b.DB,
-		name: name,
+		db:    b.DB,
+		tName: []byte(name),
 	}
 }
 
 func (b *Bolt) TaskList(str string) (res models.Tasks) {
-	str = taskPrefix + str
+	strPrefix := utils.Join(bucketPrefix, taskPrefix, []byte(str))
 	_ = b.View(func(tx *bbolt.Tx) error {
 		return tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
-			if !strings.HasPrefix(string(name), str) {
+			if !bytes.HasPrefix(name, strPrefix) {
 				return nil
 			}
 			var data = &models.Task{}

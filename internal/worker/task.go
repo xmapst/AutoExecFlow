@@ -73,7 +73,7 @@ func (t *task) run(ctx context.Context) error {
 	}
 
 	for _, _step := range t.StepList("") {
-		state, _ := t.Step(_step.Name).GetState()
+		state, _ := t.Step(_step.Name).State()
 		if state == models.Failed {
 			res.State = models.Pointer(models.Failed)
 			return errors.New("step " + _step.Name + " is failed")

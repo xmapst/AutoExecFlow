@@ -79,7 +79,7 @@ func get(w http.ResponseWriter, r *http.Request) ([]types.StepRes, error, int) {
 	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, r.Host, strings.TrimSuffix(r.URL.Path, "/"))
 	for _, v := range steps {
 		groups[*v.State] = append(groups[*v.State], v.Name)
-		res = append(res, procStep(uriPrefix, v))
+		res = append(res, procStep(uriPrefix, taskName, v))
 	}
 
 	var keys []int
@@ -108,7 +108,7 @@ func get(w http.ResponseWriter, r *http.Request) ([]types.StepRes, error, int) {
 	return res, fmt.Errorf(task.Message), code
 }
 
-func procStep(uriPrefix string, step *models.Step) types.StepRes {
+func procStep(uriPrefix string, taskName string, step *models.Step) types.StepRes {
 	res := types.StepRes{
 		Name:      step.Name,
 		State:     models.StateMap[*step.State],
@@ -125,15 +125,15 @@ func procStep(uriPrefix string, step *models.Step) types.StepRes {
 		},
 	}
 
-	res.Depends = storage.Task(step.TaskName).Step(step.Name).Depend().List()
-	envs := storage.Task(step.TaskName).Step(step.Name).Env().List()
+	res.Depends = storage.Task(taskName).Step(step.Name).Depend().List()
+	envs := storage.Task(taskName).Step(step.Name).Env().List()
 	for _, env := range envs {
 		res.Env[env.Name] = env.Value
 	}
 
 	var output []string
 	if *step.State == models.Stop || *step.State == models.Failed {
-		logs := storage.Task(step.TaskName).Step(step.Name).Log().List()
+		logs := storage.Task(taskName).Step(step.Name).Log().List()
 		for _, o := range logs {
 			if o.Content == worker.ConsoleStart || o.Content == worker.ConsoleDone {
 				continue

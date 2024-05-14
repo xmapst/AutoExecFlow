@@ -1,8 +1,6 @@
 package models
 
 type Log struct {
-	TaskName  string `json:"task_name,omitempty"`
-	StepName  string `json:"step_name,omitempty"`
 	Timestamp int64  `json:"timestamp,omitempty"`
 	Line      *int64 `json:"line,omitempty"`
 	Content   string `json:"content,omitempty"`

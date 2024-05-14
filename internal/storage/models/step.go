@@ -5,11 +5,10 @@ import (
 )
 
 type Step struct {
-	Name     string        `json:"name,omitempty"`
-	TaskName string        `json:"task_name,omitempty"`
-	Type     string        `json:"type,omitempty"`
-	Content  string        `json:"content,omitempty"`
-	Timeout  time.Duration `json:"timeout,omitempty"`
+	Name    string        `json:"name,omitempty"`
+	Type    string        `json:"type,omitempty"`
+	Content string        `json:"content,omitempty"`
+	Timeout time.Duration `json:"timeout,omitempty"`
 	StepUpdate
 }
 
@@ -48,16 +47,4 @@ func (s Steps) Less(i, j int) bool {
 
 func (s Steps) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
-}
-
-type StepEnv struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
-	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`
-	Env
-}
-
-type StepDepend struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
-	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`
-	Name     string `json:"name,omitempty" gorm:"not null;comment:依赖步骤名称"`
 }
