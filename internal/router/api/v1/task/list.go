@@ -5,53 +5,18 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"time"
-
-	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/models"
-	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 func List(w http.ResponseWriter, r *http.Request) {
-	var ws *websocket.Conn
-	if websocket.IsWebSocketUpgrade(r) {
-		var err error
-		ws, err = base.Upgrade(w, r)
-		if err != nil {
-			logx.Errorln(err)
-			base.SendJson(w, base.New().WithError(err))
-			return
-		}
-	}
-	if ws == nil {
-		base.SendJson(w, base.New().WithData(list(r)))
-		return
-	}
-	// websocket 方式
-	defer func() {
-		_ = ws.WriteControl(websocket.CloseMessage, nil, time.Now())
-		_ = ws.Close()
-	}()
-	// 使用websocket方式
-	var ticker = time.NewTicker(1 * time.Second)
-	for range ticker.C {
-		err := ws.WriteJSON(base.New().WithData(list(r)))
-		if err != nil {
-			logx.Errorln(err)
-			return
-		}
-	}
-}
-
-// 每次获取全量数据
-func list(r *http.Request) *types.TaskListRes {
 	tasks := storage.TaskList("")
 	if tasks == nil {
-		return nil
+		base.SendJson(w, base.New())
+		return
 	}
 	var res = &types.TaskListRes{
 		Total: len(tasks),
@@ -64,7 +29,7 @@ func list(r *http.Request) *types.TaskListRes {
 	for _, task := range tasks {
 		res.Tasks = append(res.Tasks, procTask(uriPrefix, task))
 	}
-	return res
+	base.SendJson(w, base.New().WithData(res))
 }
 
 func procTask(uriPrefix string, task *models.Task) *types.TaskRes {
