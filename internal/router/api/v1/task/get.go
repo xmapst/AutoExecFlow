@@ -56,7 +56,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		task.Message = fmt.Sprintf("%s; %s: [%s]", task.Message, models.StateMap[key], strings.Join(groups[key], ","))
 	}
 
-	res := base.New().WithData(data).WithError(fmt.Errorf(task.Message))
+	res := base.New()
 	switch *task.State {
 	case models.Stop:
 		res.WithCode(base.CodeSuccess)
@@ -71,7 +71,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	default:
 		res.WithCode(base.CodeNoData)
 	}
-	base.SendJson(w, res)
+	base.SendJson(w, res.WithData(data).WithError(fmt.Errorf(task.Message)))
 }
 
 func procStep(uriPrefix string, taskName string, step *models.Step) types.StepRes {
