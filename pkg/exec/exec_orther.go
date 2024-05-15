@@ -3,9 +3,6 @@
 package exec
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"os/exec"
 	"syscall"
 
@@ -71,53 +68,11 @@ func (c *Cmd) selfCmd() {
 	}
 }
 
-func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
-	defer func() {
-		if _err := recover(); _err != nil {
-			err = fmt.Errorf("%v", _err)
-		}
-	}()
-
-	c.newCmd()
-	defer func() {
-		c.cancel()
-	}()
-
-	// Print STDOUT and STDERR lines streaming from Cmd
-	go c.consoleOutput()
-
-	select {
-	// 人工强制终止
-	case <-ctx.Done():
-		_ = c.cmd.Stop()
-		err = ErrManual
-		code = Killed
-		if context.Cause(ctx) != nil {
-			switch {
-			case errors.Is(context.Cause(ctx), ErrTimeOut):
-				err = ErrTimeOut
-				code = Timeout
-			default:
-				err = context.Cause(ctx)
-			}
-		}
-	// 执行超时信号
-	case <-c.ctx.Done():
-		_ = c.cmd.Stop()
-		err = ErrTimeOut
-		code = Timeout
-	// 执行结果
-	case status := <-c.cmd.Start():
-		code = int64(status.Exit)
-		err = status.Error
-		if err != nil && code == 0 {
-			code = SystemErr
-		}
-		if err == nil && code != 0 {
-			err = fmt.Errorf("exit code %d%s", code, last(c.stderrBuf.Lines()))
-		}
+func (c *Cmd) kill() (err error) {
+	if c.cmd == nil {
+		return
 	}
-	return
+	return c.cmd.Stop()
 }
 
 func (c *Cmd) utf8ToGb2312(s string) string {

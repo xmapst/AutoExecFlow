@@ -4,8 +4,6 @@ package exec
 
 import (
 	"bytes"
-	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os/exec"
@@ -55,57 +53,6 @@ func (c *Cmd) selfCmd() {
 	default:
 		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/S", "/C", c.scriptName)
 	}
-}
-
-func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
-	defer func() {
-		if _err := recover(); _err != nil {
-			err = fmt.Errorf("%v", _err)
-		}
-	}()
-
-	c.newCmd()
-	defer func() {
-		c.cancel()
-	}()
-
-	// Print STDOUT and STDERR lines streaming from Cmd
-	go c.consoleOutput()
-
-	select {
-	// 人工强制终止
-	case <-ctx.Done():
-		_ = c.kill()
-		err = ErrManual
-		code = Killed
-		if context.Cause(ctx) != nil {
-			switch {
-			case errors.Is(context.Cause(ctx), ErrTimeOut):
-				err = ErrTimeOut
-				code = Timeout
-			default:
-				err = context.Cause(ctx)
-			}
-		}
-	// 执行超时信号
-	case <-c.ctx.Done():
-		// 如果直接使用cmd.Process.Kill()并不能杀死主进程下的所有子进程
-		// _ = cmd.Process.Kill()
-		_ = c.kill()
-		err = ErrTimeOut
-		code = Timeout
-	// 执行结果
-	case status := <-c.cmd.Start():
-		code = int64(status.Exit)
-		err = status.Error
-		if err != nil && code == 0 {
-			code = SystemErr
-		}
-		if err == nil && code != 0 {
-			err = fmt.Errorf("exit code %d%s", code, last(c.stderrBuf.Lines()))
-		}
-	}
-	return
 }
 
 func (c *Cmd) kill() error {

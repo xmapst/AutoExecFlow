@@ -151,13 +151,13 @@ func Submit(taskName string) {
 			return
 		}
 
-		taskDetail, err := t.Timeout()
+		timeout, err := t.Timeout()
 		if err != nil {
 			return
 		}
 		var ctx, cancel = context.WithCancel(context.Background())
-		if taskDetail > 0 {
-			ctx, cancel = context.WithTimeoutCause(context.Background(), (taskDetail*time.Minute)+1, exec.ErrTimeOut)
+		if timeout > 0 {
+			ctx, cancel = context.WithTimeoutCause(context.Background(), timeout+1*time.Minute, exec.ErrTimeOut)
 		}
 		defer cancel()
 		res := t.run(ctx)
