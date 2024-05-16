@@ -14,12 +14,12 @@ type stepLog struct {
 }
 
 func (s *stepLog) List() (res models.Logs) {
-	s.db.Model(&tables.Log{}).Where("task_name = ? AND step_name = ?", s.tName, s.sName).Order("id ASC").Find(&res)
+	s.db.Model(&tables.StepLog{}).Where("task_name = ? AND step_name = ?", s.tName, s.sName).Order("id ASC").Find(&res)
 	return
 }
 
 func (s *stepLog) Create(log *models.Log) (err error) {
-	return s.db.Create(&tables.Log{
+	return s.db.Create(&tables.StepLog{
 		TaskName: s.tName,
 		StepName: s.sName,
 		Log:      *log,

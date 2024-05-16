@@ -10,34 +10,34 @@ type Task struct {
 }
 
 type TaskEnv struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	models.Env
 	Base
 }
 
 type Step struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	models.Step
 	Base
 }
 
 type StepEnv struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
-	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
+	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
 	models.Env
 	Base
 }
 
 type StepDepend struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
-	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`
-	Name     string `json:"name" gorm:"not null;comment:依赖步骤名称"`
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
+	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
+	Name     string `json:"name" gorm:"not null,comment:依赖步骤名称"`
 	Base
 }
 
-type Log struct {
-	TaskName string `json:"task_name,omitempty" gorm:"not null;comment:任务名称"`
-	StepName string `json:"step_name,omitempty" gorm:"not null;comment:步骤名称"`
+type StepLog struct {
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
+	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
 	models.Log
 	Base
 }

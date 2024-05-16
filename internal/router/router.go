@@ -118,7 +118,7 @@ func recovery(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rvr := recover(); rvr != nil {
-				logx.Errorln(rvr, debug.Stack())
+				logx.Errorf("%v %s", rvr, debug.Stack())
 				if r.Header.Get("Connection") != "Upgrade" {
 					w.WriteHeader(http.StatusInternalServerError)
 				}

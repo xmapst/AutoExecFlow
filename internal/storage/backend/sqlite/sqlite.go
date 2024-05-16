@@ -79,6 +79,7 @@ func New(path string) (backend.IStorage, error) {
 func (s *storage) init() error {
 	// 开启外键约束
 	s.Exec("PRAGMA foreign_keys=ON;")
+	s.Exec("PRAGMA sqlite_threadsafe=15000;")
 
 	// 自动迁移表
 	if err := s.AutoMigrate(
@@ -87,7 +88,7 @@ func (s *storage) init() error {
 		&tables.Step{},
 		&tables.StepEnv{},
 		&tables.StepDepend{},
-		&tables.Log{},
+		&tables.StepLog{},
 	); err != nil {
 		logx.Errorln(err)
 		return err
