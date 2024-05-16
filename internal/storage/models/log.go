@@ -1,9 +1,9 @@
 package models
 
 type Log struct {
-	Timestamp int64  `json:"timestamp,omitempty"`
-	Line      *int64 `json:"line,omitempty"`
-	Content   string `json:"content,omitempty"`
+	Timestamp int64  `json:"timestamp,omitempty" gorm:"not null;comment:时间戳"`
+	Line      *int64 `json:"line,omitempty" gorm:"not null;comment:行号"`
+	Content   string `json:"content,omitempty" gorm:"comment:内容"`
 }
 
 type Logs []*Log

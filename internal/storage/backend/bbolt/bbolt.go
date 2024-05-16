@@ -24,12 +24,12 @@ var (
 	logPrefix    = []byte("Log")
 )
 
-type Bolt struct {
+type storage struct {
 	*bbolt.DB
 }
 
 func New(path string) (backend.IStorage, error) {
-	var b = new(Bolt)
+	var b = new(storage)
 	err := retry.Do(
 		func() (err error) {
 			b.DB, err = bbolt.Open(filepath.Join(path, "database.db"), os.ModePerm, &bbolt.Options{})
@@ -78,25 +78,25 @@ func New(path string) (backend.IStorage, error) {
 	return b, nil
 }
 
-func (b *Bolt) Name() string {
+func (b *storage) Name() string {
 	return "bbolt"
 }
 
-func (b *Bolt) Close() error {
+func (b *storage) Close() error {
 	if err := b.Sync(); err != nil {
 		return err
 	}
 	return b.DB.Close()
 }
 
-func (b *Bolt) Task(name string) backend.ITask {
+func (b *storage) Task(name string) backend.ITask {
 	return &task{
 		db:    b.DB,
 		tName: []byte(name),
 	}
 }
 
-func (b *Bolt) TaskList(str string) (res models.Tasks) {
+func (b *storage) TaskList(str string) (res models.Tasks) {
 	strPrefix := utils.Join(bucketPrefix, taskPrefix, []byte(str))
 	_ = b.View(func(tx *bbolt.Tx) error {
 		return tx.ForEach(func(name []byte, b *bbolt.Bucket) error {

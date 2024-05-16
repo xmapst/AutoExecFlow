@@ -48,7 +48,7 @@ func New() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&config.App.Debug, "debug", "d", false, "debug mode.")
-	cmd.Flags().StringVar(&config.App.DBType, "db_type", "bolt", "database type. [bolt]")
+	cmd.Flags().StringVar(&config.App.DBType, "db_type", "sqlite", "database type. [sqlite,bolt]")
 	cmd.Flags().DurationVar(&config.App.ExecTimeOut, "exec_timeout", 24*time.Hour, "set the task exec command expire time")
 	cmd.Flags().StringVarP(&config.App.ListenAddress, "addr", "a", "tcp://0.0.0.0:2376", "listening address.")
 	cmd.Flags().BoolVarP(&config.App.Normal, "normal", "n", false, "wait for all task execution to complete.")

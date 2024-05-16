@@ -44,7 +44,7 @@ func (c *Config) Init() error {
 	c.WorkSpace = c.dir(c.WorkSpace, "workspace")
 	c.DataDir = c.dir(c.DataDir, "data")
 	if c.DBType == "" {
-		c.DBType = "bolt"
+		c.DBType = "sqlite"
 	}
 	return nil
 }
