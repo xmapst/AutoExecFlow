@@ -11,6 +11,18 @@ import (
 	"github.com/xmapst/osreapi/internal/utils"
 )
 
+func DefaultQuery(r *http.Request, key, defaultValue string) string {
+	value := Query(r, key)
+	if value == "" {
+		value = defaultValue
+	}
+	return value
+}
+
+func Query(r *http.Request, key string) string {
+	return r.URL.Query().Get(key)
+}
+
 func DecodeJson(r io.Reader, v interface{}) error {
 	defer io.Copy(io.Discard, r) //nolint:errcheck
 	return json.NewDecoder(r).Decode(v)

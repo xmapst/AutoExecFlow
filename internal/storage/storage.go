@@ -33,6 +33,6 @@ func Task(name string) backend.ITask {
 	return db.Task(name)
 }
 
-func TaskList(str string) (res []*models.Task) {
-	return db.TaskList(str)
+func TaskList(page, pageSize int64, str string) (res []*models.Task, total int64) {
+	return db.TaskList(page, pageSize, str)
 }

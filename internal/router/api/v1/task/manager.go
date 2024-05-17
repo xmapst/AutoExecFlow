@@ -19,11 +19,8 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	action := r.URL.Query().Get("action")
-	if action == "" {
-		action = "paused"
-	}
-	duration := r.URL.Query().Get("duration")
+	action := base.DefaultQuery(r, "action", "paused")
+	duration := base.Query(r, "duration")
 	manager, err := dag.GraphManager(taskName)
 	if err != nil {
 		logx.Errorln(err)

@@ -9,14 +9,15 @@ import (
 )
 
 type Base struct {
-	gorm.Model
+	ID        uint      `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type BaseModel interface {
 	GetID() uint
 	GetCreateTime() time.Time
 	GetUpdateTime() time.Time
-	GetDeleteTime() time.Time
 }
 
 func (b *Base) GetID() uint {
@@ -29,10 +30,6 @@ func (b *Base) GetCreateTime() time.Time {
 
 func (b *Base) GetUpdateTime() time.Time {
 	return b.UpdatedAt
-}
-
-func (b *Base) GetDeleteTime() time.Time {
-	return b.DeletedAt.Time
 }
 
 func (b *Base) BeforeCreate(tx *gorm.DB) error {
@@ -60,4 +57,21 @@ func (b *Base) BeforeDelete(tx *gorm.DB) error {
 func (b *Base) AfterDelete(tx *gorm.DB) error {
 	logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
+}
+
+func Paginate(db *gorm.DB, page, pageSize int64) *gorm.DB {
+	if page == -1 {
+		return db
+	}
+	if page == 0 {
+		page = 1
+	}
+	switch {
+	case pageSize > 500:
+		pageSize = 500
+	case pageSize <= 0:
+		pageSize = 10
+	}
+	offset := (page - 1) * pageSize
+	return db.Offset(int(offset)).Limit(int(pageSize))
 }

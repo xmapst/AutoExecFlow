@@ -109,20 +109,20 @@ func Submit(taskName string) {
 		// 校验dag图形
 		// 1. 创建顶点并入库
 		var stepVertex = make(map[string]*dag.Vertex)
-		var steps = t.StepList("")
+		var steps = t.StepNameList("")
 		if len(steps) == 0 {
 			err = errors.New("no step found")
 			return
 		}
-		for _, s := range steps {
-			stepVertex[s.Name] = dag.NewVertex(s.Name, t.newStep())
+		for _, name := range steps {
+			stepVertex[name] = dag.NewVertex(name, t.newStep())
 		}
 
 		// 2. 创建顶点依赖关系
-		for _, s := range steps {
-			vertex, ok := stepVertex[s.Name]
+		for _, name := range steps {
+			vertex, ok := stepVertex[name]
 			if !ok {
-				err = fmt.Errorf("%s vertex does not exist", s.Name)
+				err = fmt.Errorf("%s vertex does not exist", name)
 				return
 			}
 
@@ -132,8 +132,8 @@ func Submit(taskName string) {
 			}
 			err = vertex.WithDeps(func() []*dag.Vertex {
 				var stepFns []*dag.Vertex
-				for _, name := range t.Step(s.Name).Depend().List() {
-					_stepFn, _ok := stepVertex[name]
+				for _, dep := range t.Step(name).Depend().List() {
+					_stepFn, _ok := stepVertex[dep]
 					if !_ok {
 						continue
 					}

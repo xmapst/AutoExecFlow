@@ -13,8 +13,8 @@ type IStorage interface {
 	Close() (err error)
 
 	Task(name string) ITask
-	// TaskList 获取所有任务
-	TaskList(str string) (res models.Tasks)
+	// TaskList 获取任务,支持分页, 模糊匹配
+	TaskList(page, pageSize int64, str string) (res models.Tasks, total int64)
 }
 
 type IBase interface {
@@ -45,6 +45,8 @@ type ITask interface {
 
 	// Step 步骤接口
 	Step(name string) IStep
+	// StepNameList 所有步骤名称
+	StepNameList(str string) (res []string)
 	// StepList 获取任务下所有步骤
 	StepList(str string) (res models.Steps)
 }
@@ -77,6 +79,7 @@ type ILog interface {
 	List() (res models.Logs)
 	// Create 插入
 	Create(log *models.Log) (err error)
+	DeleteAll() (err error)
 }
 
 type IEnv interface {

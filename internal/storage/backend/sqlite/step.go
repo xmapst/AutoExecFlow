@@ -24,16 +24,22 @@ func (s *step) ClearAll() {
 	_ = s.Delete()
 	_ = s.Env().DeleteAll()
 	_ = s.Depend().DeleteAll()
+	_ = s.Log().DeleteAll()
 }
 
 func (s *step) Delete() (err error) {
-	err = s.db.Where("task_name = ? AND name = ?", s.tName, s.sName).Delete(&tables.Step{}).Error
-	return
+	return s.db.Where("task_name = ? AND name = ?", s.tName, s.sName).
+		Delete(&tables.Step{}).
+		Error
 }
 
 func (s *step) State() (state int, err error) {
 	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).Select("state").Where("task_name = ? AND name = ?", s.tName, s.sName).First(&data).Error
+	err = s.db.Model(&tables.Step{}).
+		Select("state").
+		Where("task_name = ? AND name = ?", s.tName, s.sName).
+		First(&data).
+		Error
 	state = *data.State
 	return
 }
@@ -52,28 +58,43 @@ func (s *step) TaskName() string {
 
 func (s *step) Timeout() (res time.Duration, err error) {
 	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).Select("timeout").Where("task_name = ? AND name = ?", s.tName, s.sName).First(&data).Error
+	err = s.db.Model(&tables.Step{}).
+		Select("timeout").
+		Where("task_name = ? AND name = ?", s.tName, s.sName).
+		First(&data).
+		Error
 	res = data.Timeout
 	return
 }
 
 func (s *step) Type() (res string, err error) {
 	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).Select("type").Where("task_name = ? AND name = ?", s.tName, s.sName).First(&data).Error
+	err = s.db.Model(&tables.Step{}).
+		Select("type").
+		Where("task_name = ? AND name = ?", s.tName, s.sName).
+		First(&data).
+		Error
 	res = data.Type
 	return
 }
 
 func (s *step) Content() (res string, err error) {
 	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).Select("content").Where("task_name = ? AND name = ?", s.tName, s.sName).First(&data).Error
+	err = s.db.Model(&tables.Step{}).
+		Select("content").
+		Where("task_name = ? AND name = ?", s.tName, s.sName).
+		First(&data).
+		Error
 	res = data.Content
 	return
 }
 
 func (s *step) Get() (res *models.Step, err error) {
 	res = new(models.Step)
-	err = s.db.Model(&tables.Step{}).Where("task_name = ? AND name = ?", s.tName, s.sName).First(res).Error
+	err = s.db.Model(&tables.Step{}).
+		Where("task_name = ? AND name = ?", s.tName, s.sName).
+		First(res).
+		Error
 	return
 }
 
@@ -89,7 +110,10 @@ func (s *step) Update(value *models.StepUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return s.db.Model(&tables.Step{}).Where("task_name = ? AND name = ?", s.tName, s.sName).Updates(value).Error
+	return s.db.Model(&tables.Step{}).
+		Where("task_name = ? AND name = ?", s.tName, s.sName).
+		Updates(value).
+		Error
 }
 
 func (s *step) Depend() backend.IDepend {

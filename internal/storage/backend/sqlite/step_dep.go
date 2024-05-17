@@ -13,7 +13,11 @@ type stepDepend struct {
 }
 
 func (s *stepDepend) List() (res []string) {
-	s.db.Model(&tables.StepDepend{}).Select("name").Where("task_name = ? AND step_name = ?", s.tName, s.sName).Order("id ASC").Find(&res)
+	s.db.Model(&tables.StepDepend{}).
+		Select("name").
+		Where("task_name = ? AND step_name = ?", s.tName, s.sName).
+		Order("id ASC").
+		Find(&res)
 	return
 }
 
@@ -33,5 +37,7 @@ func (s *stepDepend) Create(depends ...string) (err error) {
 }
 
 func (s *stepDepend) DeleteAll() (err error) {
-	return s.db.Where("task_name = ? AND step_name = ?", s.tName, s.sName).Delete(&tables.StepDepend{}).Error
+	return s.db.Where("task_name = ? AND step_name = ?", s.tName, s.sName).
+		Delete(&tables.StepDepend{}).
+		Error
 }

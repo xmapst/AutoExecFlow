@@ -29,13 +29,18 @@ func (t *task) ClearAll() {
 }
 
 func (t *task) Delete() (err error) {
-	err = t.db.Where("name = ?", t.tName).Delete(&tables.Task{}).Error
-	return
+	return t.db.Where("name = ?", t.tName).
+		Delete(&tables.Task{}).
+		Error
 }
 
 func (t *task) State() (state int, err error) {
 	var data = new(models.Task)
-	err = t.db.Model(&tables.Task{}).Select("state").Where("name = ?", t.tName).First(data).Error
+	err = t.db.Model(&tables.Task{}).
+		Select("state").
+		Where("name = ?", t.tName).
+		First(data).
+		Error
 	state = *data.State
 	return
 }
@@ -49,14 +54,21 @@ func (t *task) Env() backend.IEnv {
 
 func (t *task) Timeout() (res time.Duration, err error) {
 	var data = new(models.Task)
-	err = t.db.Model(&tables.Task{}).Select("state").Where("name = ?", t.tName).First(data).Error
+	err = t.db.Model(&tables.Task{}).
+		Select("state").
+		Where("name = ?", t.tName).
+		First(data).
+		Error
 	res = data.Timeout
 	return
 }
 
 func (t *task) Get() (res *models.Task, err error) {
 	res = new(models.Task)
-	err = t.db.Model(&tables.Task{}).Where("name = ?", t.tName).First(res).Error
+	err = t.db.Model(&tables.Task{}).
+		Where("name = ?", t.tName).
+		First(res).
+		Error
 	return
 }
 
@@ -71,7 +83,10 @@ func (t *task) Update(value *models.TaskUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return t.db.Model(&tables.Task{}).Where("name = ?", t.tName).Updates(value).Error
+	return t.db.Model(&tables.Task{}).
+		Where("name = ?", t.tName).
+		Updates(value).
+		Error
 }
 
 func (t *task) Step(name string) backend.IStep {
@@ -82,11 +97,25 @@ func (t *task) Step(name string) backend.IStep {
 	}
 }
 
-func (t *task) StepList(str string) (res models.Steps) {
+func (t *task) StepNameList(str string) (res []string) {
+	query := t.db.Model(&tables.Step{}).
+		Select("name").
+		Order("id ASC").
+		Where("task_name = ?", t.tName)
 	if str != "" {
-		t.db.Model(&tables.Step{}).Where("task_name = ? AND name LIKE ?", t.tName, str+"%s").Order("id ASC").Find(&res)
-		return
+		query.Where("name LIKE ?", str+"%s")
 	}
-	t.db.Model(&tables.Step{}).Where("task_name = ?", t.tName).Order("id ASC").Find(&res)
+	query.Find(&res)
+	return
+}
+
+func (t *task) StepList(str string) (res models.Steps) {
+	query := t.db.Model(&tables.Step{}).
+		Order("id ASC").
+		Where("task_name = ?", t.tName)
+	if str != "" {
+		query.Where("name LIKE ?", str+"%s")
+	}
+	query.Find(&res)
 	return
 }

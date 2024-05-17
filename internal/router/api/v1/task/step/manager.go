@@ -24,11 +24,8 @@ func Manager(w http.ResponseWriter, r *http.Request) {
 		base.SendJson(w, base.New().WithData(base.CodeNoData).WithError(errors.New("step does not exist")))
 		return
 	}
-	action := r.URL.Query().Get("action")
-	if action == "" {
-		action = "paused"
-	}
-	duration := r.URL.Query().Get("duration")
+	action := base.DefaultQuery(r, "action", "paused")
+	duration := base.Query(r, "duration")
 	manager, err := dag.VertexManager(taskName, stepName)
 	if err != nil {
 		logx.Errorln(err)

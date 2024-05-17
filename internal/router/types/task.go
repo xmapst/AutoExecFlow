@@ -35,8 +35,17 @@ type TaskCreateRes struct {
 }
 
 type TaskListRes struct {
-	Total int        `json:"total"`
+	Page  Page       `json:"page"`
 	Tasks []*TaskRes `json:"tasks"`
+}
+
+type Page struct {
+	// 当前页
+	Current int64 `json:"current"`
+	// 页大小
+	Size int64 `json:"size"`
+	// 总页数
+	Total int64 `json:"total"`
 }
 
 type TaskRes struct {
@@ -46,9 +55,9 @@ type TaskRes struct {
 	Workspace string            `json:"workspace"`
 	Message   string            `json:"msg"`
 	Count     int               `json:"count"`
-	Env       map[string]string `json:"env,omitempty"`
-	Timeout   string            `json:"timeout,omitempty"`
-	Time      *Time             `json:"time,omitempty"`
+	Env       map[string]string `json:"env"`
+	Timeout   string            `json:"timeout"`
+	Time      *Time             `json:"time"`
 }
 
 type StepRes struct {
@@ -58,17 +67,17 @@ type StepRes struct {
 	Manager   string            `json:"manager"`
 	Workspace string            `json:"workspace"`
 	Message   string            `json:"msg"`
-	Timeout   string            `json:"timeout,omitempty"`
-	Depends   []string          `json:"depends,omitempty"`
-	Env       map[string]string `json:"env,omitempty"`
-	Type      string            `json:"type,omitempty"`
-	Content   string            `json:"content,omitempty"`
-	Time      *Time             `json:"time,omitempty"`
+	Timeout   string            `json:"timeout"`
+	Depends   []string          `json:"depends"`
+	Env       map[string]string `json:"env"`
+	Type      string            `json:"type"`
+	Content   string            `json:"content"`
+	Time      *Time             `json:"time"`
 }
 
 type Time struct {
-	Start string `json:"start,omitempty"` // 开始时间
-	End   string `json:"end,omitempty"`   // 结束时间
+	Start string `json:"start"` // 开始时间
+	End   string `json:"end"`   // 结束时间
 }
 
 type LogRes struct {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/xmapst/osreapi/internal/router/base"
@@ -13,13 +14,32 @@ import (
 )
 
 func List(w http.ResponseWriter, r *http.Request) {
-	tasks := storage.TaskList("")
+	page, err := strconv.ParseInt(base.DefaultQuery(r, "page", "1"), 10, 64)
+	if err != nil {
+		base.SendJson(w, base.New().WithError(err))
+		return
+	}
+	size, err := strconv.ParseInt(base.DefaultQuery(r, "size", "100"), 10, 64)
+	if err != nil {
+		base.SendJson(w, base.New().WithError(err))
+		return
+	}
+	prefix := base.Query(r, "prefix")
+	tasks, total := storage.TaskList(page, size, prefix)
 	if tasks == nil {
 		base.SendJson(w, base.New())
 		return
 	}
+	pageTotal := total / size
+	if total%size != 0 {
+		pageTotal += 1
+	}
 	var res = &types.TaskListRes{
-		Total: len(tasks),
+		Page: types.Page{
+			Current: page,
+			Size:    size,
+			Total:   pageTotal,
+		},
 	}
 	var scheme = "http"
 	if r.TLS != nil {
@@ -47,22 +67,26 @@ func procTask(uriPrefix string, task *models.Task) *types.TaskRes {
 			End:   task.ETimeStr(),
 		},
 	}
-
+	st := storage.Task(task.Name)
 	// 获取任务级所有环境变量
-	envs := storage.Task(task.Name).Env().List()
+	envs := st.Env().List()
 	for _, env := range envs {
 		res.Env[env.Name] = env.Value
 	}
 
 	// 获取当前进行到那些步骤
-	steps := storage.Task(task.Name).StepList("")
+	steps := st.StepNameList("")
 	if steps == nil {
 		return res
 	}
 
 	var groups = make(map[int][]string)
-	for _, vv := range steps {
-		groups[*vv.State] = append(groups[*vv.State], vv.Name)
+	for _, name := range steps {
+		state, err := st.Step(name).State()
+		if err != nil {
+			continue
+		}
+		groups[state] = append(groups[state], name)
 	}
 	var keys []int
 	for k := range groups {

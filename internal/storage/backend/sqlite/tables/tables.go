@@ -5,39 +5,39 @@ import (
 )
 
 type Task struct {
-	models.Task
 	Base
+	models.Task
 }
 
 type TaskEnv struct {
+	Base
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	models.Env
-	Base
 }
 
 type Step struct {
+	Base
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	models.Step
-	Base
 }
 
 type StepEnv struct {
+	Base
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
 	models.Env
-	Base
 }
 
 type StepDepend struct {
+	Base
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
 	Name     string `json:"name" gorm:"not null,comment:依赖步骤名称"`
-	Base
 }
 
 type StepLog struct {
+	Base
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
 	models.Log
-	Base
 }
