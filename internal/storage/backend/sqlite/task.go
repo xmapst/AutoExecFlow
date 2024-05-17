@@ -11,7 +11,7 @@ import (
 )
 
 type task struct {
-	db    *gorm.DB
+	*gorm.DB
 	tName string
 }
 
@@ -20,26 +20,22 @@ func (t *task) Name() string {
 }
 
 func (t *task) ClearAll() {
-	_ = t.Delete()
-	_ = t.Env().DeleteAll()
+	_ = t.Remove()
+	_ = t.Env().RemoveAll()
 	list := t.StepList(backend.All)
 	for _, v := range list {
 		t.Step(v.Name).ClearAll()
 	}
 }
 
-func (t *task) Delete() (err error) {
-	return t.db.
-		Where(map[string]interface{}{
-			"name": t.tName,
-		}).
-		Delete(&tables.Task{}).
-		Error
+func (t *task) Remove() (err error) {
+	return t.Where(map[string]interface{}{
+		"name": t.tName,
+	}).Delete(&tables.Task{}).Error
 }
 
 func (t *task) State() (state int, err error) {
-	err = t.db.
-		Model(&tables.Task{}).
+	err = t.Model(&tables.Task{}).
 		Select("state").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -51,14 +47,13 @@ func (t *task) State() (state int, err error) {
 
 func (t *task) Env() backend.IEnv {
 	return &taskEnv{
-		db:    t.db,
+		DB:    t.DB,
 		tName: t.tName,
 	}
 }
 
 func (t *task) Timeout() (res time.Duration, err error) {
-	err = t.db.
-		Model(&tables.Task{}).
+	err = t.Model(&tables.Task{}).
 		Select("state").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -70,8 +65,7 @@ func (t *task) Timeout() (res time.Duration, err error) {
 
 func (t *task) Get() (res *models.Task, err error) {
 	res = new(models.Task)
-	err = t.db.
-		Model(&tables.Task{}).
+	err = t.Model(&tables.Task{}).
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).
@@ -80,21 +74,18 @@ func (t *task) Get() (res *models.Task, err error) {
 	return
 }
 
-func (t *task) Create(task *models.Task) (err error) {
+func (t *task) Insert(task *models.Task) (err error) {
 	task.Name = t.tName
-	return t.db.
-		Create(&tables.Task{
-			Task: *task,
-		}).
-		Error
+	return t.Create(&tables.Task{
+		Task: *task,
+	}).Error
 }
 
 func (t *task) Update(value *models.TaskUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return t.db.
-		Model(&tables.Task{}).
+	return t.Model(&tables.Task{}).
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).
@@ -104,20 +95,19 @@ func (t *task) Update(value *models.TaskUpdate) (err error) {
 
 func (t *task) Step(name string) backend.IStep {
 	return &step{
-		db:    t.db,
+		DB:    t.DB,
 		tName: t.tName,
 		sName: name,
 	}
 }
 
 func (t *task) StepCount() (res int64) {
-	t.db.Model(&tables.Step{}).Count(&res)
+	t.Model(&tables.Step{}).Count(&res)
 	return
 }
 
 func (t *task) StepNameList(str string) (res []string) {
-	query := t.db.
-		Model(&tables.Step{}).
+	query := t.Model(&tables.Step{}).
 		Select("name").
 		Order("id ASC").
 		Where(map[string]interface{}{
@@ -131,8 +121,7 @@ func (t *task) StepNameList(str string) (res []string) {
 }
 
 func (t *task) StepList(str string) (res models.Steps) {
-	query := t.db.
-		Model(&tables.Step{}).
+	query := t.Model(&tables.Step{}).
 		Order("id ASC").
 		Where(map[string]interface{}{
 			"task_name": t.tName,

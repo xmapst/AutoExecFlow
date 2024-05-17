@@ -8,16 +8,15 @@ import (
 )
 
 type stepLog struct {
-	db    *gorm.DB
+	*gorm.DB
 	tName string
 	sName string
 }
 
 func (s *stepLog) List() (res models.Logs) {
-	s.db.
-		Model(&tables.StepLog{}).
+	s.Model(&tables.StepLog{}).
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"step_name": s.sName,
 		}).
 		Order("id ASC").
@@ -25,22 +24,17 @@ func (s *stepLog) List() (res models.Logs) {
 	return
 }
 
-func (s *stepLog) Create(log *models.Log) (err error) {
-	return s.db.
-		Create(&tables.StepLog{
-			TaskName: s.tName,
-			StepName: s.sName,
-			Log:      *log,
-		}).
-		Error
+func (s *stepLog) Insert(log *models.Log) (err error) {
+	return s.Create(&tables.StepLog{
+		TaskName: s.tName,
+		StepName: s.sName,
+		Log:      *log,
+	}).Error
 }
 
-func (s *stepLog) DeleteAll() (err error) {
-	return s.db.
-		Where(map[string]interface{}{
-			"task_name": s.sName,
-			"step_name": s.sName,
-		}).
-		Delete(&tables.StepLog{}).
-		Error
+func (s *stepLog) RemoveAll() (err error) {
+	return s.Where(map[string]interface{}{
+		"task_name": s.tName,
+		"step_name": s.sName,
+	}).Delete(&tables.StepLog{}).Error
 }

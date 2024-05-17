@@ -10,16 +10,15 @@ import (
 )
 
 type stepEnv struct {
-	db    *gorm.DB
+	*gorm.DB
 	tName string
 	sName string
 }
 
 func (s *stepEnv) List() (res models.Envs) {
-	s.db.
-		Model(&tables.StepEnv{}).
+	s.Model(&tables.StepEnv{}).
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"step_name": s.sName,
 		}).
 		Order("id ASC").
@@ -27,7 +26,7 @@ func (s *stepEnv) List() (res models.Envs) {
 	return
 }
 
-func (s *stepEnv) Create(envs ...*models.Env) (err error) {
+func (s *stepEnv) Insert(envs ...*models.Env) (err error) {
 	if len(envs) == 0 {
 		return
 	}
@@ -39,20 +38,17 @@ func (s *stepEnv) Create(envs ...*models.Env) (err error) {
 			Env:      *env,
 		})
 	}
-	return s.db.
-		Create(&_envs).
-		Error
+	return s.Create(&_envs).Error
 }
 
 func (s *stepEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
-	err = s.db.
-		Model(&tables.StepEnv{}).
+	err = s.Model(&tables.StepEnv{}).
 		Select("value").
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"step_name": s.sName,
 			"name":      name,
 		}).
@@ -61,26 +57,20 @@ func (s *stepEnv) Get(name string) (res string, err error) {
 	return
 }
 
-func (s *stepEnv) Delete(name string) (err error) {
+func (s *stepEnv) Remove(name string) (err error) {
 	if name == "" {
 		return errors.New("name is empty")
 	}
-	return s.db.
-		Where(map[string]interface{}{
-			"task_name": s.sName,
-			"step_name": s.sName,
-			"name":      name,
-		}).
-		Delete(&tables.StepEnv{}).
-		Error
+	return s.Where(map[string]interface{}{
+		"task_name": s.tName,
+		"step_name": s.sName,
+		"name":      name,
+	}).Delete(&tables.StepEnv{}).Error
 }
 
-func (s *stepEnv) DeleteAll() (err error) {
-	return s.db.
-		Where(map[string]interface{}{
-			"task_name": s.sName,
-			"step_name": s.sName,
-		}).
-		Delete(&tables.StepEnv{}).
-		Error
+func (s *stepEnv) RemoveAll() (err error) {
+	return s.Where(map[string]interface{}{
+		"task_name": s.tName,
+		"step_name": s.sName,
+	}).Delete(&tables.StepEnv{}).Error
 }

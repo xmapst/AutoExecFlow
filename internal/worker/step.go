@@ -110,7 +110,7 @@ const ConsoleDone = "OSREAPI::CONSOLE::DONE"
 func (s *step) writeLog() {
 	var num int64
 	// start
-	if err := s.storage.Log().Create(&models.Log{
+	if err := s.storage.Log().Insert(&models.Log{
 		Timestamp: time.Now().UnixNano(),
 		Line:      models.Pointer(num),
 		Content:   ConsoleStart,
@@ -120,7 +120,7 @@ func (s *step) writeLog() {
 	defer func() {
 		// end
 		num += 1
-		if err := s.storage.Log().Create(&models.Log{
+		if err := s.storage.Log().Insert(&models.Log{
 			Timestamp: time.Now().UnixNano(),
 			Line:      models.Pointer(num),
 			Content:   ConsoleDone,
@@ -136,7 +136,7 @@ func (s *step) writeLog() {
 		num += 1
 		log = strings.ReplaceAll(log, ConsoleStart, "")
 		log = strings.ReplaceAll(log, ConsoleDone, "")
-		if err := s.storage.Log().Create(&models.Log{
+		if err := s.storage.Log().Insert(&models.Log{
 			Timestamp: time.Now().UnixNano(),
 			Line:      models.Pointer(num),
 			Content:   log,

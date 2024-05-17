@@ -265,7 +265,7 @@ func (t *Task) Save() (err error) {
 	}()
 
 	// save task
-	err = task.Create(&models.Task{
+	err = task.Insert(&models.Task{
 		Count:   models.Pointer(len(t.Step)),
 		Timeout: t.timeoutDuration,
 		TaskUpdate: models.TaskUpdate{
@@ -280,7 +280,7 @@ func (t *Task) Save() (err error) {
 
 	// save task env
 	for name, value := range t.Env {
-		if err = task.Env().Create(&models.Env{
+		if err = task.Env().Insert(&models.Env{
 			Name:  name,
 			Value: value,
 		}); err != nil {
@@ -290,7 +290,7 @@ func (t *Task) Save() (err error) {
 
 	for _, step := range t.Step {
 		// save step
-		err = task.Step(step.Name).Create(&models.Step{
+		err = task.Step(step.Name).Insert(&models.Step{
 			Type:    step.Type,
 			Content: step.Content,
 			Timeout: step.timeoutDuration,
@@ -306,7 +306,7 @@ func (t *Task) Save() (err error) {
 		}
 		// save step env
 		for name, value := range step.Env {
-			if err = task.Step(step.Name).Env().Create(&models.Env{
+			if err = task.Step(step.Name).Env().Insert(&models.Env{
 				Name:  name,
 				Value: value,
 			}); err != nil {
@@ -314,7 +314,7 @@ func (t *Task) Save() (err error) {
 			}
 		}
 		// save step depend
-		err = task.Step(step.Name).Depend().Create(step.Depends...)
+		err = task.Step(step.Name).Depend().Insert(step.Depends...)
 		if err != nil {
 			return err
 		}

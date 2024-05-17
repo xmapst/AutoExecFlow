@@ -7,17 +7,16 @@ import (
 )
 
 type stepDepend struct {
-	db    *gorm.DB
+	*gorm.DB
 	tName string
 	sName string
 }
 
 func (s *stepDepend) List() (res []string) {
-	s.db.
-		Model(&tables.StepDepend{}).
+	s.Model(&tables.StepDepend{}).
 		Select("name").
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"step_name": s.sName,
 		}).
 		Order("id ASC").
@@ -25,7 +24,7 @@ func (s *stepDepend) List() (res []string) {
 	return
 }
 
-func (s *stepDepend) Create(depends ...string) (err error) {
+func (s *stepDepend) Insert(depends ...string) (err error) {
 	if len(depends) == 0 {
 		return
 	}
@@ -37,17 +36,12 @@ func (s *stepDepend) Create(depends ...string) (err error) {
 			Name:     depend,
 		})
 	}
-	return s.db.
-		Create(&stepDepends).
-		Error
+	return s.Create(&stepDepends).Error
 }
 
-func (s *stepDepend) DeleteAll() (err error) {
-	return s.db.
-		Where(map[string]interface{}{
-			"task_name": s.sName,
-			"step_name": s.sName,
-		}).
-		Delete(&tables.StepDepend{}).
-		Error
+func (s *stepDepend) RemoveAll() (err error) {
+	return s.Where(map[string]interface{}{
+		"task_name": s.tName,
+		"step_name": s.sName,
+	}).Delete(&tables.StepDepend{}).Error
 }

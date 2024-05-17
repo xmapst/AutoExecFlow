@@ -24,8 +24,8 @@ type IBase interface {
 	Name() string
 	// ClearAll 清理
 	ClearAll()
-	// Delete 删除
-	Delete() (err error)
+	// Remove 删除
+	Remove() (err error)
 	// State 获取状态
 	State() (state int, err error)
 
@@ -40,8 +40,8 @@ type ITask interface {
 	Timeout() (res time.Duration, err error)
 	// Get 根据名称获取指定任务
 	Get() (res *models.Task, err error)
-	// Create 插入
-	Create(task *models.Task) (err error)
+	// Insert 插入
+	Insert(task *models.Task) (err error)
 	// Update 更新
 	Update(value *models.TaskUpdate) (err error)
 
@@ -67,8 +67,8 @@ type IStep interface {
 	Content() (res string, err error)
 	// Get 根据名称获取指定步骤
 	Get() (res *models.Step, err error)
-	// Create 插入
-	Create(step *models.Step) (err error)
+	// Insert 插入
+	Insert(step *models.Step) (err error)
 	// Update 更新
 	Update(value *models.StepUpdate) (err error)
 
@@ -81,21 +81,21 @@ type IStep interface {
 type ILog interface {
 	// List 获取指定任务指定步骤所有日志,支持分页
 	List() (res models.Logs)
-	// Create 插入
-	Create(log *models.Log) (err error)
-	DeleteAll() (err error)
+	// Insert 插入
+	Insert(log *models.Log) (err error)
+	RemoveAll() (err error)
 }
 
 type IEnv interface {
 	List() (res models.Envs)
-	Create(env ...*models.Env) (err error)
+	Insert(env ...*models.Env) (err error)
 	Get(name string) (string, error)
-	Delete(name string) (err error)
-	DeleteAll() (err error)
+	Remove(name string) (err error)
+	RemoveAll() (err error)
 }
 
 type IDepend interface {
 	List() (res []string)
-	Create(depends ...string) (err error)
-	DeleteAll() (err error)
+	Insert(depends ...string) (err error)
+	RemoveAll() (err error)
 }

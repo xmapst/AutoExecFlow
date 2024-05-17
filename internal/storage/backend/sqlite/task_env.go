@@ -10,13 +10,12 @@ import (
 )
 
 type taskEnv struct {
-	db    *gorm.DB
+	*gorm.DB
 	tName string
 }
 
 func (t *taskEnv) List() (res models.Envs) {
-	t.db.
-		Model(&tables.TaskEnv{}).
+	t.Model(&tables.TaskEnv{}).
 		Where(map[string]interface{}{
 			"task_name": t.tName,
 		}).
@@ -25,7 +24,7 @@ func (t *taskEnv) List() (res models.Envs) {
 	return
 }
 
-func (t *taskEnv) Create(envs ...*models.Env) (err error) {
+func (t *taskEnv) Insert(envs ...*models.Env) (err error) {
 	if len(envs) == 0 {
 		return
 	}
@@ -36,17 +35,14 @@ func (t *taskEnv) Create(envs ...*models.Env) (err error) {
 			Env:      *env,
 		})
 	}
-	return t.db.
-		Create(&_envs).
-		Error
+	return t.Create(&_envs).Error
 }
 
 func (t *taskEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
-	err = t.db.
-		Model(&tables.TaskEnv{}).
+	err = t.Model(&tables.TaskEnv{}).
 		Select("value").
 		Where(map[string]interface{}{
 			"task_name": t.tName,
@@ -57,24 +53,18 @@ func (t *taskEnv) Get(name string) (res string, err error) {
 	return
 }
 
-func (t *taskEnv) Delete(name string) (err error) {
+func (t *taskEnv) Remove(name string) (err error) {
 	if name == "" {
 		return errors.New("name is empty")
 	}
-	return t.db.
-		Where(map[string]interface{}{
-			"task_name": t.tName,
-			"name":      name,
-		}).
-		Delete(&tables.TaskEnv{}).
-		Error
+	return t.Where(map[string]interface{}{
+		"task_name": t.tName,
+		"name":      name,
+	}).Delete(&tables.TaskEnv{}).Error
 }
 
-func (t *taskEnv) DeleteAll() (err error) {
-	return t.db.
-		Where(map[string]interface{}{
-			"task_name": t.tName,
-		}).
-		Delete(&tables.TaskEnv{}).
-		Error
+func (t *taskEnv) RemoveAll() (err error) {
+	return t.Where(map[string]interface{}{
+		"task_name": t.tName,
+	}).Delete(&tables.TaskEnv{}).Error
 }

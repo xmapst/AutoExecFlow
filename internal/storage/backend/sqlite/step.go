@@ -11,7 +11,7 @@ import (
 )
 
 type step struct {
-	db    *gorm.DB
+	*gorm.DB
 	tName string
 	sName string
 }
@@ -21,28 +21,24 @@ func (s *step) Name() string {
 }
 
 func (s *step) ClearAll() {
-	_ = s.Delete()
-	_ = s.Env().DeleteAll()
-	_ = s.Depend().DeleteAll()
-	_ = s.Log().DeleteAll()
+	_ = s.Remove()
+	_ = s.Env().RemoveAll()
+	_ = s.Depend().RemoveAll()
+	_ = s.Log().RemoveAll()
 }
 
-func (s *step) Delete() (err error) {
-	return s.db.
-		Where(map[string]interface{}{
-			"task_name": s.sName,
-			"name":      s.sName,
-		}).
-		Delete(&tables.Step{}).
-		Error
+func (s *step) Remove() (err error) {
+	return s.Where(map[string]interface{}{
+		"task_name": s.tName,
+		"name":      s.sName,
+	}).Delete(&tables.Step{}).Error
 }
 
 func (s *step) State() (state int, err error) {
-	err = s.db.
-		Model(&tables.Step{}).
+	err = s.Model(&tables.Step{}).
 		Select("state").
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"name":      s.sName,
 		}).
 		Scan(&state).
@@ -52,7 +48,7 @@ func (s *step) State() (state int, err error) {
 
 func (s *step) Env() backend.IEnv {
 	return &stepEnv{
-		db:    s.db,
+		DB:    s.DB,
 		tName: s.tName,
 		sName: s.sName,
 	}
@@ -63,11 +59,10 @@ func (s *step) TaskName() string {
 }
 
 func (s *step) Timeout() (res time.Duration, err error) {
-	err = s.db.
-		Model(&tables.Step{}).
+	err = s.Model(&tables.Step{}).
 		Select("timeout").
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"name":      s.sName,
 		}).
 		Scan(&res).
@@ -76,11 +71,10 @@ func (s *step) Timeout() (res time.Duration, err error) {
 }
 
 func (s *step) Type() (res string, err error) {
-	err = s.db.
-		Model(&tables.Step{}).
+	err = s.Model(&tables.Step{}).
 		Select("type").
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"name":      s.sName,
 		}).
 		Scan(&res).
@@ -89,11 +83,10 @@ func (s *step) Type() (res string, err error) {
 }
 
 func (s *step) Content() (res string, err error) {
-	err = s.db.
-		Model(&tables.Step{}).
+	err = s.Model(&tables.Step{}).
 		Select("content").
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"name":      s.sName,
 		}).
 		Scan(&res).
@@ -103,10 +96,9 @@ func (s *step) Content() (res string, err error) {
 
 func (s *step) Get() (res *models.Step, err error) {
 	res = new(models.Step)
-	err = s.db.
-		Model(&tables.Step{}).
+	err = s.Model(&tables.Step{}).
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"name":      s.sName,
 		}).
 		First(res).
@@ -114,24 +106,22 @@ func (s *step) Get() (res *models.Step, err error) {
 	return
 }
 
-func (s *step) Create(step *models.Step) (err error) {
+func (s *step) Insert(step *models.Step) (err error) {
 	step.Name = s.sName
-	return s.db.
-		Create(&tables.Step{
-			TaskName: s.tName,
-			Step:     *step,
-		}).
-		Error
+	return s.Create(&tables.Step{
+		TaskName: s.tName,
+		Step:     *step,
+	}).Error
 }
 
 func (s *step) Update(value *models.StepUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return s.db.
+	return s.
 		Model(&tables.Step{}).
 		Where(map[string]interface{}{
-			"task_name": s.sName,
+			"task_name": s.tName,
 			"name":      s.sName,
 		}).
 		Updates(value).
@@ -140,7 +130,7 @@ func (s *step) Update(value *models.StepUpdate) (err error) {
 
 func (s *step) Depend() backend.IDepend {
 	return &stepDepend{
-		db:    s.db,
+		DB:    s.DB,
 		tName: s.tName,
 		sName: s.sName,
 	}
@@ -148,7 +138,7 @@ func (s *step) Depend() backend.IDepend {
 
 func (s *step) Log() backend.ILog {
 	return &stepLog{
-		db:    s.db,
+		DB:    s.DB,
 		tName: s.tName,
 		sName: s.sName,
 	}

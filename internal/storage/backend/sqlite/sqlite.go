@@ -141,7 +141,7 @@ func (s *storage) Close() error {
 
 func (s *storage) Task(name string) backend.ITask {
 	return &task{
-		db:    s.DB,
+		DB:    s.DB,
 		tName: name,
 	}
 }
