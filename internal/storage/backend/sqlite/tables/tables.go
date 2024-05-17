@@ -11,21 +11,21 @@ type Task struct {
 
 type TaskEnv struct {
 	Base
-	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	models.Env
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 }
 
 type Step struct {
 	Base
-	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	models.Step
+	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 }
 
 type StepEnv struct {
 	Base
+	models.Env
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
-	models.Env
 }
 
 type StepDepend struct {
@@ -37,7 +37,7 @@ type StepDepend struct {
 
 type StepLog struct {
 	Base
+	models.Log
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
-	models.Log
 }

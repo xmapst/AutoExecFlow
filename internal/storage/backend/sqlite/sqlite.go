@@ -103,7 +103,7 @@ func (s *storage) init() error {
 	s.Exec("PRAGMA mode=rwc;")
 
 	// 自动迁移表
-	if err := s.AutoMigrate(
+	if err = s.AutoMigrate(
 		&tables.Task{},
 		&tables.TaskEnv{},
 		&tables.Step{},
@@ -114,13 +114,13 @@ func (s *storage) init() error {
 		logx.Errorln(err)
 		return err
 	}
-	s.DB.Model(&tables.Task{}).
+	s.Model(&tables.Task{}).
 		Where("state = ?", models.Running).
 		Updates(map[string]interface{}{
 			"state":   models.Failed,
 			"message": "unexpected ending",
 		})
-	s.DB.Model(&tables.Step{}).
+	s.Model(&tables.Step{}).
 		Where("state = ?", models.Running).
 		Updates(map[string]interface{}{
 			"state":   models.Failed,
@@ -146,9 +146,14 @@ func (s *storage) Task(name string) backend.ITask {
 	}
 }
 
+func (s *storage) TaskCount() (res int64) {
+	s.Model(&tables.Task{}).Distinct("DISTINCT name").Count(&res)
+	return
+}
+
 func (s *storage) TaskList(page, pageSize int64, str string) (res models.Tasks, total int64) {
 	query := s.Model(&tables.Task{}).
-		Order("s_time DESC, id DESC")
+		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/xmapst/osreapi/internal/router/base"
 	"github.com/xmapst/osreapi/internal/router/types"
 	"github.com/xmapst/osreapi/internal/storage"
+	"github.com/xmapst/osreapi/internal/storage/backend"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/internal/worker"
 )
@@ -30,7 +31,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	state := models.StateMap[*task.State]
 	r.Header.Set(types.XTaskState, state)
 	w.Header().Set(types.XTaskState, state)
-	steps := storage.Task(taskName).StepList("")
+	steps := storage.Task(taskName).StepList(backend.All)
 	if steps == nil {
 		base.SendJson(w, base.New().WithCode(base.CodeNoData).WithError(err))
 		return

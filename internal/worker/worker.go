@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
-	"sync/atomic"
 	"time"
 
 	"github.com/xmapst/osreapi/internal/server/config"
@@ -24,7 +23,6 @@ var (
 	DefaultSize = runtime.NumCPU() * 2
 	pool        = tunny.NewCallback(DefaultSize)
 	queue       = deque.New[func()]()
-	taskTotal   int64
 )
 
 func init() {
@@ -40,7 +38,7 @@ func GetSize() int {
 }
 
 func GetTotal() int64 {
-	return atomic.LoadInt64(&taskTotal)
+	return storage.TaskCount()
 }
 
 func Running() int64 {
@@ -77,7 +75,6 @@ func dispatch() {
 }
 
 func Submit(taskName string) {
-	atomic.AddInt64(&taskTotal, 1)
 	queue.PushBack(func() {
 		t := &task{
 			ITask:     storage.Task(taskName),

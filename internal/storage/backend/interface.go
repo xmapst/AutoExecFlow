@@ -13,6 +13,8 @@ type IStorage interface {
 	Close() (err error)
 
 	Task(name string) ITask
+	// TaskCount 任务总数
+	TaskCount() (res int64)
 	// TaskList 获取任务,支持分页, 模糊匹配
 	TaskList(page, pageSize int64, str string) (res models.Tasks, total int64)
 }
@@ -45,6 +47,8 @@ type ITask interface {
 
 	// Step 步骤接口
 	Step(name string) IStep
+	// StepCount 任务总数
+	StepCount() (res int64)
 	// StepNameList 所有步骤名称
 	StepNameList(str string) (res []string)
 	// StepList 获取任务下所有步骤

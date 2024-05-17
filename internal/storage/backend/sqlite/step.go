@@ -28,19 +28,25 @@ func (s *step) ClearAll() {
 }
 
 func (s *step) Delete() (err error) {
-	return s.db.Where("task_name = ? AND name = ?", s.tName, s.sName).
+	return s.db.
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
 		Delete(&tables.Step{}).
 		Error
 }
 
 func (s *step) State() (state int, err error) {
-	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).
+	err = s.db.
+		Model(&tables.Step{}).
 		Select("state").
-		Where("task_name = ? AND name = ?", s.tName, s.sName).
-		First(&data).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
+		Scan(&state).
 		Error
-	state = *data.State
 	return
 }
 
@@ -57,42 +63,52 @@ func (s *step) TaskName() string {
 }
 
 func (s *step) Timeout() (res time.Duration, err error) {
-	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).
+	err = s.db.
+		Model(&tables.Step{}).
 		Select("timeout").
-		Where("task_name = ? AND name = ?", s.tName, s.sName).
-		First(&data).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
+		Scan(&res).
 		Error
-	res = data.Timeout
 	return
 }
 
 func (s *step) Type() (res string, err error) {
-	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).
+	err = s.db.
+		Model(&tables.Step{}).
 		Select("type").
-		Where("task_name = ? AND name = ?", s.tName, s.sName).
-		First(&data).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
+		Scan(&res).
 		Error
-	res = data.Type
 	return
 }
 
 func (s *step) Content() (res string, err error) {
-	var data = new(tables.Step)
-	err = s.db.Model(&tables.Step{}).
+	err = s.db.
+		Model(&tables.Step{}).
 		Select("content").
-		Where("task_name = ? AND name = ?", s.tName, s.sName).
-		First(&data).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
+		Scan(&res).
 		Error
-	res = data.Content
 	return
 }
 
 func (s *step) Get() (res *models.Step, err error) {
 	res = new(models.Step)
-	err = s.db.Model(&tables.Step{}).
-		Where("task_name = ? AND name = ?", s.tName, s.sName).
+	err = s.db.
+		Model(&tables.Step{}).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
 		First(res).
 		Error
 	return
@@ -100,18 +116,24 @@ func (s *step) Get() (res *models.Step, err error) {
 
 func (s *step) Create(step *models.Step) (err error) {
 	step.Name = s.sName
-	return s.db.Create(&tables.Step{
-		TaskName: s.tName,
-		Step:     *step,
-	}).Error
+	return s.db.
+		Create(&tables.Step{
+			TaskName: s.tName,
+			Step:     *step,
+		}).
+		Error
 }
 
 func (s *step) Update(value *models.StepUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return s.db.Model(&tables.Step{}).
-		Where("task_name = ? AND name = ?", s.tName, s.sName).
+	return s.db.
+		Model(&tables.Step{}).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"name":      s.sName,
+		}).
 		Updates(value).
 		Error
 }

@@ -14,23 +14,33 @@ type stepLog struct {
 }
 
 func (s *stepLog) List() (res models.Logs) {
-	s.db.Model(&tables.StepLog{}).
-		Where("task_name = ? AND step_name = ?", s.tName, s.sName).
+	s.db.
+		Model(&tables.StepLog{}).
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"step_name": s.sName,
+		}).
 		Order("id ASC").
 		Find(&res)
 	return
 }
 
 func (s *stepLog) Create(log *models.Log) (err error) {
-	return s.db.Create(&tables.StepLog{
-		TaskName: s.tName,
-		StepName: s.sName,
-		Log:      *log,
-	}).Error
+	return s.db.
+		Create(&tables.StepLog{
+			TaskName: s.tName,
+			StepName: s.sName,
+			Log:      *log,
+		}).
+		Error
 }
 
 func (s *stepLog) DeleteAll() (err error) {
-	return s.db.Where("task_name = ? AND step_name = ?", s.tName, s.sName).
+	return s.db.
+		Where(map[string]interface{}{
+			"task_name": s.sName,
+			"step_name": s.sName,
+		}).
 		Delete(&tables.StepLog{}).
 		Error
 }

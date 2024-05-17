@@ -33,6 +33,10 @@ func Task(name string) backend.ITask {
 	return db.Task(name)
 }
 
+func TaskCount() (res int64) {
+	return db.TaskCount()
+}
+
 func TaskList(page, pageSize int64, str string) (res []*models.Task, total int64) {
 	return db.TaskList(page, pageSize, str)
 }
