@@ -135,7 +135,11 @@ func (s *storage) Name() string {
 }
 
 func (s *storage) Close() error {
-	return nil
+	db, err := s.DB.DB()
+	if err != nil {
+		return err
+	}
+	return db.Close()
 }
 
 func (s *storage) Task(name string) backend.ITask {
