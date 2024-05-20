@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/xmapst/osreapi/internal/storage/backend/sqlite/tables"
+	"github.com/xmapst/osreapi/internal/storage/models"
 )
 
 type stepDepend struct {
@@ -33,7 +34,9 @@ func (s *stepDepend) Insert(depends ...string) (err error) {
 		stepDepends = append(stepDepends, tables.StepDepend{
 			TaskName: s.tName,
 			StepName: s.sName,
-			Name:     depend,
+			StepDepend: models.StepDepend{
+				Name: depend,
+			},
 		})
 	}
 	return s.Create(&stepDepends).Error
