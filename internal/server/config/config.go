@@ -61,7 +61,7 @@ func (c *Config) dir(dir, sub string) string {
 		return os.Getenv(s)
 	})
 	defer func() {
-		if err := os.MkdirAll(dir, os.ModeDir); err != nil {
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 			logx.Fatalln(err)
 		}
 		if sub == "logs" {
