@@ -147,7 +147,7 @@ func saveUploadedFile(file *multipart.FileHeader, dst string) error {
 	}
 	defer src.Close()
 
-	if err = os.MkdirAll(filepath.Dir(dst), 0750); err != nil {
+	if err = os.MkdirAll(filepath.Dir(dst), os.ModePerm); err != nil {
 		return err
 	}
 

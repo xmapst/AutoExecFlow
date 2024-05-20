@@ -52,7 +52,7 @@ func New(path string) (backend.IStorage, error) {
 				}
 				// 尝试删除后重建
 				_ = os.RemoveAll(path)
-				_ = os.MkdirAll(path, os.ModeDir)
+				_ = os.MkdirAll(path, os.ModePerm)
 			}()
 			s.DB, err = gorm.Open(dialector, config)
 			if err != nil {
@@ -135,7 +135,6 @@ func (s *storage) Name() string {
 }
 
 func (s *storage) Close() error {
-	time.Sleep(3 * time.Second)
 	return nil
 }
 
