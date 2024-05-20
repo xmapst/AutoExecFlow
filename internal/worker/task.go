@@ -16,14 +16,19 @@ import (
 )
 
 type task struct {
-	backend.ITask
+	storage   backend.ITask
 	graph     *dag.Graph
 	workspace string
 	scriptDir string
 }
 
-func (t *task) newStep() dag.VertexFunc {
+func (t *task) name() string {
+	return t.graph.Name()
+}
+
+func (t *task) newStep(name string) dag.VertexFunc {
 	s := &step{
+		storage:   t.storage.Step(name),
 		wg:        new(sync.WaitGroup),
 		workspace: t.workspace,
 		scriptDir: t.scriptDir,
@@ -36,7 +41,7 @@ func (t *task) run(ctx context.Context) error {
 	defer func() {
 		err := recover()
 		if err != nil {
-			logx.Errorln(t.Name(), err)
+			logx.Errorln(t.name(), err)
 		}
 	}()
 
@@ -51,13 +56,13 @@ func (t *task) run(ctx context.Context) error {
 		res.ETime = models.Pointer(time.Now())
 		res.OldState = models.Pointer(models.Running)
 		// 更新数据
-		if err := t.Update(res); err != nil {
-			logx.Errorln(t.Name(), err)
+		if err := t.storage.Update(res); err != nil {
+			logx.Errorln(t.name(), err)
 		}
 	}()
 
 	if err := t.initDir(); err != nil {
-		logx.Errorln(t.Name(), err)
+		logx.Errorln(t.name(), err)
 		res.State = models.Pointer(models.Failed)
 		res.Message = err.Error()
 		return nil
@@ -68,12 +73,12 @@ func (t *task) run(ctx context.Context) error {
 	if err := t.graph.Run(ctx); err != nil {
 		res.State = models.Pointer(models.Failed)
 		res.Message = err.Error()
-		logx.Errorln(t.Name(), err)
+		logx.Errorln(t.name(), err)
 		return err
 	}
 
-	for _, name := range t.StepNameList("") {
-		state, _ := t.Step(name).State()
+	for _, name := range t.storage.StepNameList("") {
+		state, _ := t.storage.Step(name).State()
 		if state == models.Failed {
 			res.State = models.Pointer(models.Failed)
 			return errors.New("step " + name + " is failed")
@@ -84,11 +89,11 @@ func (t *task) run(ctx context.Context) error {
 
 func (t *task) initDir() error {
 	if err := utils.EnsureDirExist(t.workspace); err != nil {
-		logx.Errorln(t.Name(), t.workspace, t.scriptDir, err)
+		logx.Errorln(t.name(), t.workspace, t.scriptDir, err)
 		return err
 	}
 	if err := utils.EnsureDirExist(t.scriptDir); err != nil {
-		logx.Errorln(t.Name(), err)
+		logx.Errorln(t.name(), err)
 		return err
 	}
 	return nil
@@ -96,9 +101,9 @@ func (t *task) initDir() error {
 
 func (t *task) clearDir() {
 	if err := os.RemoveAll(t.scriptDir); err != nil {
-		logx.Errorln(t.Name(), err)
+		logx.Errorln(t.name, err)
 	}
 	if err := os.RemoveAll(t.workspace); err != nil {
-		logx.Errorln(t.Name(), err)
+		logx.Errorln(t.name, err)
 	}
 }

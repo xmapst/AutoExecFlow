@@ -74,15 +74,58 @@ func dispatch() {
 	}
 }
 
-func Submit(taskName string) {
-	queue.PushBack(func() {
-		t := &task{
-			ITask:     storage.Task(taskName),
-			graph:     dag.New(taskName),
-			workspace: filepath.Join(config.App.WorkSpace, taskName),
-			scriptDir: filepath.Join(config.App.ScriptDir, taskName),
+func Submit(taskName string) error {
+	t := &task{
+		storage:   storage.Task(taskName),
+		graph:     dag.New(taskName),
+		workspace: filepath.Join(config.App.WorkSpace, taskName),
+		scriptDir: filepath.Join(config.App.ScriptDir, taskName),
+	}
+
+	// 校验dag图形
+	// 1. 创建顶点并入库
+	var stepVertex = make(map[string]*dag.Vertex)
+	var steps = t.storage.StepNameList("")
+	if len(steps) == 0 {
+		return errors.New("no step found")
+	}
+	for _, name := range steps {
+		stepVertex[name] = dag.NewVertex(name, t.newStep(name))
+	}
+
+	// 2. 创建顶点依赖关系
+	for _, name := range steps {
+		vertex, ok := stepVertex[name]
+		if !ok {
+			return fmt.Errorf("%s vertex does not exist", name)
 		}
-		if err := t.Update(&models.TaskUpdate{
+		var err error
+		vertex, err = t.graph.AddVertex(vertex)
+		if err != nil {
+			return err
+		}
+		err = vertex.WithDeps(func() []*dag.Vertex {
+			var stepFns []*dag.Vertex
+			for _, dep := range t.storage.Step(name).Depend().List() {
+				_stepFn, _ok := stepVertex[dep]
+				if !_ok {
+					continue
+				}
+				stepFns = append(stepFns, _stepFn)
+			}
+			return stepFns
+		}()...)
+		if err != nil {
+			return err
+		}
+	}
+	// 3. 校验dag图形
+	if err := t.graph.Validator(); err != nil {
+		return err
+	}
+
+	queue.PushBack(func() {
+		if err := t.storage.Update(&models.TaskUpdate{
 			State:    models.Pointer(models.Running),
 			OldState: models.Pointer(models.Pending),
 			STime:    models.Pointer(time.Now()),
@@ -93,8 +136,8 @@ func Submit(taskName string) {
 		var err error
 		defer func() {
 			if err != nil {
-				logx.Errorln(t.Name(), err)
-				_ = t.Update(&models.TaskUpdate{
+				logx.Errorln(t.name(), err)
+				_ = t.storage.Update(&models.TaskUpdate{
 					State:    models.Pointer(models.Failed),
 					OldState: models.Pointer(models.Running),
 					ETime:    models.Pointer(time.Now()),
@@ -103,52 +146,7 @@ func Submit(taskName string) {
 			}
 		}()
 
-		// 校验dag图形
-		// 1. 创建顶点并入库
-		var stepVertex = make(map[string]*dag.Vertex)
-		var steps = t.StepNameList("")
-		if len(steps) == 0 {
-			err = errors.New("no step found")
-			return
-		}
-		for _, name := range steps {
-			stepVertex[name] = dag.NewVertex(name, t.newStep())
-		}
-
-		// 2. 创建顶点依赖关系
-		for _, name := range steps {
-			vertex, ok := stepVertex[name]
-			if !ok {
-				err = fmt.Errorf("%s vertex does not exist", name)
-				return
-			}
-
-			vertex, err = t.graph.AddVertex(vertex)
-			if err != nil {
-				return
-			}
-			err = vertex.WithDeps(func() []*dag.Vertex {
-				var stepFns []*dag.Vertex
-				for _, dep := range t.Step(name).Depend().List() {
-					_stepFn, _ok := stepVertex[dep]
-					if !_ok {
-						continue
-					}
-					stepFns = append(stepFns, _stepFn)
-				}
-				return stepFns
-			}()...)
-			if err != nil {
-				return
-			}
-		}
-		// 3. 校验dag图形
-		err = t.graph.Validator()
-		if err != nil {
-			return
-		}
-
-		timeout, err := t.Timeout()
+		timeout, err := t.storage.Timeout()
 		if err != nil {
 			return
 		}
@@ -159,8 +157,9 @@ func Submit(taskName string) {
 		defer cancel()
 		res := t.run(ctx)
 		if res != nil {
-			logx.Infoln(t.Name(), res)
+			logx.Infoln(t.name(), res)
 		}
 		return
 	})
+	return nil
 }

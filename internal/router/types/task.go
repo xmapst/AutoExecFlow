@@ -320,6 +320,5 @@ func (t *Task) Save() (err error) {
 		}
 	}
 	// 提交任务
-	worker.Submit(t.Name)
-	return
+	return worker.Submit(t.Name)
 }

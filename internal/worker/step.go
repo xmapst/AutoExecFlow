@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xmapst/osreapi/internal/storage"
 	"github.com/xmapst/osreapi/internal/storage/backend"
 	"github.com/xmapst/osreapi/internal/storage/models"
 	"github.com/xmapst/osreapi/pkg/dag"
@@ -26,7 +25,6 @@ type step struct {
 func (s *step) vertexFunc() dag.VertexFunc {
 	// build step
 	return func(ctx context.Context, taskName, stepName string) error {
-		s.storage = storage.Task(taskName).Step(stepName)
 		defer func() {
 			go func() {
 				s.wg.Wait()
