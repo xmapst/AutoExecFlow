@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 )
@@ -258,10 +257,10 @@ func (g *Graph) Run(ctx context.Context) error {
 	}()
 
 	var chError = make(chan error, 1)
-	var errs []string
+	var errs error
 	go func() {
 		for err := range chError {
-			errs = append(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 	}()
 
@@ -279,7 +278,7 @@ func (g *Graph) Run(ctx context.Context) error {
 	if errs == nil {
 		return nil
 	}
-	return errors.New(strings.Join(errs, "; "))
+	return errs
 }
 
 func (g *Graph) Validator() error {
