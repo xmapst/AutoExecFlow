@@ -43,7 +43,7 @@ func (c *Cmd) beforeExec() []func(cmd *exec.Cmd) {
 func (c *Cmd) selfCmd() {
 	switch c.shell {
 	case "cmd", "bat":
-		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/S", "/C", c.scriptName)
+		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
 	case "powershell", "ps", "ps1":
 		// 解决用户不写exit时, powershell进程外获取不到退出码
 		command := fmt.Sprintf("$ErrorActionPreference='Continue';%s;exit $LASTEXITCODE", c.scriptName)
@@ -51,7 +51,7 @@ func (c *Cmd) selfCmd() {
 		// command := fmt.Sprintf("$ErrorActionPreference='Stop';%s;exit $LASTEXITCODE", c.absFilePath)
 		c.cmd = cmd.NewCmdOptions(c.ops, "powershell", "-NoLogo", "-NonInteractive", "-Command", command)
 	default:
-		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/S", "/C", c.scriptName)
+		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
 	}
 }
 
