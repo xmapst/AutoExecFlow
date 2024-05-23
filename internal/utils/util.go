@@ -2,8 +2,13 @@ package utils
 
 import (
 	"os"
+<<<<<<< HEAD
 	"strings"
 	"time"
+=======
+	"path/filepath"
+	"strings"
+>>>>>>> githubB
 )
 
 func FileOrPathExist(filename string) bool {
@@ -34,14 +39,44 @@ func SliceToStrMap(s []string) map[string]string {
 	return m
 }
 
+<<<<<<< HEAD
 func ClearOldScript(path string) {
+=======
+func ClearDir(path string) {
+>>>>>>> githubB
 	_ = os.RemoveAll(path)
 	_ = EnsureDirExist(path)
 }
 
+<<<<<<< HEAD
 func TimeStr(nsec int64) string {
 	if nsec == 0 {
 		return ""
 	}
 	return time.Unix(0, nsec).Format(time.RFC3339)
+=======
+func PathEscape(s string) string {
+	s = filepath.Clean(strings.TrimPrefix(s, ".."))
+	if s == ".." {
+		return ""
+	}
+	if !strings.HasPrefix(s, "..") {
+		return s
+	}
+	return PathEscape(s)
+}
+
+// RemoveDuplicate removes duplicate elements from a slice while maintaining the original order.
+func RemoveDuplicate[T comparable](slice []T) []T {
+	allKeys := make(map[T]bool)
+	var list []T
+	for _, item := range slice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+
+	return list
+>>>>>>> githubB
 }

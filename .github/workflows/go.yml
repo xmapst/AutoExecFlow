@@ -2,15 +2,22 @@ name: Go
 
 on:
   push:
+<<<<<<< HEAD
     branches: [ master ]
   pull_request:
     branches: [ master ]
+=======
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+>>>>>>> githubB
 
 jobs:
 
   build:
     strategy:
       matrix:
+<<<<<<< HEAD
         go-version: [1.16.x]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -21,9 +28,25 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+=======
+        go: ['1.22.0']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+>>>>>>> githubB
 
       - name: Build
         run: go build -v ./...
 
       - name: Test
+<<<<<<< HEAD
         run: go test -v ./...
+=======
+        run: go test -v ./...
+>>>>>>> githubB
