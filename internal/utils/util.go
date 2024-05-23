@@ -2,13 +2,8 @@ package utils
 
 import (
 	"os"
-<<<<<<< HEAD
-	"strings"
-	"time"
-=======
 	"path/filepath"
 	"strings"
->>>>>>> githubB
 )
 
 func FileOrPathExist(filename string) bool {
@@ -39,22 +34,11 @@ func SliceToStrMap(s []string) map[string]string {
 	return m
 }
 
-<<<<<<< HEAD
-func ClearOldScript(path string) {
-=======
 func ClearDir(path string) {
->>>>>>> githubB
 	_ = os.RemoveAll(path)
 	_ = EnsureDirExist(path)
 }
 
-<<<<<<< HEAD
-func TimeStr(nsec int64) string {
-	if nsec == 0 {
-		return ""
-	}
-	return time.Unix(0, nsec).Format(time.RFC3339)
-=======
 func PathEscape(s string) string {
 	s = filepath.Clean(strings.TrimPrefix(s, ".."))
 	if s == ".." {
@@ -78,5 +62,4 @@ func RemoveDuplicate[T comparable](slice []T) []T {
 	}
 
 	return list
->>>>>>> githubB
 }
