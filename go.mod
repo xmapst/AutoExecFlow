@@ -2,6 +2,8 @@ module github.com/xmapst/osreapi
 
 go 1.22.0
 
+retract [v1.0.1, v1.1.9]
+
 require (
 	github.com/Microsoft/go-winio v0.6.2
 	github.com/avast/retry-go/v4 v4.6.0
@@ -60,5 +62,3 @@ require (
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/sqlite v1.29.10 // indirect
 )
-
-retract [v1.0.1, v1.9.9]
