@@ -54,7 +54,7 @@ func (t *task) Env() backend.IEnv {
 
 func (t *task) Timeout() (res time.Duration, err error) {
 	err = t.Model(&tables.Task{}).
-		Select("state").
+		Select("timeout").
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).

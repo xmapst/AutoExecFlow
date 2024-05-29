@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-
-	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 type Base struct {
@@ -37,7 +35,7 @@ func (b *Base) BeforeCreate(tx *gorm.DB) error {
 }
 
 func (b *Base) AfterCreate(tx *gorm.DB) error {
-	logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
+	//logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
 }
 
@@ -46,7 +44,7 @@ func (b *Base) BeforeUpdate(tx *gorm.DB) error {
 }
 
 func (b *Base) AfterUpdate(tx *gorm.DB) error {
-	logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
+	//logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
 }
 
@@ -55,7 +53,7 @@ func (b *Base) BeforeDelete(tx *gorm.DB) error {
 }
 
 func (b *Base) AfterDelete(tx *gorm.DB) error {
-	logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
+	//logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
 }
 
