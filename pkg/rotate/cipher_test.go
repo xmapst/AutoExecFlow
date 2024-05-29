@@ -34,15 +34,11 @@ func BenchmarkDecrypt(b *testing.B) {
 	key := generateRandomBytes(128) // 128 字节密钥
 	_cipher := New(key)
 	data := generateRandomBytes(1024 * 1024 * 10) // 10MB 数据
-	encryptedData := bytes.Buffer{}
-	err := _cipher.EncryptReader(bytes.NewReader(data), &encryptedData)
-	if err != nil {
-		panic(err)
-	}
+	encryptedData := _cipher.Encrypt(data)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = _cipher.DecryptReader(&encryptedData, io.Discard)
+		_ = _cipher.Decrypt(encryptedData)
 	}
 }
 
@@ -53,18 +49,29 @@ func BenchmarkEncryptStream(b *testing.B) {
 	data := bytes.NewReader(generateRandomBytes(1024 * 1024 * 10)) // 10MB 数据
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = _cipher.EncryptReader(data, io.Discard)
+		err := _cipher.EncryptReader(data, io.Discard)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
-// BenchmarkEncryptStream 压力测试流式加密
+// BenchmarkDecryptStream 压力测试流式解密
 func BenchmarkDecryptStream(b *testing.B) {
 	key := generateRandomBytes(128) // 128 字节密钥
 	_cipher := New(key)
 	data := bytes.NewReader(generateRandomBytes(1024 * 1024 * 10)) // 10MB 数据
+	encryptedData := bytes.Buffer{}
+	err := _cipher.EncryptReader(data, &encryptedData)
+	if err != nil {
+		b.Fatal(err)
+	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = _cipher.EncryptReader(data, io.Discard)
+		err = _cipher.DecryptReader(&encryptedData, io.Discard)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
