@@ -10,6 +10,7 @@ import (
 
 	"github.com/xmapst/osreapi/internal/server"
 	"github.com/xmapst/osreapi/internal/server/config"
+	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
@@ -30,9 +31,9 @@ func New() *cobra.Command {
 				return err
 			}
 			svc, err := service.New(server.New(), &service.Config{
-				Name:        config.App.ServiceName,
-				DisplayName: "OSReApi",
-				Description: "OS Remote Executor Api",
+				Name:        utils.ServiceName,
+				DisplayName: utils.ServiceName,
+				Description: "Operating System Remote Executor Api",
 				Executable:  name,
 				Arguments:   os.Args[1:],
 			})
@@ -55,10 +56,10 @@ func New() *cobra.Command {
 	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", 30, "set the size of the execution work pool.")
 	cmd.Flags().StringVarP(&config.App.SelfUpdateURL, "self_url", "s", "https://oss.yfdou.com/tools/osreapi", "self Update URL")
 	cmd.Flags().DurationVarP(&config.App.WebTimeout, "timeout", "t", 120*time.Second, "maximum duration before timing out read/write/idle.")
-	cmd.Flags().StringVar(&config.App.DataDir, "data_dir", filepath.Join(os.TempDir(), config.App.ServiceName, "data"), "database directory")
-	cmd.Flags().StringVar(&config.App.LogDir, "log_dir", filepath.Join(os.TempDir(), config.App.ServiceName, "logs"), "log output directory")
-	cmd.Flags().StringVar(&config.App.ScriptDir, "script_dir", filepath.Join(os.TempDir(), config.App.ServiceName, "scripts"), "task script temp directory.")
-	cmd.Flags().StringVar(&config.App.WorkSpace, "workspace_dir", filepath.Join(os.TempDir(), config.App.ServiceName, "workspace"), "task workspace temp directory")
+	cmd.Flags().StringVar(&config.App.DataDir, "data_dir", filepath.Join(utils.DefaultDir, "data"), "database directory")
+	cmd.Flags().StringVar(&config.App.LogDir, "log_dir", filepath.Join(utils.DefaultDir, "logs"), "log output directory")
+	cmd.Flags().StringVar(&config.App.ScriptDir, "script_dir", filepath.Join(utils.DefaultDir, "scripts"), "task script temp directory.")
+	cmd.Flags().StringVar(&config.App.WorkSpace, "workspace_dir", filepath.Join(utils.DefaultDir, "workspace"), "task workspace temp directory")
 
 	return cmd
 }

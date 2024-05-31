@@ -3,19 +3,18 @@ package config
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/xmapst/osreapi/internal/utils"
 	"github.com/xmapst/osreapi/pkg/logx"
 )
 
 var App = new(Config)
 
 type Config struct {
-	ServiceName   string
 	Debug         bool
 	Normal        bool
 	ListenAddress string
@@ -28,14 +27,6 @@ type Config struct {
 	DataDir       string
 	DBType        string
 	SelfUpdateURL string
-}
-
-func init() {
-	executable, err := os.Executable()
-	if err != nil {
-		logx.Fatalln(err)
-	}
-	App.ServiceName = strings.TrimSuffix(filepath.Base(executable), ".exe")
 }
 
 func (c *Config) Init() error {
@@ -67,7 +58,7 @@ func (c *Config) dir(dir, sub string) string {
 		if sub == "logs" {
 			var logfile string
 			if !c.Debug {
-				logfile = filepath.Join(c.LogDir, c.ServiceName+".log")
+				logfile = filepath.Join(c.LogDir, utils.ServiceName+".log")
 			}
 			logx.SetupLogger(logfile, zap.AddStacktrace(zapcore.ErrorLevel))
 		}
@@ -76,6 +67,6 @@ func (c *Config) dir(dir, sub string) string {
 	if dir != "" {
 		return dir
 	}
-	dir = filepath.Join(os.TempDir(), c.ServiceName, sub)
+	dir = filepath.Join(utils.DefaultDir, sub)
 	return dir
 }
