@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"runtime"
 	"time"
@@ -15,7 +14,6 @@ import (
 )
 
 func version(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("1111")
 	var ws *websocket.Conn
 	if websocket.IsWebSocketUpgrade(r) {
 		var err error
