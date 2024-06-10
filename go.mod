@@ -12,7 +12,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/cors v1.2.1
 	github.com/go-cmd/cmd v1.4.2
-	github.com/gorilla/websocket v1.5.1
+	github.com/gorilla/websocket v1.5.2
 	github.com/kardianos/service v1.2.2
 	github.com/pires/go-proxyproto v0.7.0
 	github.com/pkg/errors v0.9.1
