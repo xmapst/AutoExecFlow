@@ -1,0 +1,95 @@
+﻿version: 2
+project_name: AutoExecFlow
+
+before:
+  hooks:
+    - apt update
+    - apt install gcc-multilib -y
+    - go mod tidy
+    - go generate ./...
+    - go vet ./...
+    - go fmt ./...
+
+builds:
+  - id: AutoExecFlow
+    main: cmd/AutoExecFlow.go
+    buildmode: pie
+    flags:
+      - -trimpath
+    ldflags:
+      - >-
+        {{- if eq .Os "darwin" }}
+        -s -w -linkmode "external" -extldflags "-fno-PIC"
+        {{ else }}
+        -s -w -linkmode "external" -extldflags "-static -fno-PIC"
+        {{- end }}
+      - -X "github.com/xmapst/AutoExecFlow/pkg/info.Version={{.Version}}"
+      - -X "github.com/xmapst/AutoExecFlow/pkg/info.GitUrl={{.GitURL}}"
+      - -X "github.com/xmapst/AutoExecFlow/pkg/info.GitBranch={{.Branch}}"
+      - -X "github.com/xmapst/AutoExecFlow/pkg/info.GitCommit={{.FullCommit}}"
+      - -X "github.com/xmapst/AutoExecFlow/pkg/info.BuildTime={{.Date}}"
+    tags:
+      - osusergo
+      - netgo
+      - sqlite_stat4
+      - sqlite_foreign_keys
+      - sqlite_fts5
+#      - sqlite_icu
+      - sqlite_introspect
+      - sqlite_json
+      - sqlite_math_functions
+      - sqlite_secure_delete_fast
+      - sqlite_userauth
+    env:
+      - CGO_ENABLED=1
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=o64-clang{{- end }}
+          {{- if eq .Arch "arm64"}}CC=oa64-clang{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "arm" }}CC=/llvm-mingw/bin/armv7-w64-mingw32-gcc{{- end }}
+          {{- if eq .Arch "386" }}CC=/llvm-mingw/bin/i686-w64-mingw32-gcc{{- end }}
+          {{- if eq .Arch "amd64" }}CC=/llvm-mingw/bin/x86_64-w64-mingw32-gcc{{- end }}
+          {{- if eq .Arch "arm64" }}CC=/llvm-mingw/bin/aarch64-w64-mingw32-gcc{{- end }}
+        {{- end }}
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "arm" }}CC=arm-linux-gnueabihf-gcc{{- end }}
+          {{- if eq .Arch "386" }}CC=x86_64-linux-gnu-gcc{{- end }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-linux-gnu-gcc{{- end }}
+          {{- if eq .Arch "arm64" }}CC=aarch64-linux-gnu-gcc{{- end }}
+        {{- end }}
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CXX=o64-clang+{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=oa64-clang++{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "arm" }}CXX=/llvm-mingw/bin/armv7-w64-mingw32-g++{{- end }}
+          {{- if eq .Arch "386" }}CXX=/llvm-mingw/bin/i686-w64-mingw32-g++{{- end }}
+          {{- if eq .Arch "amd64" }}CXX=/llvm-mingw/bin/x86_64-w64-mingw32-g++{{- end }}
+          {{- if eq .Arch "arm64" }}CXX=/llvm-mingw/bin/aarch64-w64-mingw32-g++{{- end }}
+        {{- end }}
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "arm" }}CXX=arm-linux-gnueabihf-g++{{- end }}
+          {{- if eq .Arch "386" }}CXX=x86_64-linux-gnu-g++{{- end }}
+          {{- if eq .Arch "amd64" }}CXX=x86_64-linux-gnu-g++{{- end }}
+          {{- if eq .Arch "arm64" }}CXX=aarch64-linux-gnu-g++{{- end }}
+        {{- end }}
+    goos:
+      - "linux"
+      - "windows"
+      - "darwin"
+    goarch:
+      - "386"
+      - "arm64"
+      - "amd64"
+    goamd64:
+      - "v1"
+
+archives:
+  - format: binary
+    wrap_in_directory: true
+
+release:
+  disable: true
