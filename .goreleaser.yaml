@@ -12,7 +12,7 @@ before:
 
 builds:
   - id: AutoExecFlow
-    main: cmd/AutoExecFlow.go
+    main: cmd/main.go
     buildmode: pie
     flags:
       - -trimpath
