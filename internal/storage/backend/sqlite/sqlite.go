@@ -17,6 +17,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite/tables"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
@@ -25,7 +26,7 @@ type storage struct {
 }
 
 func New(path string) (backend.IStorage, error) {
-	dialector := sqlite.Open(filepath.Join(path, "AutoExecFlow.db3"))
+	dialector := sqlite.Open(filepath.Join(path, fmt.Sprintf("%s.db3", utils.ServiceName)))
 	config := &gorm.Config{
 		SkipDefaultTransaction: true,
 		NamingStrategy: schema.NamingStrategy{
