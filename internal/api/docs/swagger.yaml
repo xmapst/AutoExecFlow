@@ -25,14 +25,8 @@ paths:
       summary: Detail
       description: Get task pool details
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
       responses:
         "200":
           description: OK
@@ -51,20 +45,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      Size:
-                        type: integer
-                        example: 30
-                      Total:
-                        type: integer
-                        example: 50
-                      Running:
-                        type: integer
-                        example: 10
-                      Waiting:
-                        type: integer
-                        example: 20
+                    $ref: '#/components/schemas/poolResponseYaml'
             application/json:
               schema:
                 type: object
@@ -79,99 +60,29 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      size:
-                        type: integer
-                        example: 30
-                      total:
-                        type: integer
-                        example: 50
-                      running:
-                        type: integer
-                        example: 10
-                      waiting:
-                        type: integer
-                        example: 20
+                    $ref: '#/components/schemas/poolResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
     post:
       tags:
         - Pool
       summary: Setting
       description: Configuring the Task Pool Size
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
-        - in: header
-          name: Content-Type
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
       requestBody:
         description: body
         content:
           application/yaml:
             schema:
-              required:
-                - Size
-              type: object
-              properties:
-                Size:
-                  type: integer
-                  example: 30
+              $ref: '#/components/schemas/poolRequestYaml'
           application/json:
             schema:
-              required:
-                - size
-              type: object
-              properties:
-                size:
-                  type: integer
-                  example: 30
+              $ref: '#/components/schemas/poolRequestJson'
           multipart/form-data:
             schema:
-              required:
-                - size
-              type: object
-              properties:
-                size:
-                  type: integer
-                  example: 30
+              $ref: '#/components/schemas/poolRequestJson'
         required: true
       responses:
         "200":
@@ -191,20 +102,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      Size:
-                        type: integer
-                        example: 30
-                      Total:
-                        type: integer
-                        example: 50
-                      Running:
-                        type: integer
-                        example: 10
-                      Waiting:
-                        type: integer
-                        example: 20
+                    $ref: '#/components/schemas/poolResponseYaml'
             application/json:
               schema:
                 type: object
@@ -219,119 +117,20 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      size:
-                        type: integer
-                        example: 30
-                      total:
-                        type: integer
-                        example: 50
-                      running:
-                        type: integer
-                        example: 10
-                      waiting:
-                        type: integer
-                        example: 20
+                    $ref: '#/components/schemas/poolResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v1/pty:
     get:
       tags:
         - System
       summary: Terminal
       description: websocket terminal
-      parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v1/task:
     get:
       tags:
@@ -339,14 +138,8 @@ paths:
       summary: List
       description: Get the task list
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: page
           in: query
           description: page number
@@ -383,67 +176,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      Page:
-                        type: object
-                        properties:
-                          Current:
-                            type: integer
-                            example: 1
-                          Size:
-                            type: integer
-                            example: 100
-                          Total:
-                            type: integer
-                            example: 100
-                      Tasks:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            Name:
-                              type: string
-                              example: task-name
-                            State:
-                              type: string
-                              example: running
-                            Manager:
-                              type: string
-                              example: http://localhost:2376/api/v1/tasks/task-name
-                            Workspace:
-                              type: string
-                              example: http://localhost:2376/api/v1/task/task-name/workspace
-                            Message:
-                              type: string
-                              example: task is running
-                            Count:
-                              type: integer
-                              example: 1
-                            Env:
-                              type: object
-                              properties:
-                                K1:
-                                  type: string
-                                  example: v1
-                                K2:
-                                  type: string
-                                  example: v2
-                            Timeout:
-                              type: string
-                              example: 24h
-                            Disable:
-                              type: boolean
-                              example: false
-                            Time:
-                              type: object
-                              properties:
-                                Start:
-                                  type: string
-                                  example: 2021-01-01T00:00:00Z
-                                End:
-                                  type: string
-                                  example: 2021-01-01T00:00:00Z
+                    $ref: '#/components/schemas/taskListResponseYaml'
             application/json:
               schema:
                 type: object
@@ -458,116 +191,17 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      page:
-                        type: object
-                        properties:
-                          current:
-                            type: integer
-                            example: 1
-                          size:
-                            type: integer
-                            example: 100
-                          total:
-                            type: integer
-                            example: 100
-                      tasks:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            name:
-                              type: string
-                              example: task-name
-                            state:
-                              type: string
-                              example: running
-                            manager:
-                              type: string
-                              example: http://localhost:2376/api/v1/tasks/task-name
-                            workspace:
-                              type: string
-                              example: http://localhost:2376/api/v1/task/task-name/workspace
-                            msg:
-                              type: string
-                              example: task is running
-                            count:
-                              type: integer
-                              example: 1
-                            env:
-                              type: object
-                              properties:
-                                K1:
-                                  type: string
-                                  example: v1
-                                K2:
-                                  type: string
-                                  example: v2
-                            timeout:
-                              type: string
-                              example: 24h
-                            disable:
-                              type: boolean
-                              example: false
-                            time:
-                              type: object
-                              properties:
-                                Start:
-                                  type: string
-                                  example: 2021-01-01T00:00:00Z
-                                End:
-                                  type: string
-                                  example: 2021-01-01T00:00:00Z
+                    $ref: '#/components/schemas/taskListResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
     post:
       tags:
         - Task
       summary: Create
       description: Create a task
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
-        - in: header
-          name: Content-Type
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: name
           in: query
           description: task name
@@ -608,17 +242,17 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/step.yaml'
+                $ref: '#/components/schemas/stepRequestYaml'
           application/json:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/step.json'
+                $ref: '#/components/schemas/stepRequestJson'
           multipart/form-data:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/step.json'
+                $ref: '#/components/schemas/stepRequestJson'
         required: true
       responses:
         "200":
@@ -638,17 +272,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      URL:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name
-                      Name:
-                        type: string
-                        example: task-name
-                      Count:
-                        type: integer
-                        example: 1
+                    $ref: '#/components/schemas/taskCreateResponseYaml'
             application/json:
               schema:
                 type: object
@@ -663,44 +287,9 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      url:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name
-                      name:
-                        type: string
-                        example: task-name
-                      count:
-                        type: integer
-                        example: 1
+                    $ref: '#/components/schemas/taskCreateResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v1/task/{task}:
     put:
       tags:
@@ -708,14 +297,8 @@ paths:
       summary: Manager
       description: "Task management, can terminate, suspend, and resolve"
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -772,45 +355,14 @@ paths:
                     example: 1719977634080348943
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
     get:
       tags:
         - Step
       summary: List
       description: Get the list of steps for a specified task
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -838,63 +390,7 @@ paths:
                   Data:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        Name:
-                          type: string
-                          example: step-name
-                        Code:
-                          type: integer
-                          example: 0
-                        State:
-                          type: string
-                          example: success
-                        Manager:
-                          type: string
-                          example: http://localhost:8080/api/v1/tasks/task-name/step/step-name
-                        Workspace:
-                          type: string
-                          example: http://localhost:8080/api/v1/tasks/task-name/workspace
-                        Message:
-                          type: string
-                          example: step success execute
-                        Timeout:
-                          type: string
-                          example: 24h
-                        Disable:
-                          type: boolean
-                          example: false
-                        Depends:
-                          type: array
-                          items:
-                            type: string
-                            example: step-name
-                        Env:
-                          type: object
-                          properties:
-                            K1:
-                              type: string
-                              example: v1
-                            K2:
-                              type: string
-                              example: v2
-                        Type:
-                          type: string
-                          example: shell
-                        Content:
-                          type: string
-                          example: |
-                            #!/bin/bash
-                            echo "hello world"
-                        Time:
-                          type: object
-                          properties:
-                            Start:
-                              type: string
-                              example: 2021-01-01T00:00:00Z
-                            End:
-                              type: string
-                              example: 2021-01-01T00:00:00Z
+                      $ref: '#/components/schemas/stepResponseYaml'
             application/json:
               schema:
                 type: object
@@ -911,90 +407,9 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                          example: step-name
-                        code:
-                          type: integer
-                          example: 0
-                        state:
-                          type: string
-                          example: success
-                        manager:
-                          type: string
-                          example: http://localhost:8080/api/v1/tasks/task-name/step/step-name
-                        workspace:
-                          type: string
-                          example: http://localhost:8080/api/v1/tasks/task-name/workspace
-                        msg:
-                          type: string
-                          example: step success execute
-                        timeout:
-                          type: string
-                          example: 24h
-                        disable:
-                          type: boolean
-                          example: false
-                        depends:
-                          type: array
-                          items:
-                            type: string
-                            example: step-name
-                        env:
-                          type: object
-                          properties:
-                            K1:
-                              type: string
-                              example: v1
-                            K2:
-                              type: string
-                              example: v2
-                        type:
-                          type: string
-                          example: shell
-                        content:
-                          type: string
-                          example: |
-                            #!/bin/bash
-                            echo "hello world"
-                        time:
-                          type: object
-                          properties:
-                            start:
-                              type: string
-                              example: 2021-01-01T00:00:00Z
-                            end:
-                              type: string
-                              example: 2021-01-01T00:00:00Z
+                      $ref: '#/components/schemas/stepResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v1/task/{task}/step/{step}:
     get:
       tags:
@@ -1002,14 +417,8 @@ paths:
       summary: Log
       description: Step Execution Output
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1044,17 +453,7 @@ paths:
                   Data:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        Timestamp:
-                          type: integer
-                          example: 1719977634080348943
-                        Line:
-                          type: integer
-                          example: 0
-                        Content:
-                          type: string
-                          example: hello world
+                      $ref: '#/components/schemas/stepLogResponseYaml'
             application/json:
               schema:
                 type: object
@@ -1071,58 +470,17 @@ paths:
                   data:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        timestamp:
-                          type: integer
-                          example: 1719977634080348943
-                        line:
-                          type: integer
-                          example: 0
-                        content:
-                          type: string
-                          example: hello world
+                      $ref: '#/components/schemas/stepLogResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
     put:
       tags:
         - Step
       summary: Manager
       description: "Step management, can terminate, suspend, and resolve"
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1186,31 +544,6 @@ paths:
                     example: 1719977634080348943
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v1/task/{task}/workspace:
     get:
       tags:
@@ -1218,14 +551,8 @@ paths:
       summary: Get
       description: Get file/folder contents
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1257,37 +584,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      Total:
-                        type: integer
-                        example: 1
-                      Files:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            URL:
-                              type: string
-                              example: http://localhost:2376/api/v1/task/task_name/workspace?path=/file.txt
-                            Name:
-                              type: string
-                              example: file.txt
-                            Path:
-                              type: string
-                              example: /file.txt
-                            Size:
-                              type: integer
-                              example: 100
-                            Mode:
-                              type: string
-                              example: -rw-r--r--
-                            ModeTime:
-                              type: string
-                              example: 2023-08-01T09:01:01Z
-                            IsDir:
-                              type: boolean
-                              example: false
+                    $ref: '#/components/schemas/workspaceResponseYaml'
             application/json:
               schema:
                 type: object
@@ -1302,86 +599,17 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      total:
-                        type: integer
-                        example: 1
-                      files:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            url:
-                              type: string
-                              example: http://localhost:2376/api/v1/task/task_name/workspace?path=/file.txt
-                            name:
-                              type: string
-                              example: file.txt
-                            path:
-                              type: string
-                              example: /file.txt
-                            size:
-                              type: integer
-                              example: 100
-                            mode:
-                              type: string
-                              example: -rw-r--r--
-                            mode_time:
-                              type: string
-                              example: 2023-08-01T09:01:01Z
-                            is_dir:
-                              type: boolean
-                              example: false
+                    $ref: '#/components/schemas/workspaceResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
     post:
       tags:
         - Workspace
       summary: Upload
       description: Upload a file or directory
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
-        - in: header
-          name: Content-Type
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1396,6 +624,7 @@ paths:
             type: string
             default: /
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -1407,7 +636,6 @@ paths:
                   type: string
                   description: files
                   format: binary
-        required: true
       responses:
         "200":
           description: OK
@@ -1440,45 +668,14 @@ paths:
                     example: 1719977634080348943
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
     delete:
       tags:
         - Workspace
       summary: Delete
       description: Delete file/folder contents
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1524,31 +721,6 @@ paths:
                     example: 1719977634080348943
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v2/task/{task}:
     get:
       tags:
@@ -1556,14 +728,8 @@ paths:
       summary: Detail
       description: Get task detail
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1589,50 +755,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      Name:
-                        type: string
-                        example: task-name
-                      State:
-                        type: string
-                        example: running
-                      Manager:
-                        type: string
-                        example: http://localhost:2376/api/v1/tasks/task-name
-                      Workspace:
-                        type: string
-                        example: http://localhost:2376/api/v1/task/task-name/workspace
-                      Message:
-                        type: string
-                        example: task is running
-                      Count:
-                        type: integer
-                        example: 1
-                      Env:
-                        type: object
-                        properties:
-                          K1:
-                            type: string
-                            example: v1
-                          K2:
-                            type: string
-                            example: v2
-                      Timeout:
-                        type: string
-                        example: 24h
-                      Disable:
-                        type: boolean
-                        example: false
-                      Time:
-                        type: object
-                        properties:
-                          Start:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
-                          End:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
+                    $ref: '#/components/schemas/taskResponseYaml'
             application/json:
               schema:
                 type: object
@@ -1647,77 +770,9 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        example: task-name
-                      state:
-                        type: string
-                        example: running
-                      manager:
-                        type: string
-                        example: http://localhost:2376/api/v1/tasks/task-name
-                      workspace:
-                        type: string
-                        example: http://localhost:2376/api/v1/task/task-name/workspace
-                      msg:
-                        type: string
-                        example: task is running
-                      count:
-                        type: integer
-                        example: 1
-                      env:
-                        type: object
-                        properties:
-                          K1:
-                            type: string
-                            example: v1
-                          K2:
-                            type: string
-                            example: v2
-                      timeout:
-                        type: string
-                        example: 24h
-                      disable:
-                        type: boolean
-                        example: false
-                      time:
-                        type: object
-                        properties:
-                          Start:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
-                          End:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
+                    $ref: '#/components/schemas/taskResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v2/task:
     post:
       tags:
@@ -1725,34 +780,20 @@ paths:
       summary: CreateV2
       description: Create a task
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
-        - in: header
-          name: Content-Type
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
       requestBody:
         description: body
         content:
           application/yaml:
             schema:
-              $ref: '#/components/schemas/task.yaml'
+              $ref: '#/components/schemas/taskRequestYaml'
           application/json:
             schema:
-              $ref: '#/components/schemas/task.json'
+              $ref: '#/components/schemas/taskRequestJson'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/task.json'
+              $ref: '#/components/schemas/taskRequestJson'
         required: true
       responses:
         "200":
@@ -1772,17 +813,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      URL:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name
-                      Name:
-                        type: string
-                        example: task-name
-                      Count:
-                        type: integer
-                        example: 1
+                    $ref: '#/components/schemas/taskCreateResponseYaml'
             application/json:
               schema:
                 type: object
@@ -1797,44 +828,9 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      url:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name
-                      name:
-                        type: string
-                        example: task-name
-                      count:
-                        type: integer
-                        example: 1
+                    $ref: '#/components/schemas/taskCreateResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
   /api/v2/task/{task}/step/{step}:
     get:
       tags:
@@ -1842,14 +838,8 @@ paths:
       summary: Detail
       description: Get step detail
       parameters:
-        - in: header
-          name: Accept
-          schema:
-            type: string
-            default: application/yaml
-            enum:
-              - application/yaml
-              - application/json
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/Content-Type'
         - name: task
           in: path
           description: task name
@@ -1882,63 +872,7 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   Data:
-                    type: object
-                    properties:
-                      Name:
-                        type: string
-                        example: step-name
-                      Code:
-                        type: integer
-                        example: 0
-                      State:
-                        type: string
-                        example: success
-                      Manager:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name/step/step-name
-                      Workspace:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name/workspace
-                      Message:
-                        type: string
-                        example: step success execute
-                      Timeout:
-                        type: string
-                        example: 24h
-                      Disable:
-                        type: boolean
-                        example: false
-                      Depends:
-                        type: array
-                        items:
-                          type: string
-                          example: step-name
-                      Env:
-                        type: object
-                        properties:
-                          K1:
-                            type: string
-                            example: v1
-                          K2:
-                            type: string
-                            example: v2
-                      Type:
-                        type: string
-                        example: shell
-                      Content:
-                        type: string
-                        example: |
-                          #!/bin/bash
-                          echo "hello world"
-                      Time:
-                        type: object
-                        properties:
-                          Start:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
-                          End:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
+                    $ref: '#/components/schemas/stepResponseYaml'
             application/json:
               schema:
                 type: object
@@ -1953,93 +887,408 @@ paths:
                     type: integer
                     example: 1719977634080348943
                   data:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        example: step-name
-                      code:
-                        type: integer
-                        example: 0
-                      state:
-                        type: string
-                        example: success
-                      manager:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name/step/step-name
-                      workspace:
-                        type: string
-                        example: http://localhost:8080/api/v1/tasks/task-name/workspace
-                      msg:
-                        type: string
-                        example: step success execute
-                      timeout:
-                        type: string
-                        example: 24h
-                      disable:
-                        type: boolean
-                        example: false
-                      depends:
-                        type: array
-                        items:
-                          type: string
-                          example: step-name
-                      env:
-                        type: object
-                        properties:
-                          K1:
-                            type: string
-                            example: v1
-                          K2:
-                            type: string
-                            example: v2
-                      type:
-                        type: string
-                        example: shell
-                      content:
-                        type: string
-                        example: |
-                          #!/bin/bash
-                          echo "hello world"
-                      time:
-                        type: object
-                        properties:
-                          start:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
-                          end:
-                            type: string
-                            example: 2021-01-01T00:00:00Z
+                    $ref: '#/components/schemas/stepResponseJson'
         "500":
           description: Internal Server Error
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 255
-                  Message:
-                    type: string
-                    example: failed
-                  Timestamp:
-                    type: integer
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 255
-                  msg:
-                    type: string
-                    example: failed
-                  timestamp:
-                    type: integer
 components:
+  parameters:
+    Content-Type:
+      in: header
+      name: Content-Type
+      schema:
+        type: string
+        default: application/yaml
+        enum:
+          - application/yaml
+          - application/json
+    Accept:
+      in: header
+      name: Accept
+      schema:
+        type: string
+        default: application/yaml
+        enum:
+          - application/yaml
+          - application/json
   schemas:
-    step.json:
+    poolResponseYaml:
+      type: object
+      properties:
+        Size:
+          type: integer
+          example: 30
+        Total:
+          type: integer
+          example: 50
+        Running:
+          type: integer
+          example: 10
+        Waiting:
+          type: integer
+          example: 20
+    poolResponseJson:
+      type: object
+      properties:
+        size:
+          type: integer
+          example: 30
+        total:
+          type: integer
+          example: 50
+        running:
+          type: integer
+          example: 10
+        waiting:
+          type: integer
+          example: 20
+    poolRequestYaml:
+      required:
+        - Size
+      type: object
+      properties:
+        Size:
+          type: integer
+          example: 30
+    poolRequestJson:
+      required:
+        - size
+      type: object
+      properties:
+        size:
+          type: integer
+          example: 30
+    pageResponseYaml:
+      type: object
+      properties:
+        Current:
+          type: integer
+          example: 1
+        Size:
+          type: integer
+          example: 100
+        Total:
+          type: integer
+          example: 100
+    pageResponseJson:
+      type: object
+      properties:
+        current:
+          type: integer
+          example: 1
+        size:
+          type: integer
+          example: 100
+        total:
+          type: integer
+          example: 100
+    timeResponseYaml:
+      type: object
+      properties:
+        Start:
+          type: string
+          example: 2021-01-01T00:00:00Z
+        End:
+          type: string
+          example: 2021-01-01T00:00:00Z
+    timeResponseJson:
+      type: object
+      properties:
+        start:
+          type: string
+          example: 2021-01-01T00:00:00Z
+        end:
+          type: string
+          example: 2021-01-01T00:00:00Z
+    env:
+      type: object
+      properties:
+        K1:
+          type: string
+          example: v1
+        K2:
+          type: string
+          example: v2
+    taskResponseYaml:
+      type: object
+      properties:
+        Name:
+          type: string
+          example: task-name
+        State:
+          type: string
+          example: running
+        Manager:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task-name
+        Workspace:
+          type: string
+          example: http://localhost:2376/api/v1/task/task-name/workspace
+        Message:
+          type: string
+          example: task is running
+        Count:
+          type: integer
+          example: 1
+        Env:
+          $ref: '#/components/schemas/env'
+        Timeout:
+          type: string
+          example: 24h
+        Disable:
+          type: boolean
+          example: false
+        Time:
+          $ref: '#/components/schemas/timeResponseYaml'
+    taskResponseJson:
+      type: object
+      properties:
+        name:
+          type: string
+          example: task-name
+        state:
+          type: string
+          example: running
+        manager:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task-name
+        workspace:
+          type: string
+          example: http://localhost:2376/api/v1/task/task-name/workspace
+        msg:
+          type: string
+          example: task is running
+        count:
+          type: integer
+          example: 1
+        env:
+          $ref: '#/components/schemas/env'
+        timeout:
+          type: string
+          example: 24h
+        disable:
+          type: boolean
+          example: false
+        time:
+          $ref: '#/components/schemas/timeResponseJson'
+    taskListResponseYaml:
+      type: object
+      properties:
+        Page:
+          $ref: '#/components/schemas/pageResponseYaml'
+        Tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/taskResponseYaml'
+    taskListResponseJson:
+      type: object
+      properties:
+        Page:
+          $ref: '#/components/schemas/pageResponseJson'
+        Tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/taskResponseJson'
+    taskCreateResponseYaml:
+      type: object
+      properties:
+        URL:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task_name
+        Name:
+          type: string
+          example: task-name
+        Count:
+          type: integer
+          example: 1
+    taskCreateResponseJson:
+      type: object
+      properties:
+        url:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task_name
+        name:
+          type: string
+          example: task-name
+        count:
+          type: integer
+          example: 1
+    stepResponseYaml:
+      type: object
+      properties:
+        Name:
+          type: string
+          example: step-name
+        Code:
+          type: integer
+          example: 0
+        State:
+          type: string
+          example: success
+        Manager:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task-name/step/step-name
+        Workspace:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task-name/workspace
+        Message:
+          type: string
+          example: step success execute
+        Timeout:
+          type: string
+          example: 24h
+        Disable:
+          type: boolean
+          example: false
+        Depends:
+          type: array
+          items:
+            type: string
+            example: step-name
+        Env:
+          $ref: '#/components/schemas/env'
+        Type:
+          type: string
+          example: bash
+        Content:
+          type: string
+          example: |
+            #!/bin/bash
+            echo "hello world"
+        Time:
+          $ref: '#/components/schemas/timeResponseYaml'
+    stepResponseJson:
+      type: object
+      properties:
+        name:
+          type: string
+          example: step-name
+        code:
+          type: integer
+          example: 0
+        state:
+          type: string
+          example: success
+        manager:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task-name/step/step-name
+        workspace:
+          type: string
+          example: http://localhost:2376/api/v1/tasks/task-name/workspace
+        msg:
+          type: string
+          example: step success execute
+        timeout:
+          type: string
+          example: 24h
+        disable:
+          type: boolean
+          example: false
+        depends:
+          type: array
+          items:
+            type: string
+            example: step-name
+        env:
+          $ref: '#/components/schemas/env'
+        type:
+          type: string
+          example: bash
+        content:
+          type: string
+          example: |
+            #!/bin/bash
+            echo "hello world"
+        time:
+          $ref: '#/components/schemas/timeResponseJson'
+    stepLogResponseYaml:
+      type: object
+      properties:
+        Timestamp:
+          type: integer
+          example: 1719977634080348943
+        Line:
+          type: integer
+          example: 0
+        Content:
+          type: string
+          example: hello world
+    stepLogResponseJson:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          example: 1719977634080348943
+        line:
+          type: integer
+          example: 0
+        content:
+          type: string
+          example: hello world
+    workspaceResponseYaml:
+      type: object
+      properties:
+        Total:
+          type: integer
+          example: 1
+        Files:
+          type: array
+          items:
+            type: object
+            properties:
+              URL:
+                type: string
+                example: http://localhost:2376/api/v1/task/task_name/workspace?path=/file.txt
+              Name:
+                type: string
+                example: file.txt
+              Path:
+                type: string
+                example: /file.txt
+              Size:
+                type: integer
+                example: 100
+              Mode:
+                type: string
+                example: -rw-r--r--
+              ModeTime:
+                type: string
+                example: 2023-08-01T09:01:01Z
+              IsDir:
+                type: boolean
+                example: false
+    workspaceResponseJson:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 1
+        files:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: http://localhost:2376/api/v1/task/task_name/workspace?path=/file.txt
+              name:
+                type: string
+                example: file.txt
+              path:
+                type: string
+                example: /file.txt
+              size:
+                type: integer
+                example: 100
+              mode:
+                type: string
+                example: -rw-r--r--
+              modeTime:
+                type: string
+                example: 2023-08-01T09:01:01Z
+              is_dir:
+                type: boolean
+                example: false
+    stepRequestJson:
       type: object
       properties:
         name:
@@ -2058,19 +1307,14 @@ components:
           items:
             type: string
         env:
-          type: object
-          additionalProperties:
-            type: string
-          example:
-            key: value
-            key1: value1
+          $ref: '#/components/schemas/env'
         type:
           type: string
           example: powershell
         content:
           type: string
           example: sleep 10
-    step.yaml:
+    stepRequestYaml:
       type: object
       properties:
         Name:
@@ -2089,19 +1333,14 @@ components:
           items:
             type: string
         Env:
-          type: object
-          additionalProperties:
-            type: string
-          example:
-            key: value
-            key1: value1
+          $ref: '#/components/schemas/env'
         Type:
           type: string
           example: powershell
         Content:
           type: string
           example: sleep 10
-    task.json:
+    taskRequestJson:
       type: object
       properties:
         name:
@@ -2117,17 +1356,12 @@ components:
           type: boolean
           example: false
         env:
-          type: object
-          additionalProperties:
-            type: string
-          example:
-            key: value
-            key1: value1
+          $ref: '#/components/schemas/env'
         step:
           type: array
           items:
-            $ref: '#/components/schemas/step.json'
-    task.yaml:
+            $ref: '#/components/schemas/stepRequestJson'
+    taskRequestYaml:
       type: object
       properties:
         Name:
@@ -2143,13 +1377,8 @@ components:
           type: boolean
           example: false
         Env:
-          type: object
-          additionalProperties:
-            type: string
-          example:
-            key: value
-            key1: value1
+          $ref: '#/components/schemas/env'
         Step:
           type: array
           items:
-            $ref: '#/components/schemas/step.yaml'
+            $ref: '#/components/schemas/stepRequestYaml'
