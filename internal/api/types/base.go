@@ -96,6 +96,7 @@ func WithCode[T any](code int) IBase[T] {
 
 func WithData[T any](data T) IBase[T] {
 	r := &Base[T]{
+		Code:      CodeSuccess,
 		Timestamp: time.Now().UnixNano(),
 	}
 	return r.WithData(data)
@@ -103,6 +104,7 @@ func WithData[T any](data T) IBase[T] {
 
 func WithError[T any](err error) IBase[T] {
 	r := &Base[T]{
+		Code:      CodeFailed,
 		Timestamp: time.Now().UnixNano(),
 	}
 	return r.WithError(err)
