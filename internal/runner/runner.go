@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
+	"github.com/xmapst/AutoExecFlow/internal/runner/docker"
 	"github.com/xmapst/AutoExecFlow/internal/runner/exec"
 	"github.com/xmapst/AutoExecFlow/internal/runner/git"
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes"
@@ -21,6 +22,8 @@ func New(
 		return nil, err
 	}
 	switch {
+	case strings.HasPrefix(commandType, "docker"):
+		return docker.New(storage, strings.TrimPrefix(commandType, "docker@"), workspace)
 	case strings.HasPrefix(commandType, "git"):
 		return git.New(storage, workspace)
 	case strings.HasPrefix(commandType, "kubectl"):
