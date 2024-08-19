@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/Microsoft/go-winio v0.6.2
 	github.com/avast/retry-go/v4 v4.6.0
-	github.com/creack/pty v1.1.21
+	github.com/creack/pty v1.1.23
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/pprof v1.5.0
