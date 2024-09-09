@@ -132,7 +132,7 @@ func (c *execCmd) Run(ctx context.Context) (code int64, err error) {
 			code = common.SystemErr
 		}
 		if err == nil && code != 0 {
-			err = fmt.Errorf("exit code %d%s", code, last(c.stderrBuf.Lines()))
+			err = fmt.Errorf("exit code %d", code)
 		}
 	}
 	return
@@ -210,11 +210,4 @@ func (c *execCmd) consoleOutput() {
 		logx.Infoln(line)
 		c.storage.Log().Write(line)
 	}
-}
-
-func last(slice []string) string {
-	if len(slice) > 0 {
-		return ";" + slice[len(slice)-1]
-	}
-	return ""
 }

@@ -204,7 +204,7 @@ class TaskModal {
                     <h3 style="margin-left: 15px;">名称: ${this.task.name}</h3>
                     <span class="card-close" id="closeTaskCard">&times;</span >
                 </div>
-                </hr>
+                <hr>
                 <div id="task-card-body" class="card-body"></div>
             `;
 

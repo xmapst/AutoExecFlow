@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -149,20 +148,6 @@ func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
 	for _, env := range envs {
 		data.Env[env.Name] = env.Value
 	}
-
-	var output []string
-	if *step.State == models.Stop || *step.State == models.Failed {
-		logs := db.Log().List()
-		for _, o := range logs {
-			if o.Content == common.ConsoleStart || o.Content == common.ConsoleDone {
-				continue
-			}
-			output = append(output, o.Content)
-		}
-	}
-	if output != nil {
-		data.Message = strings.Join(output, "\n")
-	}
 	return types.Code(data.Code), data, nil
 }
 
@@ -254,28 +239,10 @@ func StepList(taskName string) (code types.Code, data []*types.TaskStepRes, err 
 		for _, env := range envs {
 			res.Env[env.Name] = env.Value
 		}
-
-		res.Message = generateStepMessage(db, step)
 		data = append(data, res)
 	}
 	task.Message = GenerateStateMessage(task.Message, groups)
 	return ConvertState(*task.State), data, errors.New(task.Message)
-}
-
-func generateStepMessage(db backend.ITask, step *models.Step) string {
-	if *step.State == models.Stop || *step.State == models.Failed {
-		var output []string
-		logs := db.Step(step.Name).Log().List()
-		for _, o := range logs {
-			if o.Content != common.ConsoleStart && o.Content != common.ConsoleDone {
-				output = append(output, o.Content)
-			}
-		}
-		if len(output) > 0 {
-			return strings.Join(output, "\n")
-		}
-	}
-	return step.Message
 }
 
 func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
