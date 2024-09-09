@@ -12,10 +12,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
 	"github.com/xmapst/AutoExecFlow/internal/server/config"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
+	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // Get
@@ -34,38 +34,38 @@ import (
 func Get(c *gin.Context) {
 	taskName := c.Param("task")
 	if taskName == "" {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	prefix := filepath.Join(config.App.WorkSpace(), taskName)
 	if !utils.FileOrPathExist(prefix) {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	path := filepath.Join(prefix, utils.PathEscape(c.Query("path")))
 	file, err := os.Open(path)
 	if err != nil {
 		logx.Errorln(err)
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 		return
 	}
 	fileInfo, err := file.Stat()
 	if err != nil {
 		logx.Errorln(err)
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 		return
 	}
 	if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
 		finalPath, err := filepath.EvalSymlinks(path)
 		if err != nil {
 			logx.Errorln(err)
-			base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
+			base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 			return
 		}
 		fileInfo, err = os.Lstat(finalPath)
 		if err != nil {
 			logx.Errorln(err)
-			base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
+			base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 			return
 		}
 	}
@@ -83,19 +83,11 @@ func Get(c *gin.Context) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		logx.Errorln(err)
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 		return
-	}
-	var scheme = "http"
-	if c.Request.TLS != nil {
-		scheme = "https"
-	}
-	if c.GetHeader("X-Forwarded-Proto") != "" {
-		scheme = c.GetHeader("X-Forwarded-Proto")
 	}
 
 	var infos = new(types.FileListRes)
-	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
 	for _, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
@@ -113,7 +105,6 @@ func Get(c *gin.Context) {
 		}
 		_path = strings.TrimPrefix(filepath.ToSlash(_path), filepath.ToSlash(prefix))
 		infos.Files = append(infos.Files, &types.FileRes{
-			URL:     fmt.Sprintf("%s?path=%s", uriPrefix, _path),
 			Name:    info.Name(),
 			Path:    _path,
 			Size:    size,
@@ -123,5 +114,5 @@ func Get(c *gin.Context) {
 		})
 	}
 	infos.Total = len(infos.Files)
-	base.Send(c, types.WithData(infos))
+	base.Send(c, base.WithData(infos))
 }

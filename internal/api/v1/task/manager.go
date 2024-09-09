@@ -5,11 +5,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
-	"github.com/xmapst/AutoExecFlow/internal/storage"
-	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/pkg/dag"
+	"github.com/xmapst/AutoExecFlow/internal/service"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
+	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // Manager
@@ -29,60 +27,16 @@ import (
 func Manager(c *gin.Context) {
 	taskName := c.Param("task")
 	if taskName == "" {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
 	action := c.DefaultQuery("action", "paused")
 	duration := c.Query("duration")
-	manager, err := dag.GraphManager(taskName)
+	err := service.Task(taskName).Manager(action, duration)
 	if err != nil {
 		logx.Errorln(err)
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
+		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
 	}
-	task, err := storage.Task(taskName).Get()
-	if err != nil {
-		logx.Errorln(err)
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
-		return
-	}
-	if *task.State <= models.Stop || *task.State >= models.Failed {
-		base.Send(c, types.WithCode[any](types.CodeFailed).WithError(errors.New("task is no running")))
-		return
-	}
-	switch action {
-	case "kill":
-		err = manager.Kill()
-		if err == nil {
-			err = storage.Task(taskName).Update(&models.TaskUpdate{
-				State:    models.Pointer(models.Failed),
-				OldState: task.State,
-				Message:  "has been killed",
-			})
-		}
-	case "pause":
-		if manager.State() != dag.Paused {
-			_ = manager.Pause(duration)
-			err = storage.Task(taskName).Update(&models.TaskUpdate{
-				State:    models.Pointer(models.Paused),
-				OldState: task.State,
-				Message:  "has been paused",
-			})
-		}
-	case "resume":
-		if manager.State() == dag.Paused {
-			manager.Resume()
-			err = storage.Task(taskName).Update(&models.TaskUpdate{
-				State:    task.OldState,
-				OldState: task.State,
-				Message:  "has been resumed",
-			})
-		}
-	}
-	if err != nil {
-		logx.Errorln(err)
-		base.Send(c, types.WithCode[any](types.CodeFailed).WithError(err))
-		return
-	}
-	base.Send(c, types.WithCode[any](types.CodeSuccess))
+	base.Send(c, base.WithCode[any](types.CodeSuccess))
 }

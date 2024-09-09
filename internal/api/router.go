@@ -1,21 +1,14 @@
 package router
 
 import (
-	"embed"
-	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/api/middleware/zap"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
 	"github.com/xmapst/AutoExecFlow/internal/api/v1/pool"
 	"github.com/xmapst/AutoExecFlow/internal/api/v1/sys"
 	"github.com/xmapst/AutoExecFlow/internal/api/v1/task"
@@ -24,10 +17,8 @@ import (
 	taskv2 "github.com/xmapst/AutoExecFlow/internal/api/v2/task"
 	stepv2 "github.com/xmapst/AutoExecFlow/internal/api/v2/task/step"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
+	"github.com/xmapst/AutoExecFlow/types"
 )
-
-//go:embed docs/swagger.yaml
-var swaggerFS embed.FS
 
 // New
 // @title			Auto Exec Flow
@@ -58,57 +49,14 @@ func New(relativePath string) *gin.Engine {
 			c.Header("X-Powered-By", info.UserEmail)
 		},
 	)
-
 	baseGroup := router.Group(relativePath)
-
 	// debug pprof
 	pprof.Register(baseGroup)
-
 	// base
 	baseGroup.GET("/version", version)
 	baseGroup.GET("/healthyz", healthyz)
 	baseGroup.GET("/heartbeat", heartbeat)
 	baseGroup.HEAD("/heartbeat", heartbeat)
-	baseGroup.GET("/swagger.yaml", func(c *gin.Context) {
-		content, err := swaggerFS.ReadFile("docs/swagger.yaml")
-		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-		c.Data(http.StatusOK, binding.MIMEYAML2, content)
-	})
-	baseGroup.GET("/swagger", func(c *gin.Context) {
-		var scheme = "http"
-		if c.Request.TLS != nil {
-			scheme = "https"
-		}
-		if c.GetHeader("X-Forwarded-Proto") != "" {
-			scheme = c.GetHeader("X-Forwarded-Proto")
-		}
-		var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(relativePath, "/"))
-		htmlContent := fmt.Sprintf(`<!doctype html>
-<html>
-  <head>
-    <title>AutoExecFlow API</title>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1" />
-  </head>
-  <body>
-    <script
-      id="api-reference"
-      data-configuration="{&quot;hideModels&quot;: true, &quot;pathRouting&quot;: &quot;&quot;, &quot;baseServerURL&quot;: &quot;%s&quot;}"
-      type="application/yaml"
-      data-url="%s"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@latest"></script>
-  </body>
-</html>`,
-			uriPrefix,
-			fmt.Sprintf("%s/swagger.yaml", uriPrefix),
-		)
-		_, _ = fmt.Fprintln(c.Writer, htmlContent)
-	})
 	api := baseGroup.Group("/api")
 	// V1
 	{
@@ -139,38 +87,12 @@ func New(relativePath string) *gin.Engine {
 		api.GET("/v2/task/:task/step/:step", stepv2.Detail)
 	}
 
-	// endpoints
-	api.Any("/endpoints", func(c *gin.Context) {
-		type Endpoint struct {
-			Method string `json:"method" yaml:"Method"`
-			Path   string `json:"path" yaml:"Path"`
-		}
-		var res []Endpoint
-		var scheme = "http"
-		if c.Request.TLS != nil {
-			scheme = "https"
-		}
-		if c.GetHeader("X-Forwarded-Proto") != "" {
-			scheme = c.GetHeader("X-Forwarded-Proto")
-		}
-		var uriPrefix = fmt.Sprintf("%s://%s", scheme, c.Request.Host)
-		for _, v := range router.Routes() {
-			res = append(res, Endpoint{
-				Method: v.Method,
-				Path:   fmt.Sprintf("%s%s", uriPrefix, v.Path),
-			})
-		}
-		base.Send(c, res)
-	})
-
 	// no method
 	router.NoMethod(func(c *gin.Context) {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("method not allowed")))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("method not allowed")))
 	})
 
 	// no route
-	router.NoRoute(func(c *gin.Context) {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("the requested path does not exist")))
-	})
+	router.NoRoute(staticHandler(relativePath))
 	return router
 }

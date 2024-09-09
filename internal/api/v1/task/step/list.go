@@ -1,19 +1,17 @@
 package step
 
 import (
-	"fmt"
-	"sort"
-	"strings"
+	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
-	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/storage"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
-	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/service"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
+	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // List
@@ -31,104 +29,64 @@ import (
 func List(c *gin.Context) {
 	taskName := c.Param("task")
 	if taskName == "" {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	task, err := storage.Task(taskName).Get()
-	if err != nil {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
-		return
-	}
-	state := models.StateMap[*task.State]
-	c.Request.Header.Set(types.XTaskState, state)
-	c.Header(types.XTaskState, state)
-	steps := storage.Task(taskName).StepList(backend.All)
-	if steps == nil {
-		base.Send(c, types.WithCode[any](types.CodeNoData).WithError(err))
-		return
-	}
-	var scheme = "http"
-	if c.Request.TLS != nil {
-		scheme = "https"
-	}
-	if c.GetHeader("X-Forwarded-Proto") != "" {
-		scheme = c.GetHeader("X-Forwarded-Proto")
-	}
 
-	var data []types.TaskStepRes
-	var groups = make(map[int][]string)
-	var uriPrefix = fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, strings.TrimSuffix(c.Request.URL.Path, "/"))
-	for _, v := range steps {
-		groups[*v.State] = append(groups[*v.State], v.Name)
-		data = append(data, procStep(uriPrefix, taskName, v))
-	}
-
-	var keys []int
-	for k := range groups {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	for _, key := range keys {
-		task.Message = fmt.Sprintf("%s; %s: [%s]", task.Message, models.StateMap[key], strings.Join(groups[key], ","))
-	}
-
-	res := types.WithData(data)
-	switch *task.State {
-	case models.Stop:
-		res.WithCode(types.CodeSuccess)
-	case models.Running:
-		res.WithCode(types.CodeRunning)
-	case models.Pending:
-		res.WithCode(types.CodePending)
-	case models.Paused:
-		res.WithCode(types.CodePaused)
-	case models.Failed:
-		res.WithCode(types.CodeFailed)
-	default:
-		res.WithCode(types.CodeNoData)
-	}
-	base.Send(c, res.WithError(fmt.Errorf(task.Message)))
-}
-
-func procStep(uriPrefix string, taskName string, step *models.Step) types.TaskStepRes {
-	res := types.TaskStepRes{
-		Name:      step.Name,
-		State:     models.StateMap[*step.State],
-		Code:      *step.Code,
-		Manager:   fmt.Sprintf("%s/step/%s", uriPrefix, step.Name),
-		Workspace: fmt.Sprintf("%s/workspace", uriPrefix),
-		Message:   step.Message,
-		Timeout:   step.Timeout.String(),
-		Disable:   *step.Disable,
-		Env:       make(map[string]string),
-		Type:      step.Type,
-		Content:   step.Content,
-		Time: &types.Time{
-			Start: step.STimeStr(),
-			End:   step.ETimeStr(),
-		},
-	}
-
-	res.Depends = storage.Task(taskName).Step(step.Name).Depend().List()
-	envs := storage.Task(taskName).Step(step.Name).Env().List()
-	for _, env := range envs {
-		res.Env[env.Name] = env.Value
-	}
-
-	var output []string
-	if *step.State == models.Stop || *step.State == models.Failed {
-		logs := storage.Task(taskName).Step(step.Name).Log().List()
-		for _, o := range logs {
-			if o.Content == common.ConsoleStart || o.Content == common.ConsoleDone {
-				continue
-			}
-			output = append(output, o.Content)
+	var ws *websocket.Conn
+	if c.IsWebsocket() {
+		var err error
+		ws, err = base.Upgrade(c.Writer, c.Request)
+		if err != nil {
+			logx.Errorln(err)
+			base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
+			return
 		}
 	}
 
-	if output == nil {
-		output = []string{step.Message}
+	if ws == nil {
+		code, list, err := service.StepList(taskName)
+		base.Send(c, base.WithData(list).WithError(err).WithCode(code))
+		return
 	}
-	res.Message = strings.Join(output, "\n")
-	return res
+
+	defer func() {
+		_ = ws.WriteControl(websocket.CloseMessage, nil, time.Now().Add(3*time.Second))
+		_ = ws.Close()
+	}()
+
+	var ctx, cancel = context.WithCancel(c)
+	defer cancel()
+	go func() {
+		for {
+			_, _, err := ws.ReadMessage()
+			if err != nil {
+				if _, ok := err.(*websocket.CloseError); ok {
+					cancel()
+				}
+				return
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+		code, list, err := service.StepList(taskName)
+		if err != nil && code == types.CodeNoData {
+			_ = ws.WriteJSON(base.WithCode[any](code).WithError(err))
+			return
+		}
+		err = ws.WriteJSON(base.WithData(list).WithError(err).WithCode(code))
+		if err != nil {
+			return
+		}
+		if code == types.CodeSuccess || code == types.CodeFailed {
+			return
+		}
+		time.Sleep(1 * time.Second)
+	}
 }

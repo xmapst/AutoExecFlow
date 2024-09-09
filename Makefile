@@ -5,10 +5,6 @@ GOLANG_CROSS_VERSION  ?= latest
 all: binary copy-binary
 	@sha256sum bin/AutoExecFlow* > bin/latest.sha256sum
 
-#.PHONY: swag
-#swag:
-#	@swag init -d internal/api -g router.go -o internal/api/docs
-
 .PHONY: dev
 dev:
 	@go mod tidy

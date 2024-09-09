@@ -1,7 +1,6 @@
 package types
 
 type FileRes struct {
-	URL     string `json:"url" yaml:"URL"`
 	Name    string `json:"name" yaml:"Name"`
 	Path    string `json:"path" yaml:"Path"`
 	Size    int64  `json:"size" yaml:"Size"`

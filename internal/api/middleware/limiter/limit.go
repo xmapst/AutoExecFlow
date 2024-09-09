@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
+	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // key 是 ip+mode+path  value ==>bucket
@@ -38,7 +38,7 @@ func New(rate int64, modes ...string) gin.HandlerFunc {
 			}
 
 			if !limiter.IsAccept() {
-				base.Send(c, types.WithCode[any](types.CodeNoData).WithError(errors.New("this ip too many requests")))
+				base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("this ip too many requests")))
 			}
 		}
 	}

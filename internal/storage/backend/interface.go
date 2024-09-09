@@ -27,7 +27,7 @@ type IBase interface {
 	// Remove 删除
 	Remove() (err error)
 	// State 获取状态
-	State() (state int, err error)
+	State() (state models.State, err error)
 	// IsDisable 是否禁用
 	IsDisable() bool
 	// Env 环境变量接口

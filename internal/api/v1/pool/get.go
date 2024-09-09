@@ -4,8 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
-	"github.com/xmapst/AutoExecFlow/internal/worker"
+	"github.com/xmapst/AutoExecFlow/internal/service"
 )
 
 // Detail
@@ -20,11 +19,5 @@ import (
 // @Failure		500 {object} types.Base[any]
 // @Router		/api/v1/pool [get]
 func Detail(c *gin.Context) {
-	base.Send(c, types.WithData(&types.Pool{
-		Size:    worker.GetSize(),
-		Total:   worker.GetTotal(),
-		Running: worker.Running(),
-		Waiting: worker.Waiting(),
-	}),
-	)
+	base.Send(c, base.WithData(service.Pool().Get()))
 }

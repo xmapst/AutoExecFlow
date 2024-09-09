@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
+	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // healthyz
@@ -19,7 +19,7 @@ import (
 // @Failure		500 {object} types.Base[any]
 // @Router		/healthyz [get]
 func healthyz(c *gin.Context) {
-	base.Send(c, types.WithData(&types.Healthyz{
+	base.Send(c, base.WithData(&types.Healthyz{
 		Server: c.Request.Host,
 		Client: c.Request.RemoteAddr,
 		State:  "Running",

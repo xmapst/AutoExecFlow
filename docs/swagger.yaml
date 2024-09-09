@@ -1017,12 +1017,6 @@ components:
         State:
           type: string
           example: running
-        Manager:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task-name
-        Workspace:
-          type: string
-          example: http://localhost:2376/api/v1/task/task-name/workspace
         Message:
           type: string
           example: task is running
@@ -1048,12 +1042,6 @@ components:
         state:
           type: string
           example: running
-        manager:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task-name
-        workspace:
-          type: string
-          example: http://localhost:2376/api/v1/task/task-name/workspace
         msg:
           type: string
           example: task is running
@@ -1091,9 +1079,6 @@ components:
     taskCreateResponseYaml:
       type: object
       properties:
-        URL:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task_name
         Name:
           type: string
           example: task-name
@@ -1103,9 +1088,6 @@ components:
     taskCreateResponseJson:
       type: object
       properties:
-        url:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task_name
         name:
           type: string
           example: task-name
@@ -1124,12 +1106,6 @@ components:
         State:
           type: string
           example: success
-        Manager:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task-name/step/step-name
-        Workspace:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task-name/workspace
         Message:
           type: string
           example: step success execute
@@ -1168,12 +1144,6 @@ components:
         state:
           type: string
           example: success
-        manager:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task-name/step/step-name
-        workspace:
-          type: string
-          example: http://localhost:2376/api/v1/tasks/task-name/workspace
         msg:
           type: string
           example: step success execute
@@ -1235,9 +1205,6 @@ components:
           items:
             type: object
             properties:
-              URL:
-                type: string
-                example: http://localhost:2376/api/v1/task/task_name/workspace?path=/file.txt
               Name:
                 type: string
                 example: file.txt
@@ -1267,9 +1234,6 @@ components:
           items:
             type: object
             properties:
-              url:
-                type: string
-                example: http://localhost:2376/api/v1/task/task_name/workspace?path=/file.txt
               name:
                 type: string
                 example: file.txt

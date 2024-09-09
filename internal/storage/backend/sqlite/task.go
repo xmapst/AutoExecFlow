@@ -36,7 +36,7 @@ func (t *task) Remove() (err error) {
 	}).Delete(&tables.Task{}).Error
 }
 
-func (t *task) State() (state int, err error) {
+func (t *task) State() (state models.State, err error) {
 	err = t.Model(&tables.Task{}).
 		Select("state").
 		Where(map[string]interface{}{

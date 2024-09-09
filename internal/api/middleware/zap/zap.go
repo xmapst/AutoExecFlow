@@ -34,29 +34,39 @@ func Logger(c *gin.Context) {
 func Recovery(c *gin.Context) {
 	defer func() {
 		if err := recover(); err != nil {
-			// Check for a broken connection, as it is not really a
-			// condition that warrants a panic stack trace.
-			var brokenPipe bool
-			if ne, ok := err.(*net.OpError); ok {
-				if se, ok := ne.Err.(*os.SyscallError); ok {
-					if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
-						brokenPipe = true
-					}
-				}
-			}
-
-			httpRequest, _ := httputil.DumpRequest(c.Request, false)
-			if brokenPipe {
-				logx.Errorln(c.Request.URL.Path, httpRequest, err)
-				// If the connection is dead, we can't write a status to it.
-				_ = c.Error(err.(error)) // nolint: errcheck
-				c.Abort()
-				return
-			}
-
-			logx.Errorln("[Recovery from panic]", time.Now().UTC().Format(time.RFC3339), string(httpRequest), string(debug.Stack()), err)
-			c.AbortWithStatus(http.StatusInternalServerError)
+			handlePanic(c, err)
 		}
 	}()
 	c.Next()
+}
+
+func handlePanic(c *gin.Context, err interface{}) {
+	// 检查是否是连接中断
+	if isBrokenPipeError(err) {
+		httpRequest, _ := httputil.DumpRequest(c.Request, false)
+		logx.Errorln(c.Request.URL.Path, httpRequest, err)
+		_ = c.Error(err.(error)) // nolint: errcheck
+		c.Abort()
+		return
+	}
+
+	// 正常的 panic 处理逻辑
+	httpRequest, _ := httputil.DumpRequest(c.Request, false)
+	logx.Errorln("[Recovery from panic]",
+		time.Now().UTC().Format(time.RFC3339),
+		string(httpRequest),
+		string(debug.Stack()),
+		err,
+	)
+	c.AbortWithStatus(http.StatusInternalServerError)
+}
+
+func isBrokenPipeError(err interface{}) bool {
+	if ne, ok := err.(*net.OpError); ok {
+		if se, ok := ne.Err.(*os.SyscallError); ok {
+			errMsg := strings.ToLower(se.Error())
+			return strings.Contains(errMsg, "broken pipe") || strings.Contains(errMsg, "connection reset by peer")
+		}
+	}
+	return false
 }

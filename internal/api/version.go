@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/api/types"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
+	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // version
@@ -22,7 +22,7 @@ import (
 // @Failure		500 {object} types.Base[any]
 // @Router		/version [get]
 func version(c *gin.Context) {
-	base.Send(c, types.WithData(&types.Version{
+	base.Send(c, base.WithData(&types.Version{
 		Version:   info.Version,
 		BuildTime: info.BuildTime,
 		Git: types.VersionGit{

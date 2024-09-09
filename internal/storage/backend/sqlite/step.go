@@ -39,7 +39,7 @@ func (s *step) Remove() (err error) {
 	}).Delete(&tables.Step{}).Error
 }
 
-func (s *step) State() (state int, err error) {
+func (s *step) State() (state models.State, err error) {
 	err = s.Model(&tables.Step{}).
 		Select("state").
 		Where(map[string]interface{}{
