@@ -1,5 +1,5 @@
 let highestZIndex = 1000;
-require.config({ paths: { 'vs': baseUrl+'/vs' } });
+require.config({ paths: { 'vs': baseUrl+basePath+'/vs' } });
 const taskTpl = `# 异步执行, 可选, 默认并行,自定义编排时需要设置为true
 Async: true
 # 超时时间, 可选, 默认48小时
