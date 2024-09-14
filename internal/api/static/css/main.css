@@ -37,7 +37,7 @@ body {
 .container {
     max-width: 1200px;
     margin: 50px auto;
-    padding: 20px;
+    padding: 15px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -46,28 +46,81 @@ body {
 .header {
     display: flex;
     justify-content: right;
-    margin-bottom: 20px;
+    margin-bottom: 6px;
 }
 
 #pageSize {
-    padding: 10px;
-    background-color: #eee;
-    color: #333;
-    border: 1px solid #ccc;
+    background-color: #3498db;
+    color: #ffffff;
+    padding: 5px 10px;
+    border: none;
     border-radius: 4px;
 }
 
+.button {
+    text-align: right;
+    justify-content: end;
+    display: flex;
+}
+
+button {
+    margin: 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.button-sure {
+    background-color: #3498db;
+    color: white;
+    font-size: 12px;
+}
+
+.button-sure:hover {
+    background-color: #1b8dd8;
+}
+
+.button-cancel {
+    background-color: #e74c3c;
+    color: white;
+    font-size: 12px;
+}
+
+.button-cancel:hover {
+    background-color: #c0392b;
+}
+
+.table-container {
+    width: 100%;
+    max-width: 100%;
+    min-height: 300px;
+    overflow-x: auto;
+    margin-bottom: 6px;
+}
+
 #taskTable {
+    table-layout: auto;
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
-    font-size: 15px;
+    font-size: 12px;
 }
 
 #taskTable th, #taskTable td {
-    padding: 10px;
+    padding: 1px;
     text-align: left;
     border-bottom: 1px solid #ccc;
+    position: relative;
+}
+
+#taskTable td.message {
+    max-width: 666px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
 }
 
 #taskTable th {
@@ -82,49 +135,52 @@ body {
     display: flex;
     justify-content: right;
     align-items: center;
-}
-
-#pageInfo {
-    margin: 0 10px;
+    font-size: 12px;
 }
 
 .dropdown {
     position: relative;
     display: inline-block;
+    vertical-align: top;
+    overflow: visible;
 }
 
-#pageSize, .dropbtn {
-    background-color: #55c2da;
+.dropbtn {
+    background-color: #3498db;
     color: white;
-    padding: 6px;
-    font-size: 15px;
-    border: none;
-    cursor: pointer;
-    border-radius: 6px;
+    white-space: nowrap;
 }
 
-#pageSize:hover, .dropbtn:hover, .dropbtn:focus {
-    background-color: #4cabc0;
+.dropbtn:hover, .dropbtn:focus {
+    background-color: #1b8dd8;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-    z-index: 1;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    z-index: 100;
     border-radius: 4px;
     min-width: 70px;
+    top: auto;
+    left: 0;
+    bottom: 100%;
 }
 
-.dropdown-content a {
+tr:nth-child(-n + 3) .dropdown-content {
+    top: 100%;
+    bottom: auto;
+}
+
+a {
     color: black;
     padding: 12px 16px;
     text-decoration: none;
     display: block;
 }
 
-.dropdown-content a:hover {
+a:hover {
     background-color: #f1f1f1;
 }
 
@@ -136,20 +192,33 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-radius: 6px;
-    padding: 6px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
 }
 
 .card-header h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 12px;
 }
 
 .card-body {
-    padding: 10px;
+    padding: 6px;
+    display: flex;
+    position: absolute;
+    top: 42px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.card-body-left {
+    width: 150px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.card-body-right {
+    flex: 1;
+    margin-right: 3px;
+    overflow: hidden;
 }
 
 .card-close {
@@ -163,21 +232,58 @@ body {
 .card-close:hover {
     color: #333;
 }
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+}
+
+.env {
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 12px;
+}
+
 .task-card {
     position: fixed;
     top: 0;
     bottom: 0;
-    left: 0;
+    left: 60%;
     right: 0;
     background-color: white;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     padding: 6px;
     overflow-y: auto;
     z-index: 500;
+    opacity: 0;
+    transform: translateY(-100px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
+
+.task-card.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 .step-card {
-    position: fixed;
-    width: 50%;
+    position: absolute;
+    top: 100px;
+    right: 100px;
+    height: 700px;
+    width: 42%;
     background-color: white;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     padding: 6px;
@@ -186,14 +292,12 @@ body {
 }
 
 .step-card-input {
-    height: 30vh;
-    max-height: 30vh;
+    height: 300px;
     overflow-y: auto;
 }
 
 .step-card-output {
-    height: 44vh;
-    max-height: 44vh;
+    height: 320px;
     overflow-y: auto;
 }
 
@@ -202,53 +306,21 @@ body {
     background-color: black;
     color: white;
     padding: 6px;
-    font-size: 15px;
     overflow-y: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
 }
 
 .create-content {
-    top: 60px;
+    top: 46px;
     bottom: 6px;
-    left: 15px;
-    right: 15px;
+    left: 6px;
+    right: 6px;
     color: white;
     position: fixed;
 }
+
 #yamlEditor {
     height: 100%;
     width: 100%;
-}
-.create-footer {
-    text-align: right;
-    bottom: 15px;
-    right: 20px;
-    justify-content: end;
-    display: flex;
-    position: fixed;
-}
-
-.create-footer button {
-    margin: 5px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.btn-create {
-    background-color: #3498db;
-    color: white;
-}
-
-.btn-cancel {
-    background-color: #e74c3c;
-    color: white;
-}
-
-.CodeMirror {
-    height: 100%;
-    width: 100%;
-    border-radius: 6px;
 }

@@ -44,7 +44,7 @@ func (g *Graph) Kill() error {
 	}
 
 	g.ctx.baseCancel()
-
+	remove(fmt.Sprintf(graphPrefix, g.Name()))
 	return nil
 }
 

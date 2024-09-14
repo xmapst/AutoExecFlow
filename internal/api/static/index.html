@@ -5,21 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoExecFlow</title>
     <script src="BASE_PATH/js/g6.min.js"></script>
-    <link rel="stylesheet" href="BASE_PATH/css/codemirror.min.css">
-    <link rel="stylesheet" href="BASE_PATH/css/material-darker.css">
     <link rel="stylesheet" href="BASE_PATH/css/main.css">
 </head>
 <body>
-<script src="BASE_PATH/js/codemirror.js" async></script>
-<script src="BASE_PATH/js/yaml.js" async></script>
-<script src="BASE_PATH/js/js-yaml.min.js" async></script>
 <script src="BASE_PATH/js/main.js" defer></script>
+<script src="BASE_PATH/vs/loader.js"></script>
 <script type="text/javascript">
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     const port = window.location.port || (protocol === 'https:' ? '443' : '80');
     const wsProtocol = protocol === 'https:' ? 'wss' : 'ws';
-    const baseUrl = protocol + '://' + hostname + ':' + port;
+    const baseUrl = protocol + '//' + hostname + ':' + port;
     const wsBaseUrl = wsProtocol + '://' + hostname + ':' + port;
     const taskUrl = 'BASE_PATH/api/v1/task';
     const taskV2Url = 'BASE_PATH/api/v2/task';

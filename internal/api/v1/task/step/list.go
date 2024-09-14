@@ -45,7 +45,7 @@ func List(c *gin.Context) {
 	}
 
 	if ws == nil {
-		code, list, err := service.StepList(taskName)
+		code, list, err := service.Task(taskName).Steps()
 		base.Send(c, base.WithData(list).WithError(err).WithCode(code))
 		return
 	}
@@ -75,7 +75,7 @@ func List(c *gin.Context) {
 			return
 		default:
 		}
-		code, list, err := service.StepList(taskName)
+		code, list, err := service.Task(taskName).Steps()
 		if err != nil && code == types.CodeNoData {
 			_ = ws.WriteJSON(base.WithCode[any](code).WithError(err))
 			return
@@ -87,6 +87,6 @@ func List(c *gin.Context) {
 		if code == types.CodeSuccess || code == types.CodeFailed {
 			return
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(300 * time.Millisecond)
 	}
 }

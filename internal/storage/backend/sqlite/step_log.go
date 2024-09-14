@@ -20,14 +20,17 @@ type stepLog struct {
 	lock sync.Mutex
 }
 
-func (s *stepLog) List() (res models.Logs) {
-	s.Model(&tables.StepLog{}).
+func (s *stepLog) List(latestLine *int64) (res models.Logs) {
+	query := s.Model(&tables.StepLog{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"step_name": s.sName,
-		}).
-		Order("id ASC").
-		Find(&res)
+		}).Order("line ASC")
+	if latestLine != nil {
+		// 如果 latestLine 不为空，只查询行号大于 latestLine 的日志
+		query = query.Where("line > ?", latestLine).Limit(500)
+	}
+	query.Find(&res)
 	return
 }
 
