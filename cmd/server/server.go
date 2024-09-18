@@ -3,6 +3,7 @@ package server
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/kardianos/service"
@@ -53,7 +54,7 @@ func New() *cobra.Command {
 	cmd.Flags().DurationVar(&config.App.ExecTimeOut, "exec_timeout", 24*time.Hour, "set the task exec command expire time")
 	cmd.Flags().StringVarP(&config.App.ListenAddress, "addr", "a", "tcp://0.0.0.0:2376", "listening address.")
 	cmd.Flags().BoolVarP(&config.App.Normal, "normal", "n", false, "wait for all task execution to complete.")
-	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", 30, "set the size of the execution work pool.")
+	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", runtime.NumCPU()*2, "set the size of the execution work pool.")
 	cmd.Flags().StringVarP(&config.App.SelfUpdateURL, "self_url", "s", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
 	cmd.Flags().DurationVarP(&config.App.WebTimeout, "timeout", "t", 120*time.Second, "maximum duration before timing out read/write/idle.")
 	cmd.Flags().StringVarP(&config.App.RelativePath, "relative_path", "r", "/", "web relative path")

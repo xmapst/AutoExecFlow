@@ -81,8 +81,8 @@ type IStep interface {
 }
 
 type ILog interface {
-	// List 获取指定任务指定步骤所有日志,支持分页
-	List() (res models.Logs)
+	// List 获取指定任务指定步骤所有日志, 增量查询
+	List(latestLine *int64) (res models.Logs)
 	// Insert 插入
 	Insert(log *models.Log) (err error)
 	Write(content string)

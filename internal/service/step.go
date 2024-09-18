@@ -162,7 +162,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 		logx.Errorln(err)
 		return err
 	}
-	if *step.State <= models.Stop || *step.State >= models.Failed {
+	if *step.State != models.Running && *step.State != models.Pending && *step.State != models.Paused {
 		return errors.New("step is no running")
 	}
 	switch action {
@@ -205,46 +205,6 @@ func (ss *StepService) Delete() error {
 	return nil
 }
 
-func StepList(taskName string) (code types.Code, data []*types.TaskStepRes, err error) {
-	db := storage.Task(taskName)
-	task, err := db.Get()
-	if err != nil {
-		return types.CodeNoData, nil, err
-	}
-	steps := db.StepList(backend.All)
-	if steps == nil {
-		return types.CodeNoData, nil, errors.New("steps not found")
-	}
-
-	var groups = make(map[models.State][]string)
-	for _, step := range steps {
-		groups[*step.State] = append(groups[*step.State], step.Name)
-		res := &types.TaskStepRes{
-			Name:    step.Name,
-			State:   models.StateMap[*step.State],
-			Code:    *step.Code,
-			Message: step.Message,
-			Timeout: step.Timeout.String(),
-			Disable: *step.Disable,
-			Env:     make(map[string]string),
-			Type:    step.Type,
-			Content: step.Content,
-			Time: &types.TimeRes{
-				Start: step.STimeStr(),
-				End:   step.ETimeStr(),
-			},
-		}
-		res.Depends = db.Step(step.Name).Depend().List()
-		envs := db.Step(step.Name).Env().List()
-		for _, env := range envs {
-			res.Env[env.Name] = env.Value
-		}
-		data = append(data, res)
-	}
-	task.Message = GenerateStateMessage(task.Message, groups)
-	return ConvertState(*task.State), data, errors.New(task.Message)
-}
-
 func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
@@ -273,17 +233,14 @@ func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
 	}
 }
 
-func (ss *StepService) log(latest *int64) (res []*types.TaskStepLogRes, done bool) {
-	logs := storage.Task(ss.taskName).Step(ss.stepName).Log().List()
-	for k, v := range logs {
+func (ss *StepService) log(latestLine *int64) (res []*types.TaskStepLogRes, done bool) {
+	logs := storage.Task(ss.taskName).Step(ss.stepName).Log().List(latestLine)
+	for _, v := range logs {
 		if v.Content == common.ConsoleStart {
 			continue
 		}
 		if v.Content == common.ConsoleDone {
 			done = true
-			continue
-		}
-		if latest != nil && int64(k) <= *latest {
 			continue
 		}
 		res = append(res, &types.TaskStepLogRes{
@@ -292,8 +249,9 @@ func (ss *StepService) log(latest *int64) (res []*types.TaskStepLogRes, done boo
 			Content:   v.Content,
 		})
 	}
-	if latest != nil {
-		*latest = int64(len(logs)) - 1
+	// 如果查询到有新日志，更新 latestLine 为最后一条日志的行号
+	if len(logs) > 0 && latestLine != nil {
+		*latestLine = *logs[len(logs)-1].Line // 更新 latestLine
 	}
 	return
 }
@@ -307,7 +265,7 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 		return err
 	}
 
-	var latest int64 = -1
+	var latestLine int64
 	// 用于防止某些状态下的重复推送
 	var onceMap = map[models.State]*sync.Once{
 		models.Pending: new(sync.Once),
@@ -336,7 +294,7 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 		// Stop, Failed 推送后结束.
 
 		if handler, exists := handlers[*step.State]; exists {
-			shouldContinue, err := handler(ws, &latest)
+			shouldContinue, err := handler(ws, &latestLine)
 			if err != nil {
 				logx.Errorln(err)
 				return err
@@ -353,7 +311,7 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 		if err != nil {
 			return err
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(300 * time.Millisecond)
 	}
 }
 
@@ -372,8 +330,8 @@ func (ss *StepService) createOnceHandler(once *sync.Once, code types.Code, messa
 	}
 }
 
-func (ss *StepService) handleRunningState(ws *websocket.Conn, latest *int64) (bool, error) {
-	res, done := ss.log(latest)
+func (ss *StepService) handleRunningState(ws *websocket.Conn, latestLine *int64) (bool, error) {
+	res, done := ss.log(latestLine)
 	err := ws.WriteJSON(base.WithData(res).WithCode(types.CodeRunning).WithError(errors.New("in progress")))
 	if err != nil {
 		return false, err
@@ -385,13 +343,13 @@ func (ss *StepService) handleRunningState(ws *websocket.Conn, latest *int64) (bo
 }
 
 func (ss *StepService) handleFinalState(code types.Code) stateHandler {
-	return func(ws *websocket.Conn, latest *int64) (bool, error) {
+	return func(ws *websocket.Conn, latestLine *int64) (bool, error) {
 		db := storage.Task(ss.taskName).Step(ss.stepName)
 		step, err := db.Get()
 		if err != nil {
 			return false, err
 		}
-		res, _ := ss.log(latest)
+		res, _ := ss.log(latestLine)
 		var errMsg error
 		if code == types.CodeFailed {
 			errMsg = fmt.Errorf("exit code: %d", step.Code)

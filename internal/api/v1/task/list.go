@@ -102,6 +102,6 @@ func List(c *gin.Context) {
 		}
 		// 保存当前数据作为上一次的数据
 		lastTaskList = currentTaskList
-		time.Sleep(1 * time.Second)
+		time.Sleep(300 * time.Millisecond)
 	}
 }

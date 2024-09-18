@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/pkg/errors"
@@ -19,10 +18,8 @@ import (
 )
 
 var (
-	// DefaultSize 默认worker数为cpu核心数的两倍
-	DefaultSize = runtime.NumCPU() * 2
-	pool        = tunny.NewCallback(DefaultSize)
-	queue       = deque.New[func()]()
+	pool  = tunny.NewCallback(1)
+	queue = deque.New[func()]()
 )
 
 func init() {
@@ -130,10 +127,14 @@ func Submit(taskName string) error {
 
 	// 2. 创建dag图形
 	t.graph = dag.New(taskName)
-
+	var err error
+	defer func() {
+		if err != nil {
+			_ = t.graph.Kill()
+		}
+	}()
 	// 3. 创建顶点依赖关系
 	for name, vertex := range stepVertex {
-		var err error
 		vertex, err = t.graph.AddVertex(vertex)
 		if err != nil {
 			return err
@@ -154,46 +155,51 @@ func Submit(taskName string) error {
 		}
 	}
 	// 4. 校验dag图形
-	if err := t.graph.Validator(); err != nil {
+	if err = t.graph.Validator(); err != nil {
 		return err
 	}
 
 	queue.PushBack(func() {
-		if err := t.storage.Update(&models.TaskUpdate{
-			State:    models.Pointer(models.Running),
-			OldState: models.Pointer(models.Pending),
-			STime:    models.Pointer(time.Now()),
-			Message:  "task is running",
-		}); err != nil {
-			return
-		}
-		var err error
-		defer func() {
-			if err != nil {
-				logx.Errorln(t.name(), err)
-				_ = t.storage.Update(&models.TaskUpdate{
-					State:    models.Pointer(models.Failed),
-					OldState: models.Pointer(models.Running),
-					ETime:    models.Pointer(time.Now()),
-					Message:  err.Error(),
-				})
-			}
-		}()
-
-		timeout, err := t.storage.Timeout()
-		if err != nil {
-			return
-		}
-		var ctx, cancel = context.WithCancel(context.Background())
-		if timeout > 0 {
-			ctx, cancel = context.WithTimeoutCause(context.Background(), timeout+1*time.Minute, common.ErrTimeOut)
-		}
-		defer cancel()
-		res := t.run(ctx)
-		if res != nil {
-			logx.Infoln(t.name(), res)
-		}
-		return
+		runTask(t)
 	})
 	return nil
+}
+
+func runTask(t *task) {
+	var err error
+	if err = t.storage.Update(&models.TaskUpdate{
+		State:    models.Pointer(models.Running),
+		OldState: models.Pointer(models.Pending),
+		STime:    models.Pointer(time.Now()),
+		Message:  "task is running",
+	}); err != nil {
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			logx.Errorln(t.name(), err)
+			_ = t.storage.Update(&models.TaskUpdate{
+				State:    models.Pointer(models.Failed),
+				OldState: models.Pointer(models.Running),
+				ETime:    models.Pointer(time.Now()),
+				Message:  err.Error(),
+			})
+		}
+	}()
+
+	timeout, err := t.storage.Timeout()
+	if err != nil {
+		return
+	}
+	var ctx, cancel = context.WithCancel(context.Background())
+	if timeout > 0 {
+		ctx, cancel = context.WithTimeoutCause(context.Background(), timeout+1*time.Minute, common.ErrTimeOut)
+	}
+	defer cancel()
+	res := t.run(ctx)
+	if res != nil {
+		logx.Infoln(t.name(), res)
+	}
+	return
 }

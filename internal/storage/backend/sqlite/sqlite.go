@@ -115,18 +115,20 @@ func (s *storage) init() error {
 		logx.Errorln(err)
 		return err
 	}
+	// 修正非正常关机时任务状态不为停止和失败的状态强制为错误
 	s.Model(&tables.Task{}).
 		Where("state <> ? AND state <> ?", models.Stop, models.Failed).
 		Updates(map[string]interface{}{
 			"state":   models.Failed,
-			"message": "unexpected ending",
+			"message": "execution failed due to system error",
 		})
+	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
 	s.Model(&tables.Step{}).
-		Where("state <> ? AND state <> ?", models.Stop, models.Failed).
+		Where("state = ? OR state = ?", models.Running, models.Paused).
 		Updates(map[string]interface{}{
 			"state":   models.Failed,
 			"code":    common.SystemErr,
-			"message": "unexpected ending",
+			"message": "execution failed due to system error",
 		})
 	return nil
 }

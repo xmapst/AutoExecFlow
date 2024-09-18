@@ -262,7 +262,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 		logx.Errorln(err)
 		return err
 	}
-	if *task.State <= models.Stop || *task.State >= models.Failed {
+	if *task.State != models.Running && *task.State != models.Pending && *task.State != models.Paused {
 		return errors.New("task is no running")
 	}
 	switch action {
@@ -295,4 +295,44 @@ func (ts *TaskService) Manager(action string, duration string) error {
 		}
 	}
 	return nil
+}
+
+func (ts *TaskService) Steps() (code types.Code, data []*types.TaskStepRes, err error) {
+	db := storage.Task(ts.name)
+	task, err := db.Get()
+	if err != nil {
+		return types.CodeNoData, nil, err
+	}
+	steps := db.StepList(backend.All)
+	if steps == nil {
+		return types.CodeNoData, nil, errors.New("steps not found")
+	}
+
+	var groups = make(map[models.State][]string)
+	for _, step := range steps {
+		groups[*step.State] = append(groups[*step.State], step.Name)
+		res := &types.TaskStepRes{
+			Name:    step.Name,
+			State:   models.StateMap[*step.State],
+			Code:    *step.Code,
+			Message: step.Message,
+			Timeout: step.Timeout.String(),
+			Disable: *step.Disable,
+			Env:     make(map[string]string),
+			Type:    step.Type,
+			Content: step.Content,
+			Time: &types.TimeRes{
+				Start: step.STimeStr(),
+				End:   step.ETimeStr(),
+			},
+		}
+		res.Depends = db.Step(step.Name).Depend().List()
+		envs := db.Step(step.Name).Env().List()
+		for _, env := range envs {
+			res.Env[env.Name] = env.Value
+		}
+		data = append(data, res)
+	}
+	task.Message = GenerateStateMessage(task.Message, groups)
+	return ConvertState(*task.State), data, errors.New(task.Message)
 }

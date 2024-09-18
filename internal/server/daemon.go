@@ -62,9 +62,7 @@ func (p *Program) init() error {
 	p.selfUpdate()
 
 	// 调整工作池的大小
-	if config.App.PoolSize > worker.DefaultSize {
-		worker.SetSize(config.App.PoolSize)
-	}
+	worker.SetSize(config.App.PoolSize)
 	logx.Infoln("number of workers", worker.GetSize())
 
 	// clear old script

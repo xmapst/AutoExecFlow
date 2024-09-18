@@ -14,7 +14,6 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type execCmd struct {
@@ -207,7 +206,6 @@ func (c *execCmd) consoleOutput() {
 			continue
 		}
 		line = c.transform(line)
-		logx.Infoln(line)
 		c.storage.Log().Write(line)
 	}
 }
