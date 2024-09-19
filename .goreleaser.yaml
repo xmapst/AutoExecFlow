@@ -34,12 +34,10 @@ builds:
       - sqlite_stat4
       - sqlite_foreign_keys
       - sqlite_fts5
-#      - sqlite_icu
       - sqlite_introspect
       - sqlite_json
       - sqlite_math_functions
       - sqlite_secure_delete_fast
-      - sqlite_userauth
     env:
       - CGO_ENABLED=1
       - >-
