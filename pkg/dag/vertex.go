@@ -2,6 +2,7 @@ package dag
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -41,7 +42,7 @@ func (v *Vertex) Kill() error {
 	}
 
 	v.ctx.baseCancel()
-
+	eventChan <- fmt.Sprintf("kill step %s in task %s", v.Name(), v.graph.Name())
 	return nil
 }
 
@@ -50,19 +51,20 @@ func (v *Vertex) Pause(duration string) error {
 	v.ctx.Lock()
 	defer v.ctx.Unlock()
 
-	if v.ctx.state == Paused || v.ctx.controlCtx != nil {
+	if v.ctx.state == StatePaused || v.ctx.controlCtx != nil {
 		// 重复挂起, 直接返回
 		return nil
 	}
 	v.ctx.oldState = v.ctx.state
-	v.ctx.state = Paused
+	v.ctx.state = StatePaused
 
-	v.ctx.controlCtx, v.ctx.controlCancel = context.WithCancel(context.Background())
 	d, err := time.ParseDuration(duration)
 	if err == nil && d > 0 {
 		v.ctx.controlCtx, v.ctx.controlCancel = context.WithTimeout(context.Background(), d)
+	} else {
+		v.ctx.controlCtx, v.ctx.controlCancel = context.WithCancel(context.Background())
 	}
-
+	eventChan <- fmt.Sprintf("pause step %s in task %s", v.Name(), v.graph.Name())
 	return nil
 }
 
@@ -70,14 +72,15 @@ func (v *Vertex) Pause(duration string) error {
 func (v *Vertex) Resume() {
 	v.ctx.Lock()
 	defer v.ctx.Unlock()
-	if v.ctx.state != Paused || v.ctx.controlCtx == nil {
+	if v.ctx.state != StatePaused || v.ctx.controlCtx == nil {
 		// 没有挂起不需要恢复,直接返回
 		return
 	}
 	v.ctx.oldState = v.ctx.state
-	v.ctx.state = Resume
+	v.ctx.state = StateResume
 	// 解除挂起
 	v.ctx.controlCancel()
+	eventChan <- fmt.Sprintf("resume step %s in task %s", v.Name(), v.graph.Name())
 }
 
 // WaitResume 等待解挂
@@ -85,7 +88,7 @@ func (v *Vertex) WaitResume() {
 	v.ctx.Lock()
 	defer v.ctx.Unlock()
 
-	if v.ctx.state != Paused || v.ctx.controlCtx == nil {
+	if v.ctx.state != StatePaused || v.ctx.controlCtx == nil {
 		// 没有挂起不需要d等待,直接返回
 		return
 	}

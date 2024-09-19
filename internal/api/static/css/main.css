@@ -310,3 +310,10 @@ tr:nth-child(-n + 3) .dropdown-content {
     height: 100%;
     width: 100%;
 }
+
+.event-container {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    font-size: 12px;
+}

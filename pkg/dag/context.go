@@ -8,11 +8,11 @@ import (
 type State int
 
 const (
-	Unknown State = iota
-	Running
-	Stopped
-	Paused
-	Resume
+	StateUnknown State = iota
+	StateRunning
+	StateStopped
+	StatePaused
+	StateResume
 )
 
 type iContext struct {

@@ -45,6 +45,7 @@ func (g *Graph) Kill() error {
 
 	g.ctx.baseCancel()
 	remove(fmt.Sprintf(graphPrefix, g.Name()))
+	eventChan <- fmt.Sprintf("kill task %s", g.Name())
 	return nil
 }
 
@@ -53,18 +54,20 @@ func (g *Graph) Pause(duration string) error {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
-	if g.ctx.state == Paused || g.ctx.controlCtx != nil {
+	if g.ctx.state == StatePaused || g.ctx.controlCtx != nil {
 		// 重复挂起, 直接返回
 		return nil
 	}
 	g.ctx.oldState = g.ctx.state
-	g.ctx.state = Paused
+	g.ctx.state = StatePaused
 
-	g.ctx.controlCtx, g.ctx.controlCancel = context.WithCancel(context.Background())
 	d, err := time.ParseDuration(duration)
 	if err == nil && d > 0 {
 		g.ctx.controlCtx, g.ctx.controlCancel = context.WithTimeout(context.Background(), d)
+	} else {
+		g.ctx.controlCtx, g.ctx.controlCancel = context.WithCancel(context.Background())
 	}
+	eventChan <- fmt.Sprintf("pause task %s", g.Name())
 
 	return nil
 }
@@ -73,14 +76,15 @@ func (g *Graph) Pause(duration string) error {
 func (g *Graph) Resume() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
-	if g.ctx.state != Paused || g.ctx.controlCancel == nil {
+	if g.ctx.state != StatePaused || g.ctx.controlCancel == nil {
 		// 没有挂起不需要恢复,直接返回
 		return
 	}
 	g.ctx.oldState = g.ctx.state
-	g.ctx.state = Resume
+	g.ctx.state = StateResume
 	// 解除挂起
 	g.ctx.controlCancel()
+	eventChan <- fmt.Sprintf("resume task %s", g.Name())
 }
 
 // WaitResume 等待解挂
@@ -88,7 +92,7 @@ func (g *Graph) WaitResume() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
-	if g.ctx.state != Paused || g.ctx.controlCtx == nil {
+	if g.ctx.state != StatePaused || g.ctx.controlCtx == nil {
 		// 没有挂起不需要d等待,直接返回
 		return
 	}
@@ -106,6 +110,7 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 	defer g.ctx.Unlock()
 
 	if g.ctx.visited {
+		eventChan <- fmt.Sprintf("duplicate step %s in task %s", v.Name(), g.Name())
 		return nil, ErrDuplicateCompile
 	}
 
@@ -131,62 +136,73 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 // 然后，遍历邻接节点，对于每个邻接节点，更新其依赖数量，如果依赖数量为 0，则启动一个新的 Goroutine 来处理该邻接节点。
 // 这样可以实现图算法中节点之间的并发处理和依赖关系的维护。
 func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
+	defer g.wg.Done()
+	eventChan <- fmt.Sprintf("start step %s in task %s", v.Name(), g.Name())
 	defer func() {
 		v.ctx.mainCancel()
 
 		g.ctx.Lock()
 		v.ctx.oldState = v.ctx.state
-		g.ctx.state = Stopped
+		g.ctx.state = StateStopped
 		g.ctx.Unlock()
 
 		remove(fmt.Sprintf(vertexPrefix, g.Name(), v.Name()))
-		g.wg.Done()
 	}()
 
 	// 图形级暂停
-	if g.State() == Paused {
+	if g.State() == StatePaused {
+		eventChan <- fmt.Sprintf("step %s paused because task %s is paused", v.Name(), g.Name())
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
 			errCh <- ErrForceKill
+			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
 			return
 		case <-g.ctx.controlCtx.Done():
 			// 继续
+			eventChan <- fmt.Sprintf("resumed step %s in task %s", v.Name(), g.Name())
 		}
 	}
 
 	// 节点级执行前控制, 挂起/解卦/强杀
-	if v.State() == Paused {
+	if v.State() == StatePaused {
+		eventChan <- fmt.Sprintf("paused step %s in task %s", v.Name(), g.Name())
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
 			errCh <- ErrForceKill
+			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
 			return
 		case <-v.ctx.mainCtx.Done():
 			// 被终止
 			errCh <- ErrForceKill
+			eventChan <- fmt.Sprintf("killed step %s in task %s", v.Name(), g.Name())
 			return
 		case <-v.ctx.controlCtx.Done():
 			// 继续
+			eventChan <- fmt.Sprintf("resumed step %s in task %s", v.Name(), g.Name())
 		}
 	}
 
 	v.ctx.Lock()
 	v.ctx.oldState = v.ctx.state
-	v.ctx.state = Running
+	v.ctx.state = StateRunning
 	v.ctx.Unlock()
 
 	// 执行顶点函数
 	if err := v.fn(v.ctx.mainCtx, g.Name(), v.Name()); err != nil {
 		errCh <- err
+		eventChan <- fmt.Sprintf("error exec step %s in task %s, %s", v.Name(), g.Name(), err)
 		return
 	}
 
 	// 节点级执行后控制, 挂起/解卦/强杀
-	if v.State() == Paused {
+	if v.State() == StatePaused {
+		eventChan <- fmt.Sprintf("paused step %s in task %s", v.Name(), g.Name())
 		select {
 		case <-v.ctx.controlCtx.Done():
 			// 继续
+			eventChan <- fmt.Sprintf("resumed step %s in task %s", v.Name(), g.Name())
 		}
 	}
 
@@ -195,6 +211,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		select {
 		case <-g.ctx.mainCtx.Done():
 			errCh <- ErrForceKill
+			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
 			break
 		default:
 			dec := func() {
@@ -225,13 +242,11 @@ func (g *Graph) withCancel(main, extra context.Context) (context.Context, contex
 
 // Run 运行任务流程,控制整个图算法的执行流程。它启动一个 Goroutine 来监听错误通道，同时遍历图的根节点并启动相应的 Goroutine 来处理每个根节点。
 // 然后等待所有节点的处理完成，最后检查并打印可能发生的错误信息。同时，通过上下文的取消来通知所有 Goroutine 停止处理。
-func (g *Graph) Run(ctx context.Context) error {
-	if !g.ctx.visited {
-		// 调用 compile 方法生成有向无环图，并检查是否有错误发生。
-		// 如果有错误，则打印错误信息并返回。
-		if err := g.compile(); err != nil {
-			return err
-		}
+func (g *Graph) Run(ctx context.Context) (err error) {
+	eventChan <- fmt.Sprintf("start task %s", g.Name())
+	if err = g.Validator(true); err != nil {
+		eventChan <- fmt.Sprintf("invalid task %s, %s", g.Name(), err)
+		return err
 	}
 
 	// 设置图形主上下文
@@ -239,7 +254,7 @@ func (g *Graph) Run(ctx context.Context) error {
 	// 设置运行中
 	g.ctx.Lock()
 	g.ctx.oldState = g.ctx.state
-	g.ctx.state = Running
+	g.ctx.state = StateRunning
 	g.ctx.Unlock()
 
 	// 设置所有顶点主上下文
@@ -251,19 +266,20 @@ func (g *Graph) Run(ctx context.Context) error {
 		g.ctx.mainCancel()
 		g.ctx.Lock()
 		g.ctx.oldState = g.ctx.state
-		g.ctx.state = Stopped
+		g.ctx.state = StateStopped
 		g.ctx.Unlock()
 		remove(fmt.Sprintf(graphPrefix, g.Name()))
 	}()
 
 	var chError = make(chan error, 1)
 	var done = make(chan struct{})
-	var err error
+
 	go func() {
 		defer close(done)
 		for {
 			select {
 			case <-g.ctx.mainCtx.Done():
+				eventChan <- fmt.Sprintf("task %s ends because task %s is terminated", g.Name(), g.Name())
 				return
 			case _err, ok := <-chError:
 				if !ok {
@@ -285,30 +301,55 @@ func (g *Graph) Run(ctx context.Context) error {
 	g.wg.Wait()
 	close(chError)
 	<-done
-	return err
+	if err != nil {
+		eventChan <- fmt.Sprintf("error exec task %s, %s", g.Name(), err)
+		return
+	}
+	eventChan <- fmt.Sprintf("end task %s", g.Name())
+	return
 }
 
-func (g *Graph) Validator() error {
+// Validator 检查图的状态，并根据需要进行编译
+func (g *Graph) Validator(force bool) error {
 	if g.vertex == nil {
 		return ErrEmptyGraph
 	}
-	if g.ctx.visited {
-		// 只允许编译一次图形
-		// TODO: 多次编译
+	if g.ctx.visited && !force {
+		// 图已编译且不强制重新编译
 		return nil
 	}
 	return g.compile()
+}
+
+// Reset 清除图和顶点的状态，准备重新编译
+func (g *Graph) reset() {
+	g.ctx.Lock()
+	defer g.ctx.Unlock()
+
+	g.ctx.visited = false // 允许重新编译
+	for _, vertex := range g.vertex {
+		vertex.ctx.visited = false
+		vertex.adjs = []*Vertex{} // 清空邻接节点
+		vertex.ndeps = 0          // 重置依赖计数
+		vertex.root = false       // 重置根节点标志
+	}
 }
 
 // compile 将任务列表转换为有向无环图。它遍历任务列表中的每个任务，创建对应的节点，并建立节点之间的依赖关系。
 // 在建立依赖关系时，将依赖的节点的指针添加到当前节点的 adjs 切片中。
 // 如果检测到回环，则返回 ErrCycleDetected 错误
 func (g *Graph) compile() (err error) {
+	// 先重置图的状态，以支持多次编译
+	g.reset()
+
 	g.ctx.Lock()
 	defer func() {
+		// 标记为已编译
 		g.ctx.visited = true
 		if err != nil {
+			// 如果编译失败，恢复未编译状态
 			g.ctx.visited = false
+			// 清空顶点信息
 			g.vertex = nil
 		}
 		g.ctx.Unlock()
@@ -321,7 +362,7 @@ func (g *Graph) compile() (err error) {
 			return ErrDuplicateVertexName
 		}
 		nameMap[g.vertex[k].Name()] = true
-
+		// 设置依赖数量
 		g.vertex[k].ndeps = int64(len(g.vertex[k].deps))
 
 		// 将当前顶点作为邻接或相邻分配给父顶点。
@@ -352,13 +393,14 @@ func (g *Graph) detectCircularDependencies(current *Vertex, path []*Vertex) erro
 		return ErrCycleDetected
 	}
 	current.ctx.visited = true
+	defer func() {
+		current.ctx.visited = false
+	}()
 	// 递归地遍历节点的邻接节点
 	for k := range current.adjs {
 		if err := g.detectCircularDependencies(current.adjs[k], append(path, current)); err != nil {
 			return err
 		}
 	}
-
-	current.ctx.visited = false
 	return nil
 }

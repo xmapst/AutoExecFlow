@@ -276,7 +276,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 			})
 		}
 	case "pause":
-		if manager.State() != dag.Paused {
+		if manager.State() != dag.StatePaused {
 			_ = manager.Pause(duration)
 			return storage.Task(ts.name).Update(&models.TaskUpdate{
 				State:    models.Pointer(models.Paused),
@@ -285,7 +285,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 			})
 		}
 	case "resume":
-		if manager.State() == dag.Paused {
+		if manager.State() == dag.StatePaused {
 			manager.Resume()
 			return storage.Task(ts.name).Update(&models.TaskUpdate{
 				State:    task.OldState,

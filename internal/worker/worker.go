@@ -155,7 +155,7 @@ func Submit(taskName string) error {
 		}
 	}
 	// 4. 校验dag图形
-	if err = t.graph.Validator(); err != nil {
+	if err = t.graph.Validator(true); err != nil {
 		return err
 	}
 

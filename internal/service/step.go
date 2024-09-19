@@ -179,7 +179,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 		if *step.State == models.Running {
 			return dag.ErrRunning
 		}
-		if manager.State() != dag.Paused {
+		if manager.State() != dag.StatePaused {
 			_ = manager.Pause(duration)
 			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
 				State:    models.Pointer(models.Paused),
@@ -188,7 +188,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 			})
 		}
 	case "resume":
-		if manager.State() == dag.Paused {
+		if manager.State() == dag.StatePaused {
 			manager.Resume()
 			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
 				State:    step.OldState,

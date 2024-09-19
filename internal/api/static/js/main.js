@@ -898,8 +898,9 @@ class TaskTable {
 class Main {
     constructor() {
         this.createMainContent();
-        this.taskTable = new TaskTable();
+        new TaskTable();
         this.addEventListeners();
+        new EventListener();
     }
 
     createMainContent() {
@@ -962,6 +963,48 @@ class Main {
         document.getElementById("add-task").addEventListener("click", () => new TaskAddCard());
 
         window.addEventListener("resize", () => location.reload());
+    }
+}
+
+class EventListener {
+    constructor() {
+        this.initEventContainer();
+        this.listenForEvents();
+    }
+
+    // 初始化事件容器
+    initEventContainer() {
+        const eventContainer = document.createElement('div');
+        eventContainer.id = 'event-container';
+        eventContainer.className = 'event-container';
+        document.body.appendChild(eventContainer);
+    }
+
+    // 开始监听事件源
+    listenForEvents() {
+        const eventSource = new EventSource(eventUrl);
+
+        eventSource.onmessage = (event) => {
+            this.displayEventMessage(event.data);
+        };
+
+        eventSource.onerror = (event) => {
+            console.error('SSE connection error:', event);
+        };
+    }
+
+    // 展示事件信息
+    displayEventMessage(message) {
+        const eventContainer = document.getElementById('event-container');
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+
+        eventContainer.appendChild(messageElement);
+
+        // 保留最后三条消息，删除最早的
+        if (eventContainer.children.length > 9) {
+            eventContainer.removeChild(eventContainer.firstChild);
+        }
     }
 }
 

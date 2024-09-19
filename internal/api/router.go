@@ -9,6 +9,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/api/middleware/zap"
+	"github.com/xmapst/AutoExecFlow/internal/api/v1/event"
 	"github.com/xmapst/AutoExecFlow/internal/api/v1/pool"
 	"github.com/xmapst/AutoExecFlow/internal/api/v1/sys"
 	"github.com/xmapst/AutoExecFlow/internal/api/v1/task"
@@ -60,6 +61,8 @@ func New(relativePath string) *gin.Engine {
 	api := baseGroup.Group("/api")
 	// V1
 	{
+		// event
+		api.GET("/v1/event", event.Stream)
 		// task
 		api.GET("/v1/task", task.List)
 		api.POST("/v1/task", task.Post)
