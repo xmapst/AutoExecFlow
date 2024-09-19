@@ -214,6 +214,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
 			break
 		default:
+			eventChan <- fmt.Sprintf("stoped step %s in task %s", v.adjs[k].Name(), g.Name())
 			dec := func() {
 				g.ctx.Lock()
 				defer g.ctx.Unlock()
