@@ -56,7 +56,6 @@ func New() *cobra.Command {
 	cmd.Flags().BoolVarP(&config.App.Normal, "normal", "n", false, "wait for all task execution to complete.")
 	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", runtime.NumCPU()*2, "set the size of the execution work pool.")
 	cmd.Flags().StringVarP(&config.App.SelfUpdateURL, "self_url", "s", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
-	cmd.Flags().DurationVarP(&config.App.WebTimeout, "timeout", "t", 120*time.Second, "maximum duration before timing out read/write/idle.")
 	cmd.Flags().StringVarP(&config.App.RelativePath, "relative_path", "r", "/", "web relative path")
 	cmd.Flags().StringVar(&config.App.RootDir, "root_dir", utils.DefaultDir, "root directory")
 

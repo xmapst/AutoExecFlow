@@ -20,7 +20,6 @@ type Config struct {
 	ListenAddress string
 	PoolSize      int
 	ExecTimeOut   time.Duration
-	WebTimeout    time.Duration
 	RelativePath  string
 	RootDir       string
 	DBType        string

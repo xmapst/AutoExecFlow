@@ -97,10 +97,7 @@ func (p *Program) startServer() error {
 		gin.SetMode(gin.DebugMode)
 	}
 	p.http = &http.Server{
-		WriteTimeout: config.App.WebTimeout,
-		ReadTimeout:  config.App.WebTimeout,
-		IdleTimeout:  config.App.WebTimeout,
-		Handler:      router.New(config.App.RelativePath),
+		Handler: router.New(config.App.RelativePath),
 	}
 
 	_ = retry.Do(
