@@ -136,6 +136,7 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 // 然后，遍历邻接节点，对于每个邻接节点，更新其依赖数量，如果依赖数量为 0，则启动一个新的 Goroutine 来处理该邻接节点。
 // 这样可以实现图算法中节点之间的并发处理和依赖关系的维护。
 func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
+	var err error
 	defer g.wg.Done()
 	eventChan <- fmt.Sprintf("start step %s in task %s", v.Name(), g.Name())
 	defer func() {
@@ -147,6 +148,12 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		g.ctx.Unlock()
 
 		remove(fmt.Sprintf(vertexPrefix, g.Name(), v.Name()))
+		if err != nil {
+			errCh <- err
+			eventChan <- fmt.Sprintf("error exec step %s in task %s, %s", v.Name(), g.Name(), err)
+			return
+		}
+		eventChan <- fmt.Sprintf("stoped step %s in task %s", v.Name(), g.Name())
 	}()
 
 	// 图形级暂停
@@ -155,8 +162,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
-			errCh <- ErrForceKill
-			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
+			err = ErrForceKill
 			return
 		case <-g.ctx.controlCtx.Done():
 			// 继续
@@ -170,13 +176,11 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
-			errCh <- ErrForceKill
-			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
+			err = ErrForceKill
 			return
 		case <-v.ctx.mainCtx.Done():
 			// 被终止
-			errCh <- ErrForceKill
-			eventChan <- fmt.Sprintf("killed step %s in task %s", v.Name(), g.Name())
+			err = ErrForceKill
 			return
 		case <-v.ctx.controlCtx.Done():
 			// 继续
@@ -190,9 +194,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 	v.ctx.Unlock()
 
 	// 执行顶点函数
-	if err := v.fn(v.ctx.mainCtx, g.Name(), v.Name()); err != nil {
-		errCh <- err
-		eventChan <- fmt.Sprintf("error exec step %s in task %s, %s", v.Name(), g.Name(), err)
+	if err = v.fn(v.ctx.mainCtx, g.Name(), v.Name()); err != nil {
 		return
 	}
 
@@ -210,11 +212,9 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 	for k := range v.adjs {
 		select {
 		case <-g.ctx.mainCtx.Done():
-			errCh <- ErrForceKill
-			eventChan <- fmt.Sprintf("step %s ends because task %s is killed", v.Name(), g.Name())
+			err = ErrForceKill
 			break
 		default:
-			eventChan <- fmt.Sprintf("stoped step %s in task %s", v.adjs[k].Name(), g.Name())
 			dec := func() {
 				g.ctx.Lock()
 				defer g.ctx.Unlock()
