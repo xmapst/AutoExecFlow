@@ -25,11 +25,17 @@ func (s *step) Name() string {
 	return s.sName
 }
 
-func (s *step) ClearAll() {
-	_ = s.Remove()
-	_ = s.Env().RemoveAll()
-	_ = s.Depend().RemoveAll()
-	_ = s.Log().RemoveAll()
+func (s *step) ClearAll() error {
+	if err := s.Remove(); err != nil {
+		return err
+	}
+	if err := s.Env().RemoveAll(); err != nil {
+		return err
+	}
+	if err := s.Depend().RemoveAll(); err != nil {
+		return err
+	}
+	return s.Log().RemoveAll()
 }
 
 func (s *step) Remove() (err error) {

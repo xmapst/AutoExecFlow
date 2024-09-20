@@ -21,13 +21,20 @@ func (t *task) Name() string {
 	return t.tName
 }
 
-func (t *task) ClearAll() {
-	_ = t.Remove()
-	_ = t.Env().RemoveAll()
+func (t *task) ClearAll() error {
+	if err := t.Remove(); err != nil {
+		return err
+	}
+	if err := t.Env().RemoveAll(); err != nil {
+		return err
+	}
 	list := t.StepList(backend.All)
 	for _, v := range list {
-		t.Step(v.Name).ClearAll()
+		if err := t.Step(v.Name).ClearAll(); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (t *task) Remove() (err error) {

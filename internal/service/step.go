@@ -86,7 +86,7 @@ func (ss *StepService) review(step *types.TaskStepReq) (time.Duration, error) {
 func (ss *StepService) saveStep(db backend.IStep, timeout time.Duration, step *types.TaskStepReq) (err error) {
 	defer func() {
 		if err != nil {
-			db.ClearAll()
+			_ = db.ClearAll()
 		}
 	}()
 	err = db.Insert(&models.Step{
@@ -201,8 +201,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 }
 
 func (ss *StepService) Delete() error {
-	storage.Task(ss.taskName).Step(ss.stepName).ClearAll()
-	return nil
+	return storage.Task(ss.taskName).Step(ss.stepName).ClearAll()
 }
 
 func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {

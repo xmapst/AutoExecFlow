@@ -23,7 +23,7 @@ type IBase interface {
 	// Name 名称
 	Name() string
 	// ClearAll 清理
-	ClearAll()
+	ClearAll() error
 	// Remove 删除
 	Remove() (err error)
 	// State 获取状态

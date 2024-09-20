@@ -780,7 +780,13 @@ class TaskTable {
             this.rowsPerPage = res.data.page.size;
             this.renderTable();
             this.updatePagination();
+            return;
         }
+        // 置空表格, 显示无数据, 页码置为0
+        this.tasks = [];
+        this.totalPage = 1;
+        this.renderTable();
+        this.updatePagination();
     }
 
     // 通过 WebSocket 请求任务数据
@@ -799,13 +805,14 @@ class TaskTable {
 
         if (!this.tasks || this.tasks.length === 0) {
             const row = document.createElement("tr");
-            row.innerHTML = `<td colspan="5"><div style="display:flex;justify-content:center;align-items:center;">暂无数据</div></td>`;
+            row.innerHTML = `<td colspan="7"><div style="display:flex;justify-content:center;align-items:center;">暂无数据</div></td>`;
             tableBody.appendChild(row);
-        } else {
-            this.tasks.forEach(task => {
-                const row = document.createElement("tr");
-                const color = Utils.getStatusColor(task.state || 'unknown');
-                row.innerHTML = `
+            return
+        }
+        this.tasks.forEach(task => {
+            const row = document.createElement("tr");
+            const color = Utils.getStatusColor(task.state || 'unknown');
+            row.innerHTML = `
                     <td id="${task.name+'-name'}">${task.name}</td>
                     <td id="${task.name+'-count'}">${task.count}</td>
                     <td id="${task.name+'-message'}" class="message" title=""></td>
@@ -823,21 +830,20 @@ class TaskTable {
                         </div>
                     </td>
                 `;
-                tableBody.appendChild(row);
-                const msgDocument = document.getElementById(task.name + '-message');
-                if (task.msg) {
-                    msgDocument.innerText = task.msg;
-                    msgDocument.setAttribute('title', task.msg);
-                }
-                row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task));
-                if (row.querySelector("#kill-task") !== null) {
-                    row.querySelector("#kill-task").addEventListener("click", () => Utils.taskManager(task.name, 'kill'));
-                }
-                if (row.querySelector("#delete-task") !== null) {
-                    row.querySelector("#delete-task").addEventListener("click", () => this.deleteTask(task));
-                }
-            });
-        }
+            tableBody.appendChild(row);
+            const msgDocument = document.getElementById(task.name + '-message');
+            if (task.msg) {
+                msgDocument.innerText = task.msg;
+                msgDocument.setAttribute('title', task.msg);
+            }
+            row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task));
+            if (row.querySelector("#kill-task") !== null) {
+                row.querySelector("#kill-task").addEventListener("click", () => Utils.taskManager(task.name, 'kill'));
+            }
+            if (row.querySelector("#delete-task") !== null) {
+                row.querySelector("#delete-task").addEventListener("click", () => this.deleteTask(task));
+            }
+        });
 
         document.getElementById("page-info").textContent = `第${this.currentPage}页__共${this.totalPage}页`;
     }
@@ -1001,7 +1007,7 @@ class EventListener {
 
         eventContainer.appendChild(messageElement);
 
-        // 保留最后三条消息，删除最早的
+        // 保留最后9条消息，删除最早的
         if (eventContainer.children.length > 9) {
             eventContainer.removeChild(eventContainer.firstChild);
         }

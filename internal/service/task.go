@@ -96,12 +96,12 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 
 	var db = storage.Task(task.Name)
 	// 清理旧数据
-	db.ClearAll()
+	_ = db.ClearAll()
 
 	defer func() {
 		if err != nil {
 			// rollback
-			db.ClearAll()
+			_ = db.ClearAll()
 		}
 	}()
 
@@ -212,8 +212,7 @@ func (ts *TaskService) saveTask(db backend.ITask, timeout time.Duration, task *t
 }
 
 func (ts *TaskService) Delete() error {
-	storage.Task(ts.name).ClearAll()
-	return nil
+	return storage.Task(ts.name).ClearAll()
 }
 
 func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
