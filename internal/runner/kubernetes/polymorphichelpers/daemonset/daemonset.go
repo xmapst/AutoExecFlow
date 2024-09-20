@@ -45,15 +45,6 @@ func (d *DaemonSet) Update() error {
 			}
 			return err
 		}
-		for k, container := range result.Spec.Template.Spec.InitContainers {
-			image := strings.Split(container.Image, ":")
-			if len(image) != 2 {
-				continue
-			}
-			name, tag := image[0], image[1]
-			d.Storage.Log().Writef("%s/%s init container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, d.GetImageTag())
-			result.Spec.Template.Spec.InitContainers[k].Image = fmt.Sprintf("%s:%s", name, d.GetImageTag())
-		}
 		for k, container := range result.Spec.Template.Spec.Containers {
 			image := strings.Split(container.Image, ":")
 			if len(image) != 2 {
@@ -62,6 +53,18 @@ func (d *DaemonSet) Update() error {
 			name, tag := image[0], image[1]
 			d.Storage.Log().Writef("%s/%s container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, d.GetImageTag())
 			result.Spec.Template.Spec.Containers[k].Image = fmt.Sprintf("%s:%s", name, d.GetImageTag())
+		}
+		// 如果IgnoreInitContainer为空或者IgnoreInitContainer为false时更新init container
+		if d.IgnoreInitContainer == nil || !*d.IgnoreInitContainer {
+			for k, container := range result.Spec.Template.Spec.InitContainers {
+				image := strings.Split(container.Image, ":")
+				if len(image) != 2 {
+					continue
+				}
+				name, tag := image[0], image[1]
+				d.Storage.Log().Writef("%s/%s init container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, d.GetImageTag())
+				result.Spec.Template.Spec.InitContainers[k].Image = fmt.Sprintf("%s:%s", name, d.GetImageTag())
+			}
 		}
 		_, err = d.Client.Update(d.Context, result, metav1.UpdateOptions{})
 		if err != nil {

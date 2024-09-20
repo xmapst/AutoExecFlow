@@ -7,11 +7,12 @@ import (
 )
 
 type Resource struct {
-	Kind      string `yaml:"Kind" json:"kind"`
-	Namespace string `yaml:"Namespace" json:"namespace"`
-	Name      string `yaml:"Name" json:"name"`
-	Replicas  *int32 `yaml:"Replicas" json:"replicas"`
-	ImageTag  string `yaml:"ImageTag" json:"image_tag"`
+	Kind                string `yaml:"Kind" json:"kind"`
+	Namespace           string `yaml:"Namespace" json:"namespace"`
+	Name                string `yaml:"Name" json:"name"`
+	Replicas            *int32 `yaml:"Replicas" json:"replicas"`
+	ImageTag            string `yaml:"ImageTag" json:"image_tag"`
+	IgnoreInitContainer *bool  `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
 }
 
 func (r *Resource) Check() error {

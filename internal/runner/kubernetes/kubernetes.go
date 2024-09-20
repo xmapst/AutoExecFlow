@@ -22,16 +22,17 @@ import (
 )
 
 type kubectl struct {
-	kubeConf      *rest.Config
-	client        *kubernetes.Clientset
-	dynamicClient *dynamic.DynamicClient
-	storage       backend.IStep
-	subCommand    string
-	workspace     string
-	Config        string            `json:"kube_config" yaml:"KubeConfig"`
-	Namespace     string            `json:"namespace" yaml:"Namespace"`
-	ImageTag      string            `json:"image_tag" yaml:"ImageTag"`
-	Resources     []*types.Resource `json:"resources" yaml:"Resources"`
+	kubeConf            *rest.Config
+	client              *kubernetes.Clientset
+	dynamicClient       *dynamic.DynamicClient
+	storage             backend.IStep
+	subCommand          string
+	workspace           string
+	Config              string            `json:"kube_config" yaml:"KubeConfig"`
+	Namespace           string            `json:"namespace" yaml:"Namespace"`
+	ImageTag            string            `json:"image_tag" yaml:"ImageTag"`
+	IgnoreInitContainer *bool             `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
+	Resources           []*types.Resource `json:"resources" yaml:"Resources"`
 }
 
 func New(storage backend.IStep, command, workspace string) (common.IRunner, error) {
@@ -96,6 +97,9 @@ func (k *kubectl) init() error {
 		k.Resources[kk].Kind, err = k.getResourceValue(res.Kind, types.Deployment, "KIND")
 		if err != nil {
 			return err
+		}
+		if res.IgnoreInitContainer == nil {
+			k.Resources[kk].IgnoreInitContainer = k.IgnoreInitContainer
 		}
 	}
 	return nil

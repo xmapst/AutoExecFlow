@@ -61,15 +61,6 @@ func (s *StatefulSet) Update() error {
 			}
 			return err
 		}
-		for k, container := range result.Spec.Template.Spec.InitContainers {
-			image := strings.Split(container.Image, ":")
-			if len(image) != 2 {
-				continue
-			}
-			name, tag := image[0], image[1]
-			s.Storage.Log().Writef("%s/%s init container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, s.GetImageTag())
-			result.Spec.Template.Spec.InitContainers[k].Image = fmt.Sprintf("%s:%s", name, s.GetImageTag())
-		}
 		for k, container := range result.Spec.Template.Spec.Containers {
 			image := strings.Split(container.Image, ":")
 			if len(image) != 2 {
@@ -79,6 +70,18 @@ func (s *StatefulSet) Update() error {
 			s.Storage.Log().Writef("%s/%s container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, s.GetImageTag())
 			result.Spec.Template.Spec.Containers[k].Image = fmt.Sprintf("%s:%s", name, s.GetImageTag())
 		}
+		if s.IgnoreInitContainer == nil || !*s.IgnoreInitContainer {
+			for k, container := range result.Spec.Template.Spec.InitContainers {
+				image := strings.Split(container.Image, ":")
+				if len(image) != 2 {
+					continue
+				}
+				name, tag := image[0], image[1]
+				s.Storage.Log().Writef("%s/%s init container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, s.GetImageTag())
+				result.Spec.Template.Spec.InitContainers[k].Image = fmt.Sprintf("%s:%s", name, s.GetImageTag())
+			}
+		}
+
 		_, err = s.Client.Update(s.Context, result, metav1.UpdateOptions{})
 		if err != nil {
 			return err
