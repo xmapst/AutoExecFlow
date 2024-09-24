@@ -279,14 +279,14 @@ func (g *Graph) Run(ctx context.Context) (err error) {
 		defer close(done)
 		for {
 			select {
-			case <-g.ctx.mainCtx.Done():
-				eventChan <- fmt.Sprintf("task %s ends because task %s is terminated", g.Name(), g.Name())
-				return
 			case _err, ok := <-chError:
 				if !ok {
 					return
 				}
 				err = errors.Join(err, _err)
+			case <-g.ctx.mainCtx.Done():
+				eventChan <- fmt.Sprintf("task %s ends because task %s is terminated", g.Name(), g.Name())
+				return
 			}
 		}
 	}()

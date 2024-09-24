@@ -126,13 +126,17 @@ func (k *kubectl) Run(ctx context.Context) (code int64, err error) {
 		defer close(done)
 		for {
 			select {
-			case <-ctx.Done():
-				return
 			case _err, ok := <-errCh:
 				if !ok {
 					return
 				}
 				err = errors.Join(err, _err)
+			case <-ctx.Done():
+				if ctx.Err() != nil {
+					k.storage.Log().Write(ctx.Err().Error())
+					err = ctx.Err()
+				}
+				return
 			}
 		}
 	}()
