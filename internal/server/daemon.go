@@ -23,6 +23,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
+	"github.com/xmapst/AutoExecFlow/pkg/reaper"
 )
 
 type Program struct {
@@ -35,6 +36,7 @@ type Program struct {
 }
 
 func New() *Program {
+	reaper.Run()
 	p := &Program{
 		sURL: strings.TrimSuffix(config.App.SelfUpdateURL, "/"),
 		cron: cron.New(),
