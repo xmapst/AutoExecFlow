@@ -16,7 +16,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 )
 
-type execCmd struct {
+type Cmd struct {
 	storage backend.IStep
 
 	done      chan struct{}
@@ -35,8 +35,8 @@ type execCmd struct {
 func New(
 	storage backend.IStep,
 	shell, workspace, scriptDir string,
-) (common.IRunner, error) {
-	var c = &execCmd{
+) (*Cmd, error) {
+	var c = &Cmd{
 		storage:   storage,
 		workspace: workspace,
 		shell:     shell,
@@ -71,7 +71,7 @@ func New(
 	return c, nil
 }
 
-func (c *execCmd) scriptSuffix() string {
+func (c *Cmd) scriptSuffix() string {
 	switch c.shell {
 	case "python", "python2", "python3", "py", "py2", "py3":
 		return ".py"
@@ -79,11 +79,11 @@ func (c *execCmd) scriptSuffix() string {
 	return c.selfScriptSuffix()
 }
 
-func (c *execCmd) Clear() error {
+func (c *Cmd) Clear() error {
 	return os.Remove(c.scriptName)
 }
 
-func (c *execCmd) Run(ctx context.Context) (code int64, err error) {
+func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
 		if _err := recover(); _err != nil {
 			err = fmt.Errorf("%v", _err)
@@ -137,7 +137,7 @@ func (c *execCmd) Run(ctx context.Context) (code int64, err error) {
 	return
 }
 
-func (c *execCmd) newCmd() error {
+func (c *Cmd) newCmd() error {
 	timeout, err := c.storage.Timeout()
 	if err != nil {
 		return err
@@ -177,7 +177,7 @@ func (c *execCmd) newCmd() error {
 	return nil
 }
 
-func (c *execCmd) consoleOutput() {
+func (c *Cmd) consoleOutput() {
 	defer close(c.done)
 	for {
 		var line string

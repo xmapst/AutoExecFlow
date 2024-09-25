@@ -9,7 +9,7 @@ import (
 	"github.com/go-cmd/cmd"
 )
 
-func (c *execCmd) selfScriptSuffix() string {
+func (c *Cmd) selfScriptSuffix() string {
 	switch c.shell {
 	case "ash":
 		return ".ash"
@@ -32,7 +32,7 @@ func (c *execCmd) selfScriptSuffix() string {
 	}
 }
 
-func (c *execCmd) beforeExec() []func(cmd *exec.Cmd) {
+func (c *Cmd) beforeExec() []func(cmd *exec.Cmd) {
 	return []func(cmd *exec.Cmd){
 		func(cmd *exec.Cmd) {
 			cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -42,7 +42,7 @@ func (c *execCmd) beforeExec() []func(cmd *exec.Cmd) {
 	}
 }
 
-func (c *execCmd) selfCmd() {
+func (c *Cmd) selfCmd() {
 	switch c.shell {
 	case "ash":
 		c.cmd = cmd.NewCmdOptions(c.ops, "ash", "-c", c.scriptName)
@@ -68,17 +68,17 @@ func (c *execCmd) selfCmd() {
 	}
 }
 
-func (c *execCmd) kill() (err error) {
+func (c *Cmd) kill() (err error) {
 	if c.cmd == nil {
 		return
 	}
 	return c.cmd.Stop()
 }
 
-func (c *execCmd) utf8ToGb2312(s string) string {
+func (c *Cmd) utf8ToGb2312(s string) string {
 	return s
 }
 
-func (c *execCmd) transform(line string) string {
+func (c *Cmd) transform(line string) string {
 	return line
 }

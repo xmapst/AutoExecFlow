@@ -13,7 +13,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 )
 
-type touch struct {
+type Touch struct {
 	storage   backend.IStep
 	workspace string
 
@@ -25,14 +25,14 @@ type touch struct {
 func New(
 	storage backend.IStep,
 	workspace string,
-) (common.IRunner, error) {
-	return &touch{
+) (*Touch, error) {
+	return &Touch{
 		storage:   storage,
 		workspace: workspace,
 	}, nil
 }
 
-func (t *touch) Run(ctx context.Context) (code int64, err error) {
+func (t *Touch) Run(ctx context.Context) (code int64, err error) {
 	content, err := t.storage.Content()
 	if err != nil {
 		return common.SystemErr, err
@@ -64,6 +64,6 @@ func (t *touch) Run(ctx context.Context) (code int64, err error) {
 	return common.Success, nil
 }
 
-func (t *touch) Clear() error {
+func (t *Touch) Clear() error {
 	return nil
 }

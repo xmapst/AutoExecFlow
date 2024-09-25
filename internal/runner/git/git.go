@@ -21,7 +21,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-type gitCmd struct {
+type Git struct {
 	ctx       context.Context
 	cncl      context.CancelFunc
 	gopt      *git.CloneOptions
@@ -42,8 +42,8 @@ type gitConfig struct {
 	SingleBranch *bool  `json:"single_branch,omitempty"`
 }
 
-func New(storage backend.IStep, workspace string) (common.IRunner, error) {
-	g := &gitCmd{
+func New(storage backend.IStep, workspace string) (*Git, error) {
+	g := &Git{
 		gopt: &git.CloneOptions{
 			SingleBranch: true,
 		},
@@ -61,7 +61,7 @@ func New(storage backend.IStep, workspace string) (common.IRunner, error) {
 	return g, nil
 }
 
-func (g *gitCmd) parseConfig() error {
+func (g *Git) parseConfig() error {
 	content, err := g.storage.Content()
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (g *gitCmd) parseConfig() error {
 	return nil
 }
 
-func (g *gitCmd) homeDir() string {
+func (g *Git) homeDir() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		if runtime.GOOS == "windows" {
@@ -129,7 +129,7 @@ func (g *gitCmd) homeDir() string {
 	return home
 }
 
-func (g *gitCmd) Run(ctx context.Context) (code int64, err error) {
+func (g *Git) Run(ctx context.Context) (code int64, err error) {
 	logx.Infoln("git clone")
 	g.storage.Log().Write("git clone")
 	timeout, err := g.storage.Timeout()
@@ -163,7 +163,7 @@ func (g *gitCmd) Run(ctx context.Context) (code int64, err error) {
 	return common.Success, err
 }
 
-func (g *gitCmd) Clear() error {
+func (g *Git) Clear() error {
 	if g.cncl != nil {
 		g.cncl()
 		g.cncl = nil

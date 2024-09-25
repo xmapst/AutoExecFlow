@@ -21,7 +21,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 )
 
-type kubectl struct {
+type Kubectl struct {
 	kubeConf            *rest.Config
 	client              *kubernetes.Clientset
 	dynamicClient       *dynamic.DynamicClient
@@ -35,15 +35,15 @@ type kubectl struct {
 	Resources           []*types.Resource `json:"resources" yaml:"Resources"`
 }
 
-func New(storage backend.IStep, command, workspace string) (common.IRunner, error) {
-	return &kubectl{
+func New(storage backend.IStep, command, workspace string) (*Kubectl, error) {
+	return &Kubectl{
 		storage:    storage,
 		subCommand: command,
 		workspace:  workspace,
 	}, nil
 }
 
-func (k *kubectl) init() error {
+func (k *Kubectl) init() error {
 	content, err := k.storage.Content()
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func (k *kubectl) init() error {
 	return nil
 }
 
-func (k *kubectl) Run(ctx context.Context) (code int64, err error) {
+func (k *Kubectl) Run(ctx context.Context) (code int64, err error) {
 	timeout, err := k.storage.Timeout()
 	if err != nil {
 		return common.SystemErr, err
@@ -159,7 +159,7 @@ func (k *kubectl) Run(ctx context.Context) (code int64, err error) {
 	return
 }
 
-func (k *kubectl) getResourceValue(lValue, gValue, env string) (string, error) {
+func (k *Kubectl) getResourceValue(lValue, gValue, env string) (string, error) {
 	if lValue != "" {
 		return lValue, nil
 	}
@@ -176,7 +176,7 @@ func (k *kubectl) getResourceValue(lValue, gValue, env string) (string, error) {
 	return value, err
 }
 
-func (k *kubectl) run(ctx context.Context, resource *types.Resource) (err error) {
+func (k *Kubectl) run(ctx context.Context, resource *types.Resource) (err error) {
 	var rs = polymorphichelpers.ResourceFor(ctx, k.storage, k.client, resource)
 	switch k.subCommand {
 	case "restart":
@@ -201,6 +201,6 @@ func (k *kubectl) run(ctx context.Context, resource *types.Resource) (err error)
 	return rs.Println()
 }
 
-func (k *kubectl) Clear() error {
+func (k *Kubectl) Clear() error {
 	return nil
 }

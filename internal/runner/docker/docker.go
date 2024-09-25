@@ -3,23 +3,22 @@ package docker
 import (
 	"context"
 
-	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 )
 
-type docker struct {
+type Docker struct {
 }
 
-func New(storage backend.IStep, command, workspace string) (common.IRunner, error) {
-	return &docker{}, nil
+func New(storage backend.IStep, command, workspace string) (*Docker, error) {
+	return &Docker{}, nil
 }
 
-func (d *docker) Run(ctx context.Context) (code int64, err error) {
+func (d *Docker) Run(ctx context.Context) (code int64, err error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (d *docker) Clear() error {
+func (d *Docker) Clear() error {
 	//TODO implement me
 	panic("implement me")
 }
