@@ -36,7 +36,6 @@ type Program struct {
 }
 
 func New() *Program {
-	reaper.Run()
 	p := &Program{
 		sURL: strings.TrimSuffix(config.App.SelfUpdateURL, "/"),
 		cron: cron.New(),
@@ -83,6 +82,7 @@ func (p *Program) init() error {
 }
 
 func (p *Program) Start(service.Service) error {
+	reaper.Run()
 	p.cron.Start()
 	err := p.init()
 	if err != nil {

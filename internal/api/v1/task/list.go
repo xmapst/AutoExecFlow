@@ -90,9 +90,13 @@ func List(c *gin.Context) {
 		}
 
 		currentTaskList := service.TaskList(req)
-		// 如果数据没有变化，跳过本次推送
-		if lastTaskList != nil && reflect.DeepEqual(lastTaskList, currentTaskList) {
-			time.Sleep(1 * time.Second)
+		// 如果数据没有变化，只发送心跳
+		if reflect.DeepEqual(lastTaskList, currentTaskList) {
+			err = ws.WriteMessage(websocket.PingMessage, nil)
+			if err != nil {
+				return
+			}
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 

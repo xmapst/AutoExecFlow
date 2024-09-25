@@ -2,6 +2,7 @@ package step
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -68,25 +69,42 @@ func List(c *gin.Context) {
 			}
 		}
 	}()
-
+	var lastCode types.Code
+	var lastError error
+	var lastList []*types.TaskStepRes
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
 		}
-		code, list, err := service.Task(taskName).Steps()
-		if err != nil && code == types.CodeNoData {
-			_ = ws.WriteJSON(base.WithCode[any](code).WithError(err))
+		currentCode, currentList, currentErr := service.Task(taskName).Steps()
+		if currentErr != nil && currentCode == types.CodeNoData {
+			_ = ws.WriteJSON(base.WithCode[any](currentCode).WithError(currentErr))
 			return
 		}
-		err = ws.WriteJSON(base.WithData(list).WithError(err).WithCode(code))
+		// 如果状态, 错误, 列表均没有变化, 则只发送心跳
+		if lastCode == currentCode && errors.Is(currentErr, lastError) && reflect.DeepEqual(lastList, currentList) {
+			err := ws.WriteMessage(websocket.PingMessage, nil)
+			if err != nil {
+				return
+			}
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		// 保存当前数据作为上一次的数据
+		lastCode = currentCode
+		lastError = currentErr
+		lastList = currentList
+
+		err := ws.WriteJSON(base.WithData(currentList).WithError(currentErr).WithCode(currentCode))
 		if err != nil {
 			return
 		}
-		if code == types.CodeSuccess || code == types.CodeFailed {
+		if currentCode == types.CodeSuccess || currentCode == types.CodeFailed {
 			return
 		}
-		time.Sleep(300 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 	}
 }

@@ -3,7 +3,6 @@ package event
 import (
 	"io"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,12 +19,7 @@ func Stream(c *gin.Context) {
 	defer dag.UnSubscribeEvent(id)
 	ticker := time.NewTicker(30 * time.Second) // 每30秒发送心跳
 	defer ticker.Stop()
-	var once sync.Once
 	c.Stream(func(w io.Writer) bool {
-		once.Do(func() {
-			// send event heartbeat at the beginning
-			c.SSEvent("heartbeat", "keepalive")
-		})
 		select {
 		case e, ok := <-event:
 			if !ok {
