@@ -1,15 +1,15 @@
 package runner
 
 import (
-    "strings"
+	"strings"
 
-    "github.com/xmapst/AutoExecFlow/internal/runner/docker"
-    "github.com/xmapst/AutoExecFlow/internal/runner/exec"
-    "github.com/xmapst/AutoExecFlow/internal/runner/git"
-    "github.com/xmapst/AutoExecFlow/internal/runner/kubernetes"
-    "github.com/xmapst/AutoExecFlow/internal/runner/mkdir"
-    "github.com/xmapst/AutoExecFlow/internal/runner/touch"
-    "github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/runner/docker"
+	"github.com/xmapst/AutoExecFlow/internal/runner/exec"
+	"github.com/xmapst/AutoExecFlow/internal/runner/git"
+	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes"
+	"github.com/xmapst/AutoExecFlow/internal/runner/mkdir"
+	"github.com/xmapst/AutoExecFlow/internal/runner/touch"
+	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 )
 
 func New(
