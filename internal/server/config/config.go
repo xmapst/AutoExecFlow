@@ -26,6 +26,12 @@ type Config struct {
 }
 
 func (c *Config) Init() error {
+	var logfile string
+	if !c.Debug {
+		logfile = filepath.Join(c.LogDir(), utils.ServiceName+".log")
+	}
+	logx.SetupLogger(logfile, zap.AddStacktrace(zapcore.ErrorLevel))
+
 	var dirs = map[string]string{
 		"root":      c.RootDir,
 		"script":    c.ScriptDir(),
@@ -39,12 +45,6 @@ func (c *Config) Init() error {
 		}
 		logx.Infof("%s dir: %s", name, dir)
 	}
-
-	var logfile string
-	if !c.Debug {
-		logfile = filepath.Join(c.LogDir(), utils.ServiceName+".log")
-	}
-	logx.SetupLogger(logfile, zap.AddStacktrace(zapcore.ErrorLevel))
 	return nil
 }
 
