@@ -1,9 +1,9 @@
 package common
 
 const (
-	Success   int64 = 0
-	Failed    int64 = -1
-	Killed    int64 = -997
-	Timeout   int64 = -998
-	SystemErr int64 = -999
+	CodeSuccess   int64 = 0
+	CodeFailed    int64 = -1
+	CodeKilled    int64 = -997
+	CodeTimeout   int64 = -998
+	CodeSystemErr int64 = -999
 )

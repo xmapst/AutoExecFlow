@@ -92,7 +92,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 
 	err = c.newCmd()
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	// Print STDOUT and STDERR lines streaming from Cmd
 	go c.consoleOutput()
@@ -106,12 +106,12 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	case <-ctx.Done():
 		_ = c.kill()
 		err = common.ErrManual
-		code = common.Killed
+		code = common.CodeKilled
 		if context.Cause(ctx) != nil {
 			switch {
 			case errors.Is(context.Cause(ctx), common.ErrTimeOut):
 				err = common.ErrTimeOut
-				code = common.Timeout
+				code = common.CodeTimeout
 			default:
 				err = context.Cause(ctx)
 			}
@@ -122,13 +122,13 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 		// _ = cmd.Process.Kill()
 		_ = c.kill()
 		err = common.ErrTimeOut
-		code = common.Timeout
+		code = common.CodeTimeout
 	// 执行结果
 	case status := <-c.cmd.Start():
 		code = int64(status.Exit)
 		err = status.Error
 		if err != nil && code == 0 {
-			code = common.SystemErr
+			code = common.CodeSystemErr
 		}
 		if err == nil && code != 0 {
 			err = fmt.Errorf("exit code %d", code)

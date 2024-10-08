@@ -16,7 +16,6 @@ var App = new(Config)
 
 type Config struct {
 	Debug         bool
-	Normal        bool
 	ListenAddress string
 	PoolSize      int
 	ExecTimeOut   time.Duration

@@ -33,23 +33,23 @@ func New(
 func (m *Mkdir) Run(ctx context.Context) (code int64, err error) {
 	content, err := m.storage.Content()
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	if err = json.Unmarshal([]byte(content), m); err != nil {
 		if err = yaml.Unmarshal([]byte(content), m); err != nil {
-			return common.SystemErr, err
+			return common.CodeSystemErr, err
 		}
 	}
 	m.Path = filepath.Clean(m.Path)
 	if m.Path == "" {
-		return common.SystemErr, fmt.Errorf("path is empty")
+		return common.CodeSystemErr, fmt.Errorf("path is empty")
 	}
 	m.storage.Log().Writef("mkdir -p %s", m.Path)
 	err = os.MkdirAll(filepath.Join(m.workspace, m.Path), os.ModePerm)
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
-	return common.Success, nil
+	return common.CodeSuccess, nil
 }
 
 func (m *Mkdir) Clear() error {

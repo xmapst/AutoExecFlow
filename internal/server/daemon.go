@@ -181,11 +181,11 @@ func (p *Program) Stop(service.Service) error {
 	logx.Infoln("receive a shutdown event and start shutting down")
 	p.close()
 	p.wg.Wait()
-	if config.App.Normal {
-		logx.Infoln("wait for workers to converge")
-		worker.StopWait()
-	}
 	p.cron.Stop()
+
+	logx.Infoln("wait for workers to converge")
+	worker.StopWait()
+
 	logx.Infoln("put data to disk and close data storage")
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)

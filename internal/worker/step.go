@@ -25,8 +25,8 @@ func (s *step) vertexFunc() dag.VertexFunc {
 	// build step
 	return func(ctx context.Context, taskName, stepName string) (err error) {
 		if err = s.storage.Update(&models.StepUpdate{
-			State:    models.Pointer(models.Running),
-			OldState: models.Pointer(models.Pending),
+			State:    models.Pointer(models.StateRunning),
+			OldState: models.Pointer(models.StatePending),
 			Message:  "step is running",
 			STime:    models.Pointer(time.Now()),
 		}); err != nil {
@@ -39,11 +39,11 @@ func (s *step) vertexFunc() dag.VertexFunc {
 		defer func() {
 			if _err := recover(); _err != nil {
 				logx.Errorln(_err)
-				res.Code = models.Pointer(common.SystemErr)
+				res.Code = models.Pointer(common.CodeSystemErr)
 				res.Message = fmt.Sprint(_err)
 			}
 			res.ETime = models.Pointer(time.Now())
-			res.OldState = models.Pointer(models.Running)
+			res.OldState = models.Pointer(models.StateRunning)
 			if _err := s.storage.Update(res); _err != nil {
 				logx.Errorln(_err)
 			}
@@ -65,9 +65,9 @@ func (s *step) vertexFunc() dag.VertexFunc {
 		)
 		if err != nil {
 			logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-			res.State = models.Pointer(models.Failed)
+			res.State = models.Pointer(models.StateFailed)
 			res.Message = err.Error()
-			res.Code = models.Pointer(common.SystemErr)
+			res.Code = models.Pointer(common.CodeSystemErr)
 			return err
 		}
 
@@ -80,14 +80,14 @@ func (s *step) vertexFunc() dag.VertexFunc {
 		res.Message = "execution succeed"
 		code, err := runnerItr.Run(ctx)
 		res.Code = models.Pointer(code)
-		res.State = models.Pointer(models.Stop)
+		res.State = models.Pointer(models.StateStop)
 		if err != nil {
-			res.State = models.Pointer(models.Failed)
+			res.State = models.Pointer(models.StateFailed)
 			res.Message = err.Error()
 			return err
 		}
 		if code != 0 {
-			res.State = models.Pointer(models.Failed)
+			res.State = models.Pointer(models.StateFailed)
 			res.Message = fmt.Sprintf("execution failed with code: %d", code)
 			return errors.New(res.Message)
 		}

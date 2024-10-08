@@ -13,8 +13,8 @@ type IStorage interface {
 	Close() (err error)
 
 	Task(name string) ITask
-	// TaskCount 任务总数
-	TaskCount() (res int64)
+	// TaskCount 指定状态任务总数, -1为所有
+	TaskCount(state models.State) (res int64)
 	// TaskList 获取任务,支持分页, 模糊匹配
 	TaskList(page, pageSize int64, str string) (res models.Tasks, total int64)
 }

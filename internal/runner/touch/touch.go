@@ -35,16 +35,16 @@ func New(
 func (t *Touch) Run(ctx context.Context) (code int64, err error) {
 	content, err := t.storage.Content()
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	if err = json.Unmarshal([]byte(content), t); err != nil {
 		if err = yaml.Unmarshal([]byte(content), t); err != nil {
-			return common.SystemErr, err
+			return common.CodeSystemErr, err
 		}
 	}
 	t.Path = filepath.Clean(t.Path)
 	if t.Path == "" {
-		return common.SystemErr, fmt.Errorf("path is empty")
+		return common.CodeSystemErr, fmt.Errorf("path is empty")
 	}
 	if t.Overwrite {
 		t.storage.Log().Writef("overwrite %s", t.Path)
@@ -54,14 +54,14 @@ func (t *Touch) Run(ctx context.Context) (code int64, err error) {
 		file, err := os.OpenFile(filepath.Join(t.workspace, t.Path), os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 		defer file.Close()
 		if err != nil {
-			return common.SystemErr, err
+			return common.CodeSystemErr, err
 		}
 		_, err = file.WriteString(t.Content)
 	}
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
-	return common.Success, nil
+	return common.CodeSuccess, nil
 }
 
 func (t *Touch) Clear() error {

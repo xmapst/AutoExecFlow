@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -11,19 +12,28 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/server/config"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/utils"
+	"github.com/xmapst/AutoExecFlow/internal/worker/queue"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
-	"github.com/xmapst/AutoExecFlow/pkg/deque"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/pkg/tunny"
 )
 
+var qname = fmt.Sprintf("%s-worker-%s", utils.ServiceName, utils.HostName())
+
 var (
-	pool  = tunny.NewCallback(1)
-	queue = deque.New[func()]()
+	pool      = tunny.NewCallback(1)
+	workQueue = queue.NewInMemoryBroker()
 )
 
 func init() {
-	go dispatch()
+	workQueue.Subscribe(context.Background(), qname, func(m any) {
+		fn, ok := m.(func())
+		if !ok {
+			return
+		}
+		pool.Submit(fn)
+	})
 }
 
 func SetSize(n int) {
@@ -34,45 +44,11 @@ func GetSize() int {
 	return pool.GetSize()
 }
 
-func GetTotal() int64 {
-	return storage.TaskCount()
-}
-
-func Running() int64 {
-	if pool.QueueLength() > int64(pool.GetSize()) {
-		return pool.QueueLength() - 1
-	}
-	return pool.QueueLength()
-}
-
-func Waiting() int64 {
-	if pool.QueueLength() > int64(pool.GetSize()) {
-		return int64(queue.Len()) + 1
-	}
-	return int64(queue.Len())
-}
-
 func StopWait() {
 	logx.Info("Waiting for all tasks to complete")
-	for queue.Len() != 0 || pool.QueueLength() != 0 {
-		time.Sleep(100 * time.Millisecond)
-	}
-	logx.Info("All tasks completed, normal end")
-}
-
-func dispatch() {
-	for {
-		if queue.Len() == 0 {
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-		fn, err := queue.PopFront()
-		if err != nil {
-			logx.Errorln("Failed to pop front from queue:", err)
-			continue
-		}
-		pool.Submit(fn)
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+	workQueue.Shutdown(ctx)
 }
 
 func Submit(taskName string) error {
@@ -87,16 +63,16 @@ func Submit(taskName string) error {
 		for _, name := range t.storage.StepNameList("") {
 			_ = t.storage.Step(name).Update(&models.StepUpdate{
 				Message:  "the task is disabled, no execution required",
-				State:    models.Pointer(models.Stop),
-				OldState: models.Pointer(models.Stop),
+				State:    models.Pointer(models.StateStop),
+				OldState: models.Pointer(models.StatePending),
 				STime:    models.Pointer(time.Now()),
 				ETime:    models.Pointer(time.Now()),
 			})
 		}
 		return t.storage.Update(&models.TaskUpdate{
 			Message:  "the task is disabled, no execution required",
-			State:    models.Pointer(models.Stop),
-			OldState: models.Pointer(models.Stop),
+			State:    models.Pointer(models.StateStop),
+			OldState: models.Pointer(models.StatePending),
 			STime:    models.Pointer(time.Now()),
 			ETime:    models.Pointer(time.Now()),
 		})
@@ -112,8 +88,8 @@ func Submit(taskName string) error {
 			logx.Infoln("the step is disabled, no execution required", name)
 			_ = t.storage.Step(name).Update(&models.StepUpdate{
 				Message:  "the step is disabled, no execution required",
-				State:    models.Pointer(models.Stop),
-				OldState: models.Pointer(models.Stop),
+				State:    models.Pointer(models.StateStop),
+				OldState: models.Pointer(models.StatePending),
 				STime:    models.Pointer(time.Now()),
 				ETime:    models.Pointer(time.Now()),
 			})
@@ -159,17 +135,16 @@ func Submit(taskName string) error {
 		return err
 	}
 
-	queue.PushBack(func() {
+	return workQueue.Publish(qname, func() {
 		runTask(t)
 	})
-	return nil
 }
 
 func runTask(t *task) {
 	var err error
 	if err = t.storage.Update(&models.TaskUpdate{
-		State:    models.Pointer(models.Running),
-		OldState: models.Pointer(models.Pending),
+		State:    models.Pointer(models.StateRunning),
+		OldState: models.Pointer(models.StatePending),
 		STime:    models.Pointer(time.Now()),
 		Message:  "task is running",
 	}); err != nil {
@@ -180,8 +155,8 @@ func runTask(t *task) {
 		if err != nil {
 			logx.Errorln(t.name(), err)
 			_ = t.storage.Update(&models.TaskUpdate{
-				State:    models.Pointer(models.Failed),
-				OldState: models.Pointer(models.Running),
+				State:    models.Pointer(models.StateFailed),
+				OldState: models.Pointer(models.StateRunning),
 				ETime:    models.Pointer(time.Now()),
 				Message:  err.Error(),
 			})

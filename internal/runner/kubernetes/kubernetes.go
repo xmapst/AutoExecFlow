@@ -108,7 +108,7 @@ func (k *Kubectl) init() error {
 func (k *Kubectl) Run(ctx context.Context) (code int64, err error) {
 	timeout, err := k.storage.Timeout()
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	if timeout > 0 {
 		var cancel context.CancelFunc
@@ -117,7 +117,7 @@ func (k *Kubectl) Run(ctx context.Context) (code int64, err error) {
 	}
 
 	if err = k.init(); err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	var wg sync.WaitGroup
 	var errCh = make(chan error, len(k.Resources))
@@ -154,7 +154,7 @@ func (k *Kubectl) Run(ctx context.Context) (code int64, err error) {
 	close(errCh)
 	<-done
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	return
 }

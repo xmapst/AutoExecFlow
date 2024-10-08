@@ -191,8 +191,8 @@ func (ts *TaskService) saveTask(db backend.ITask, timeout time.Duration, task *t
 		Disable: models.Pointer(task.Disable),
 		TaskUpdate: models.TaskUpdate{
 			Message:  "the task is waiting to be scheduled for execution",
-			State:    models.Pointer(models.Pending),
-			OldState: models.Pointer(models.Pending),
+			State:    models.Pointer(models.StatePending),
+			OldState: models.Pointer(models.StatePending),
 		},
 	})
 	if err != nil {
@@ -261,7 +261,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 		logx.Errorln(err)
 		return err
 	}
-	if *task.State != models.Running && *task.State != models.Pending && *task.State != models.Paused {
+	if *task.State != models.StateRunning && *task.State != models.StatePending && *task.State != models.StatePaused {
 		return errors.New("task is no running")
 	}
 	switch action {
@@ -269,7 +269,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 		err = manager.Kill()
 		if err == nil {
 			return storage.Task(ts.name).Update(&models.TaskUpdate{
-				State:    models.Pointer(models.Failed),
+				State:    models.Pointer(models.StateFailed),
 				OldState: task.State,
 				Message:  "has been killed",
 			})
@@ -278,7 +278,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 		if manager.State() != dag.StatePaused {
 			_ = manager.Pause(duration)
 			return storage.Task(ts.name).Update(&models.TaskUpdate{
-				State:    models.Pointer(models.Paused),
+				State:    models.Pointer(models.StatePaused),
 				OldState: task.State,
 				Message:  "has been paused",
 			})

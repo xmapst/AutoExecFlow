@@ -97,8 +97,8 @@ func (ss *StepService) saveStep(db backend.IStep, timeout time.Duration, step *t
 		StepUpdate: models.StepUpdate{
 			Message:  "the step is waiting to be scheduled for execution",
 			Code:     models.Pointer(int64(0)),
-			State:    models.Pointer(models.Pending),
-			OldState: models.Pointer(models.Pending),
+			State:    models.Pointer(models.StatePending),
+			OldState: models.Pointer(models.StatePending),
 		},
 	})
 	if err != nil {
@@ -162,7 +162,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 		logx.Errorln(err)
 		return err
 	}
-	if *step.State != models.Running && *step.State != models.Pending && *step.State != models.Paused {
+	if *step.State != models.StateRunning && *step.State != models.StatePending && *step.State != models.StatePaused {
 		return errors.New("step is no running")
 	}
 	switch action {
@@ -170,19 +170,19 @@ func (ss *StepService) Manager(action string, duration string) error {
 		err = manager.Kill()
 		if err == nil {
 			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
-				State:    models.Pointer(models.Failed),
+				State:    models.Pointer(models.StateFailed),
 				OldState: step.State,
 				Message:  "has been killed",
 			})
 		}
 	case "pause":
-		if *step.State == models.Running {
+		if *step.State == models.StateRunning {
 			return dag.ErrRunning
 		}
 		if manager.State() != dag.StatePaused {
 			_ = manager.Pause(duration)
 			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
-				State:    models.Pointer(models.Paused),
+				State:    models.Pointer(models.StatePaused),
 				OldState: step.State,
 				Message:  "has been paused",
 			})
@@ -210,7 +210,7 @@ func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
 		return types.CodeFailed, nil, err
 	}
 	switch *step.State {
-	case models.Pending:
+	case models.StatePending:
 		return types.CodePending, []*types.TaskStepLogRes{
 			{
 				Timestamp: time.Now().UnixNano(),
@@ -218,7 +218,7 @@ func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
 				Content:   step.Message,
 			},
 		}, errors.New(step.Message)
-	case models.Paused:
+	case models.StatePaused:
 		return types.CodePaused, []*types.TaskStepLogRes{
 			{
 				Timestamp: time.Now().UnixNano(),
@@ -267,18 +267,18 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 	var latestLine int64
 	// 用于防止某些状态下的重复推送
 	var onceMap = map[models.State]*sync.Once{
-		models.Pending: new(sync.Once),
-		models.Paused:  new(sync.Once),
-		models.Unknown: new(sync.Once),
+		models.StatePending: new(sync.Once),
+		models.StatePaused:  new(sync.Once),
+		models.StateUnknown: new(sync.Once),
 	}
 	// 状态处理函数映射
 	handlers := map[models.State]stateHandler{
-		models.Pending: ss.createOnceHandler(onceMap[models.Pending], types.CodePending, "step is pending"),
-		models.Paused:  ss.createOnceHandler(onceMap[models.Paused], types.CodePaused, "step is paused"),
-		models.Unknown: ss.createOnceHandler(onceMap[models.Unknown], types.CodeNoData, "step status unknown"),
-		models.Running: ss.handleRunningState,
-		models.Stop:    ss.handleFinalState(types.CodeSuccess),
-		models.Failed:  ss.handleFinalState(types.CodeFailed),
+		models.StatePending: ss.createOnceHandler(onceMap[models.StatePending], types.CodePending, "step is pending"),
+		models.StatePaused:  ss.createOnceHandler(onceMap[models.StatePaused], types.CodePaused, "step is paused"),
+		models.StateUnknown: ss.createOnceHandler(onceMap[models.StateUnknown], types.CodeNoData, "step status unknown"),
+		models.StateRunning: ss.handleRunningState,
+		models.StateStop:    ss.handleFinalState(types.CodeSuccess),
+		models.StateFailed:  ss.handleFinalState(types.CodeFailed),
 	}
 
 	for {

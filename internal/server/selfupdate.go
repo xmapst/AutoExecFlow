@@ -12,7 +12,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/xmapst/AutoExecFlow/internal/worker"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
+	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/pkg/osext"
 	"github.com/xmapst/AutoExecFlow/pkg/selfupdate"
@@ -55,18 +56,20 @@ func (p *Program) doUpdate() {
 	}
 
 	resp, err := http.Get(fmt.Sprintf("%s/%s", p.sURL, name))
-	if resp != nil {
-		defer func(Body io.ReadCloser) {
-			err = Body.Close()
-			if err != nil {
-				logx.Errorln(err)
-			}
-		}(resp.Body)
-	}
 	if err != nil {
 		logx.Warnln(err)
 		return
 	}
+	if resp == nil {
+		logx.Warnln("resp is nil")
+		return
+	}
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+		if err != nil {
+			logx.Errorln(err)
+		}
+	}(resp.Body)
 
 	err = selfupdate.PrepareAndCheckBinary(resp.Body, opts)
 	if err != nil {
@@ -74,7 +77,7 @@ func (p *Program) doUpdate() {
 		return
 	}
 
-	if (worker.Running() + worker.Waiting()) != 0 {
+	if (storage.TaskCount(models.StateRunning) + storage.TaskCount(models.StatePending)) != 0 {
 		// 还有任务执行中或者等待执行不升级
 		logx.Warnln("the task has not been completed")
 		return

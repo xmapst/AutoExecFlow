@@ -3,21 +3,22 @@ package models
 type State int
 
 const (
-	Stop    State = iota // 成功
-	Running              // 运行
-	Failed               // 失败
-	Unknown              // 未知
-	Pending              // 等待
-	Paused               // 挂起
+	StateStop    State = iota // 成功
+	StateRunning              // 运行
+	StateFailed               // 失败
+	StateUnknown              // 未知
+	StatePending              // 等待
+	StatePaused               // 挂起
+	StateAll     State = -1
 )
 
 var StateMap = map[State]string{
-	Stop:    "stopped",
-	Running: "running",
-	Failed:  "failed",
-	Unknown: "unknown",
-	Pending: "pending",
-	Paused:  "paused",
+	StateStop:    "stopped",
+	StateRunning: "running",
+	StateFailed:  "failed",
+	StateUnknown: "unknown",
+	StatePending: "pending",
+	StatePaused:  "paused",
 }
 
 func Pointer[T any](v T) *T {

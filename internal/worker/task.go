@@ -52,7 +52,7 @@ func (t *task) run(ctx context.Context) error {
 		t.clearDir()
 		// 结束时间
 		res.ETime = models.Pointer(time.Now())
-		res.OldState = models.Pointer(models.Running)
+		res.OldState = models.Pointer(models.StateRunning)
 		// 更新数据
 		if err := t.storage.Update(res); err != nil {
 			logx.Errorln(t.name(), err)
@@ -61,15 +61,15 @@ func (t *task) run(ctx context.Context) error {
 
 	if err := t.initDir(); err != nil {
 		logx.Errorln(t.name(), err)
-		res.State = models.Pointer(models.Failed)
+		res.State = models.Pointer(models.StateFailed)
 		res.Message = err.Error()
 		return nil
 	}
 
-	res.State = models.Pointer(models.Stop)
+	res.State = models.Pointer(models.StateStop)
 	res.Message = "task has stopped"
 	if err := t.graph.Run(ctx); err != nil {
-		res.State = models.Pointer(models.Failed)
+		res.State = models.Pointer(models.StateFailed)
 		res.Message = err.Error()
 		logx.Errorln(t.name(), err)
 		return err
@@ -77,8 +77,8 @@ func (t *task) run(ctx context.Context) error {
 
 	for _, name := range t.storage.StepNameList("") {
 		state, _ := t.storage.Step(name).State()
-		if state == models.Failed {
-			res.State = models.Pointer(models.Failed)
+		if state == models.StateFailed {
+			res.State = models.Pointer(models.StateFailed)
 			return errors.New("step " + name + " is failed")
 		}
 	}

@@ -53,7 +53,6 @@ func New() *cobra.Command {
 	cmd.Flags().StringVar(&config.App.DBType, "db_type", "sqlite", "database type. [sqlite]")
 	cmd.Flags().DurationVar(&config.App.ExecTimeOut, "exec_timeout", 24*time.Hour, "set the task exec command expire time")
 	cmd.Flags().StringVarP(&config.App.ListenAddress, "addr", "a", "tcp://0.0.0.0:2376", "listening address.")
-	cmd.Flags().BoolVarP(&config.App.Normal, "normal", "n", false, "wait for all task execution to complete.")
 	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", runtime.NumCPU()*2, "set the size of the execution work pool.")
 	cmd.Flags().StringVarP(&config.App.SelfUpdateURL, "self_url", "s", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
 	cmd.Flags().StringVarP(&config.App.RelativePath, "relative_path", "r", "/", "web relative path")

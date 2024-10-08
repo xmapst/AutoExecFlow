@@ -73,3 +73,11 @@ func RemoveDuplicate[T comparable](slice []T) []T {
 
 	return list
 }
+
+func HostName() string {
+	name, err := os.Hostname()
+	if err != nil {
+		return os.Getenv("HOSTNAME")
+	}
+	return name
+}

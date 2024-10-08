@@ -33,8 +33,8 @@ func Task(name string) backend.ITask {
 	return db.Task(name)
 }
 
-func TaskCount() (res int64) {
-	return db.TaskCount()
+func TaskCount(state models.State) (res int64) {
+	return db.TaskCount(state)
 }
 
 func TaskList(page, pageSize int64, str string) (res []*models.Task, total int64) {

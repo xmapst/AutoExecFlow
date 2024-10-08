@@ -134,7 +134,7 @@ func (g *Git) Run(ctx context.Context) (code int64, err error) {
 	g.storage.Log().Write("git clone")
 	timeout, err := g.storage.Timeout()
 	if err != nil {
-		return common.SystemErr, err
+		return common.CodeSystemErr, err
 	}
 	g.ctx, g.cncl = context.WithCancel(ctx)
 	if timeout > 0 {
@@ -144,23 +144,23 @@ func (g *Git) Run(ctx context.Context) (code int64, err error) {
 	g.gopt.Progress = cmdout
 	rpy, err := git.PlainCloneContext(g.ctx, g.workspace, false, g.gopt)
 	if err != nil {
-		return common.SystemErr, fmt.Errorf("cloneRepo err:%v", err)
+		return common.CodeSystemErr, fmt.Errorf("cloneRepo err:%v", err)
 	}
 	if plumbing.IsHash(g.conf.Sha) {
 		worktree, err := rpy.Worktree()
 		if err != nil {
-			return common.SystemErr, err
+			return common.CodeSystemErr, err
 		}
 		err = worktree.Checkout(&git.CheckoutOptions{
 			Force: true,
 			Hash:  plumbing.NewHash(g.conf.Sha),
 		})
 		if err != nil {
-			return common.SystemErr, fmt.Errorf("CheckOutHash [%s] err:%v", g.conf.Sha, err)
+			return common.CodeSystemErr, fmt.Errorf("CheckOutHash [%s] err:%v", g.conf.Sha, err)
 		}
 	}
 	g.storage.Log().Write(cmdout.String())
-	return common.Success, err
+	return common.CodeSuccess, err
 }
 
 func (g *Git) Clear() error {
