@@ -21,6 +21,15 @@ type step struct {
 	scriptDir string
 }
 
+func newStep(storage backend.IStep, workspace, scriptDir string) dag.VertexFunc {
+	s := &step{
+		storage:   storage,
+		workspace: workspace,
+		scriptDir: scriptDir,
+	}
+	return s.vertexFunc()
+}
+
 func (s *step) vertexFunc() dag.VertexFunc {
 	// build step
 	return func(ctx context.Context, taskName, stepName string) (err error) {

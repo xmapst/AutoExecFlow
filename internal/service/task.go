@@ -95,6 +95,15 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 	}
 
 	var db = storage.Task(task.Name)
+	// 检查全局
+	state, err := db.State()
+	if err != nil {
+		return err
+	}
+	if state != models.StateStop && state != models.StateUnknown && state != models.StateFailed {
+		return errors.New("task is running")
+	}
+
 	// 清理旧数据
 	_ = db.ClearAll()
 
