@@ -9,8 +9,8 @@ import (
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 
+	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/server"
-	"github.com/xmapst/AutoExecFlow/internal/server/config"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
@@ -49,14 +49,17 @@ func New() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&config.App.Debug, "debug", "d", false, "debug mode.")
-	cmd.Flags().StringVar(&config.App.DBType, "db_type", "sqlite", "database type. [sqlite]")
-	cmd.Flags().DurationVar(&config.App.ExecTimeOut, "exec_timeout", 24*time.Hour, "set the task exec command expire time")
-	cmd.Flags().StringVarP(&config.App.ListenAddress, "addr", "a", "tcp://0.0.0.0:2376", "listening address.")
-	cmd.Flags().IntVarP(&config.App.PoolSize, "pool_size", "p", runtime.NumCPU()*2, "set the size of the execution work pool.")
-	cmd.Flags().StringVarP(&config.App.SelfUpdateURL, "self_url", "s", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
-	cmd.Flags().StringVarP(&config.App.RelativePath, "relative_path", "r", "/", "web relative path")
 	cmd.Flags().StringVar(&config.App.RootDir, "root_dir", utils.DefaultDir, "root directory")
+	cmd.Flags().StringVar(&config.App.RelativePath, "relative_path", "/", "web relative path")
+	cmd.Flags().StringVar(&config.App.LogOutput, "log_output", "file", "log output [file,stdout]")
+	cmd.Flags().StringVar(&config.App.Queue, "queue", "inmemory://localhost", "queue url. [inmemory]")
+	cmd.Flags().StringVar(&config.App.ListenAddress, "addr", "tcp://0.0.0.0:2376", "listening address.")
+	cmd.Flags().StringVar(&config.App.LogLevel, "log_level", "debug", "log level [debug,info,warn,error]")
+	cmd.Flags().StringVar(&config.App.Database, "database", "sqlite://localhost", "database type. [sqlite]")
+	cmd.Flags().StringVar(&config.App.Mode, "mode", config.RUN_MODE_Standalone, "run mode [standalone,api,worker]")
+	cmd.Flags().IntVar(&config.App.PoolSize, "pool_size", runtime.NumCPU()*2, "set the size of the execution work pool.")
+	cmd.Flags().DurationVar(&config.App.ExecTimeOut, "exec_timeout", 24*time.Hour, "set the task exec command expire time")
+	cmd.Flags().StringVar(&config.App.SelfUpdateURL, "self_url", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
 
 	return cmd
 }

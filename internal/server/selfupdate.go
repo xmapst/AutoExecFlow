@@ -20,7 +20,7 @@ import (
 )
 
 func (p *Program) selfUpdate() {
-	_, err := p.cron.AddFunc("@hourly", func() {
+	_, err := p.cron.AddFunc("@every 30m", func() {
 		p.doUpdate()
 	})
 	if err != nil {

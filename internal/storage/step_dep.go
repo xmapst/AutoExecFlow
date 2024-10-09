@@ -1,9 +1,8 @@
-package sqlite
+package storage
 
 import (
 	"gorm.io/gorm"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite/tables"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
@@ -14,7 +13,7 @@ type stepDepend struct {
 }
 
 func (s *stepDepend) List() (res []string) {
-	s.Model(&tables.StepDepend{}).
+	s.Model(&models.StepDepend{}).
 		Select("name").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -29,14 +28,12 @@ func (s *stepDepend) Insert(depends ...string) (err error) {
 	if len(depends) == 0 {
 		return
 	}
-	var stepDepends []tables.StepDepend
+	var stepDepends []models.StepDepend
 	for _, depend := range depends {
-		stepDepends = append(stepDepends, tables.StepDepend{
+		stepDepends = append(stepDepends, models.StepDepend{
 			TaskName: s.tName,
 			StepName: s.sName,
-			StepDepend: models.StepDepend{
-				Name: depend,
-			},
+			Name:     depend,
 		})
 	}
 	return s.Create(&stepDepends).Error
@@ -46,5 +43,5 @@ func (s *stepDepend) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,
-	}).Delete(&tables.StepDepend{}).Error
+	}).Delete(&models.StepDepend{}).Error
 }

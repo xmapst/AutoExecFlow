@@ -5,6 +5,7 @@ import (
 )
 
 type Task struct {
+	Base
 	Name    string        `json:"name,omitempty" gorm:"index;not null;comment:名称"`
 	Count   *int          `json:"count,omitempty" gorm:"default:0;comment:步骤数"`
 	Timeout time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`

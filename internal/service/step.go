@@ -13,7 +13,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
@@ -83,7 +82,7 @@ func (ss *StepService) review(step *types.TaskStepReq) (time.Duration, error) {
 	return timeout, nil
 }
 
-func (ss *StepService) saveStep(db backend.IStep, timeout time.Duration, step *types.TaskStepReq) (err error) {
+func (ss *StepService) saveStep(db storage.IStep, timeout time.Duration, step *types.TaskStepReq) (err error) {
 	defer func() {
 		if err != nil {
 			_ = db.ClearAll()

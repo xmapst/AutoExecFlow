@@ -1,42 +1,41 @@
 package storage
 
 import (
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-var db backend.IStorage
+var storage IStorage
 
-func New(t, d string) (err error) {
-	switch t {
-	default:
-		db, err = sqlite.New(d)
-	}
+const (
+	TYPE_SQLITE = "sqlite"
+	TYPE_MYSQL  = "mysql"
+)
+
+func New(rawURL string) error {
+	db, err := newDB(rawURL)
 	if err != nil {
-		logx.Errorln(err)
 		return err
 	}
-	return
+	storage = db
+	return nil
 }
 
 func Name() string {
-	return db.Name()
+	return storage.Name()
 }
 
 func Close() error {
-	return db.Close()
+	return storage.Close()
 }
 
-func Task(name string) backend.ITask {
-	return db.Task(name)
+func Task(name string) ITask {
+	return storage.Task(name)
 }
 
 func TaskCount(state models.State) (res int64) {
-	return db.TaskCount(state)
+	return storage.TaskCount(state)
 }
 
 func TaskList(page, pageSize int64, str string) (res []*models.Task, total int64) {
-	return db.TaskList(page, pageSize, str)
+	return storage.TaskList(page, pageSize, str)
 }

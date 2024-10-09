@@ -13,11 +13,11 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Cmd struct {
-	storage backend.IStep
+	storage storage.IStep
 
 	done      chan struct{}
 	ops       cmd.Options
@@ -33,7 +33,7 @@ type Cmd struct {
 }
 
 func New(
-	storage backend.IStep,
+	storage storage.IStep,
 	shell, workspace, scriptDir string,
 ) (*Cmd, error) {
 	var c = &Cmd{

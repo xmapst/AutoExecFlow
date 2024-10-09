@@ -3,13 +3,13 @@ package svn
 import (
 	"context"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Svn struct {
 }
 
-func New(storage backend.IStep, command, workspace string) (*Svn, error) {
+func New(storage storage.IStep, command, workspace string) (*Svn, error) {
 	return &Svn{}, nil
 }
 

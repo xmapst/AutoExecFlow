@@ -14,14 +14,14 @@ import (
 	kuberetry "k8s.io/client-go/util/retry"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/types"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Deployment struct {
 	context.Context
 	Client appv1.DeploymentInterface
 	*types.Resource
-	Storage backend.IStep
+	Storage storage.IStep
 }
 
 func (d *Deployment) Restart() error {

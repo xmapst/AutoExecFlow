@@ -18,14 +18,14 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers"
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/types"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Kubectl struct {
 	kubeConf            *rest.Config
 	client              *kubernetes.Clientset
 	dynamicClient       *dynamic.DynamicClient
-	storage             backend.IStep
+	storage             storage.IStep
 	subCommand          string
 	workspace           string
 	Config              string            `json:"kube_config" yaml:"KubeConfig"`
@@ -35,7 +35,7 @@ type Kubectl struct {
 	Resources           []*types.Resource `json:"resources" yaml:"Resources"`
 }
 
-func New(storage backend.IStep, command, workspace string) (*Kubectl, error) {
+func New(storage storage.IStep, command, workspace string) (*Kubectl, error) {
 	return &Kubectl{
 		storage:    storage,
 		subCommand: command,

@@ -9,7 +9,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/deployment"
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/statefulset"
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/types"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Resource interface {
@@ -19,7 +19,7 @@ type Resource interface {
 	Restart() error
 }
 
-func ResourceFor(ctx context.Context, storage backend.IStep, client *kubernetes.Clientset, resource *types.Resource) Resource {
+func ResourceFor(ctx context.Context, storage storage.IStep, client *kubernetes.Clientset, resource *types.Resource) Resource {
 	var rs Resource
 	switch resource.GetKind() {
 	case types.Deployment:

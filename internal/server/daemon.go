@@ -17,7 +17,8 @@ import (
 	"github.com/robfig/cron/v3"
 
 	"github.com/xmapst/AutoExecFlow/internal/api"
-	"github.com/xmapst/AutoExecFlow/internal/server/config"
+	"github.com/xmapst/AutoExecFlow/internal/config"
+	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/server/listeners"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
@@ -62,6 +63,16 @@ func (p *Program) init() error {
 	// 启动自更新监控
 	p.selfUpdate()
 
+	// 创建临时内存数据库
+	if err := storage.New(config.App.Database); err != nil {
+		logx.Fatalln(err)
+		return err
+	}
+
+	if config.App.Mode == config.RUN_MODE_Api {
+		return nil
+	}
+
 	// 调整工作池的大小
 	worker.SetSize(config.App.PoolSize)
 	logx.Infoln("number of workers", worker.GetSize())
@@ -71,12 +82,6 @@ func (p *Program) init() error {
 
 	// clear old workspace
 	utils.ClearDir(config.App.WorkSpace())
-
-	// 创建临时内存数据库
-	if err := storage.New(config.App.DBType, config.App.DataDir()); err != nil {
-		logx.Fatalln(err)
-		return err
-	}
 
 	// 启动任务执行器
 	return worker.Start()
@@ -90,15 +95,15 @@ func (p *Program) Start(service.Service) error {
 		logx.Errorln(err)
 		return err
 	}
+	if config.App.Mode == config.RUN_MODE_Worker {
+		return nil
+	}
 	return p.startServer()
 }
 
 func (p *Program) startServer() error {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
-	if config.App.Debug {
-		gin.SetMode(gin.DebugMode)
-	}
 	p.http = &http.Server{
 		Handler: router.New(config.App.RelativePath),
 	}
@@ -183,7 +188,11 @@ func (p *Program) Stop(service.Service) error {
 	p.close()
 	p.wg.Wait()
 	p.cron.Stop()
-	worker.Shutdown()
+
+	logx.Info("waiting for all tasks to complete")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+	queues.Shutdown(ctx)
 
 	logx.Infoln("put data to disk and close data storage")
 	if err := storage.Close(); err != nil {

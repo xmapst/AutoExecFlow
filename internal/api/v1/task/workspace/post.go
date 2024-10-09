@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
-	"github.com/xmapst/AutoExecFlow/internal/server/config"
+	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"

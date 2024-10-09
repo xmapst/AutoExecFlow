@@ -68,6 +68,8 @@ func New(relativePath string) *gin.Engine {
 		api.POST("/v1/task", task.Post)
 		api.PUT("/v1/task/:task", task.Manager)
 		api.DELETE("/v1/task/:task", task.Delete)
+		// dump
+		api.GET("/v1/task/:task/dump", task.Dump)
 		// workspace
 		api.GET("/v1/task/:task/workspace", workspace.Get)
 		api.DELETE("/v1/task/:task/workspace", workspace.Delete)

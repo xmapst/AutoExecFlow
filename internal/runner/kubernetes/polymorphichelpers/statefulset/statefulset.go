@@ -14,14 +14,14 @@ import (
 	kuberetry "k8s.io/client-go/util/retry"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/types"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type StatefulSet struct {
 	context.Context
 	*types.Resource
 	Client  appv1.StatefulSetInterface
-	Storage backend.IStep
+	Storage storage.IStep
 }
 
 func (s *StatefulSet) Restart() error {

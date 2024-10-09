@@ -1,4 +1,4 @@
-package backend
+package storage
 
 import (
 	"time"
@@ -82,9 +82,9 @@ type IStep interface {
 
 type ILog interface {
 	// List 获取指定任务指定步骤所有日志, 增量查询
-	List(latestLine *int64) (res models.Logs)
+	List(latestLine *int64) (res models.StepLogs)
 	// Insert 插入
-	Insert(log *models.Log) (err error)
+	Insert(log *models.StepLog) (err error)
 	Write(content string)
 	Writef(format string, args ...interface{})
 	RemoveAll() (err error)

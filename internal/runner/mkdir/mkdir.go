@@ -10,18 +10,18 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Mkdir struct {
-	storage   backend.IStep
+	storage   storage.IStep
 	workspace string
 
 	Path string `json:"path" yaml:"Path"` // 文件夹路径
 }
 
 func New(
-	storage backend.IStep,
+	storage storage.IStep,
 	workspace string,
 ) (*Mkdir, error) {
 	return &Mkdir{

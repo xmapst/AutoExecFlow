@@ -9,11 +9,11 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes"
 	"github.com/xmapst/AutoExecFlow/internal/runner/mkdir"
 	"github.com/xmapst/AutoExecFlow/internal/runner/touch"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 func New(
-	storage backend.IStep,
+	storage storage.IStep,
 	workspace, scriptDir string,
 ) (IRunner, error) {
 	commandType, err := storage.Type()

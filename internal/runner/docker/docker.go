@@ -3,13 +3,13 @@ package docker
 import (
 	"context"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Docker struct {
 }
 
-func New(storage backend.IStep, command, workspace string) (*Docker, error) {
+func New(storage storage.IStep, command, workspace string) (*Docker, error) {
 	return &Docker{}, nil
 }
 

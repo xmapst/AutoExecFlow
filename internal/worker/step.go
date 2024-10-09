@@ -9,19 +9,19 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/runner"
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type step struct {
-	storage   backend.IStep
+	storage   storage.IStep
 	workspace string
 	scriptDir string
 }
 
-func newStep(storage backend.IStep, workspace, scriptDir string) dag.VertexFunc {
+func newStep(storage storage.IStep, workspace, scriptDir string) dag.VertexFunc {
 	s := &step{
 		storage:   storage,
 		workspace: workspace,

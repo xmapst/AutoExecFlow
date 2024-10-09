@@ -8,11 +8,10 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/xmapst/AutoExecFlow/internal/config"
 	_ "github.com/xmapst/AutoExecFlow/internal/plugins"
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/server/config"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
@@ -20,7 +19,7 @@ import (
 )
 
 type task struct {
-	storage   backend.ITask
+	storage   storage.ITask
 	graph     *dag.Graph
 	workspace string
 	scriptDir string

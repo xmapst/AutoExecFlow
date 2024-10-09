@@ -1,10 +1,9 @@
-package sqlite
+package storage
 
 import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite/tables"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
@@ -14,7 +13,7 @@ type taskEnv struct {
 }
 
 func (t *taskEnv) List() (res models.Envs) {
-	t.Model(&tables.TaskEnv{}).
+	t.Model(&models.TaskEnv{}).
 		Where(map[string]interface{}{
 			"task_name": t.tName,
 		}).
@@ -27,9 +26,9 @@ func (t *taskEnv) Insert(envs ...*models.Env) (err error) {
 	if len(envs) == 0 {
 		return
 	}
-	var _envs []tables.TaskEnv
+	var _envs []models.TaskEnv
 	for _, env := range envs {
-		_envs = append(_envs, tables.TaskEnv{
+		_envs = append(_envs, models.TaskEnv{
 			TaskName: t.tName,
 			Env:      *env,
 		})
@@ -41,7 +40,7 @@ func (t *taskEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
-	err = t.Model(&tables.TaskEnv{}).
+	err = t.Model(&models.TaskEnv{}).
 		Select("value").
 		Where(map[string]interface{}{
 			"task_name": t.tName,
@@ -59,11 +58,11 @@ func (t *taskEnv) Remove(name string) (err error) {
 	return t.Where(map[string]interface{}{
 		"task_name": t.tName,
 		"name":      name,
-	}).Delete(&tables.TaskEnv{}).Error
+	}).Delete(&models.TaskEnv{}).Error
 }
 
 func (t *taskEnv) RemoveAll() (err error) {
 	return t.Where(map[string]interface{}{
 		"task_name": t.tName,
-	}).Delete(&tables.TaskEnv{}).Error
+	}).Delete(&models.TaskEnv{}).Error
 }

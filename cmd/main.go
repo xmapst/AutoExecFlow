@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/xmapst/AutoExecFlow/cmd/client"
 	"github.com/xmapst/AutoExecFlow/cmd/server"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
 )
@@ -35,7 +34,6 @@ func main() {
 	cmd.Flags().BoolP("version", "v", false, "Print version information and quit")
 	cmd.AddCommand(
 		server.New(),
-		client.New(),
 		&cobra.Command{
 			Use:   "version",
 			Short: "print version information and quit",

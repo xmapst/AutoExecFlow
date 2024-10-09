@@ -17,7 +17,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
@@ -26,7 +26,7 @@ type Git struct {
 	cncl      context.CancelFunc
 	gopt      *git.CloneOptions
 	conf      *gitConfig
-	storage   backend.IStep
+	storage   storage.IStep
 	workspace string
 }
 
@@ -42,7 +42,7 @@ type gitConfig struct {
 	SingleBranch *bool  `json:"single_branch,omitempty"`
 }
 
-func New(storage backend.IStep, workspace string) (*Git, error) {
+func New(storage storage.IStep, workspace string) (*Git, error) {
 	g := &Git{
 		gopt: &git.CloneOptions{
 			SingleBranch: true,

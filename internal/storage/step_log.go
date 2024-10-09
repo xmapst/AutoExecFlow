@@ -1,4 +1,4 @@
-package sqlite
+package storage
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite/tables"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
@@ -20,8 +19,8 @@ type stepLog struct {
 	lock sync.Mutex
 }
 
-func (s *stepLog) List(latestLine *int64) (res models.Logs) {
-	query := s.Model(&tables.StepLog{}).
+func (s *stepLog) List(latestLine *int64) (res models.StepLogs) {
+	query := s.Model(&models.StepLog{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"step_name": s.sName,
@@ -34,12 +33,14 @@ func (s *stepLog) List(latestLine *int64) (res models.Logs) {
 	return
 }
 
-func (s *stepLog) Insert(log *models.Log) error {
+func (s *stepLog) Insert(log *models.StepLog) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	log.TaskName = s.tName
+	log.StepName = s.sName
 	return s.Transaction(func(tx *gorm.DB) error {
 		var count int64
-		if err := s.Model(&tables.StepLog{}).
+		if err := s.Model(&models.StepLog{}).
 			Where(map[string]interface{}{
 				"task_name": s.tName,
 				"step_name": s.sName,
@@ -48,16 +49,12 @@ func (s *stepLog) Insert(log *models.Log) error {
 			return err
 		}
 		log.Line = models.Pointer(count)
-		return tx.Create(&tables.StepLog{
-			TaskName: s.tName,
-			StepName: s.sName,
-			Log:      *log,
-		}).Error
+		return tx.Create(log).Error
 	})
 }
 
 func (s *stepLog) Write(content string) {
-	if err := s.Insert(&models.Log{
+	if err := s.Insert(&models.StepLog{
 		Timestamp: time.Now().UnixNano(),
 		Content:   content,
 	}); err != nil {
@@ -73,5 +70,5 @@ func (s *stepLog) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,
-	}).Delete(&tables.StepLog{}).Error
+	}).Delete(&models.StepLog{}).Error
 }

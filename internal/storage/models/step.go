@@ -5,11 +5,13 @@ import (
 )
 
 type Step struct {
-	Name    string        `json:"name,omitempty" gorm:"index;not null;comment:名称"`
-	Type    string        `json:"type,omitempty" gorm:"index;not null;comment:类型"`
-	Content string        `json:"content,omitempty" gorm:"comment:内容"`
-	Timeout time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`
-	Disable *bool         `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
+	Base
+	TaskName string        `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
+	Name     string        `json:"name,omitempty" gorm:"index;not null;comment:名称"`
+	Type     string        `json:"type,omitempty" gorm:"index;not null;comment:类型"`
+	Content  string        `json:"content,omitempty" gorm:"comment:内容"`
+	Timeout  time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`
+	Disable  *bool         `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
 	StepUpdate
 }
 

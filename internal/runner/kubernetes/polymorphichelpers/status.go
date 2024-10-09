@@ -16,19 +16,19 @@ import (
 	watchtools "k8s.io/client-go/tools/watch"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/kubernetes/polymorphichelpers/types"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type statusViewer struct {
 	ctx     context.Context
 	lw      cache.ListerWatcher
 	fn      func(obj runtime.Unstructured) (string, bool, error)
-	storage backend.IStep
+	storage storage.IStep
 }
 
 // Status StatusViewerFor returns a StatusViewer for the resource specified by kind.
 // https://github.com/kubernetes/kubectl/blob/master/pkg/polymorphichelpers/rollout_status.go
-func Status(ctx context.Context, storage backend.IStep, dynamicClient dynamic.Interface, resource *types.Resource) error {
+func Status(ctx context.Context, storage storage.IStep, dynamicClient dynamic.Interface, resource *types.Resource) error {
 	var s = &statusViewer{
 		ctx:     ctx,
 		storage: storage,

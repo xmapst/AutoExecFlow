@@ -8,12 +8,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
 
-	"github.com/xmapst/AutoExecFlow/internal/server/config"
+	"github.com/xmapst/AutoExecFlow/internal/config"
+	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
-	"github.com/xmapst/AutoExecFlow/internal/worker"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"
@@ -70,7 +69,7 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 		}
 
 		// 获取当前进行到那些步骤
-		steps := st.StepList(backend.All)
+		steps := st.StepList(storage.All)
 		var groups = make(map[models.State][]string)
 		for _, v := range steps {
 			groups[*v.State] = append(groups[*v.State], v.Name)
@@ -131,7 +130,7 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 		}
 	}
 	// 提交任务
-	return worker.Submit(task.Name)
+	return queues.Publish(queues.TYPE_DIRECT, config.TaskQueueName, ts.name)
 }
 
 func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
@@ -192,7 +191,7 @@ func (ts *TaskService) uniqStepsName(steps types.TaskStepsReq) error {
 	}
 	return fmt.Errorf("%v", errs)
 }
-func (ts *TaskService) saveTask(db backend.ITask, timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
+func (ts *TaskService) saveTask(db storage.ITask, timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
 	// save task
 	err := db.Insert(&models.Task{
 		Count:   models.Pointer(len(task.Step)),
@@ -250,7 +249,7 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 	}
 
 	// 获取当前进行到那些步骤
-	steps := db.StepList(backend.All)
+	steps := db.StepList(storage.All)
 	var groups = make(map[models.State][]string)
 	for _, v := range steps {
 		groups[*v.State] = append(groups[*v.State], v.Name)
@@ -305,13 +304,17 @@ func (ts *TaskService) Manager(action string, duration string) error {
 	return nil
 }
 
+func (ts *TaskService) Dump() (*types.TaskCreateRes, error) {
+	return nil, nil
+}
+
 func (ts *TaskService) Steps() (code types.Code, data []*types.TaskStepRes, err error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
 		return types.CodeNoData, nil, err
 	}
-	steps := db.StepList(backend.All)
+	steps := db.StepList(storage.All)
 	if steps == nil {
 		return types.CodeNoData, nil, errors.New("steps not found")
 	}

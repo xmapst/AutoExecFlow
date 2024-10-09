@@ -10,11 +10,11 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
+	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
 type Touch struct {
-	storage   backend.IStep
+	storage   storage.IStep
 	workspace string
 
 	Path      string `json:"path" yaml:"Path"`
@@ -23,7 +23,7 @@ type Touch struct {
 }
 
 func New(
-	storage backend.IStep,
+	storage storage.IStep,
 	workspace string,
 ) (*Touch, error) {
 	return &Touch{

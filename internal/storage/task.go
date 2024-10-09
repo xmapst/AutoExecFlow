@@ -1,12 +1,10 @@
-package sqlite
+package storage
 
 import (
 	"time"
 
 	"gorm.io/gorm"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend"
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite/tables"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
@@ -14,7 +12,7 @@ type task struct {
 	*gorm.DB
 	tName string
 
-	env backend.IEnv
+	env IEnv
 }
 
 func (t *task) Name() string {
@@ -28,7 +26,7 @@ func (t *task) ClearAll() error {
 	if err := t.Env().RemoveAll(); err != nil {
 		return err
 	}
-	list := t.StepList(backend.All)
+	list := t.StepList(All)
 	for _, v := range list {
 		if err := t.Step(v.Name).ClearAll(); err != nil {
 			return err
@@ -40,11 +38,11 @@ func (t *task) ClearAll() error {
 func (t *task) Remove() (err error) {
 	return t.Where(map[string]interface{}{
 		"name": t.tName,
-	}).Delete(&tables.Task{}).Error
+	}).Delete(&models.Task{}).Error
 }
 
 func (t *task) State() (state models.State, err error) {
-	err = t.Model(&tables.Task{}).
+	err = t.Model(&models.Task{}).
 		Select("state").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -55,7 +53,7 @@ func (t *task) State() (state models.State, err error) {
 }
 
 func (t *task) IsDisable() (disable bool) {
-	if t.Model(&tables.Task{}).
+	if t.Model(&models.Task{}).
 		Select("disable").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -67,7 +65,7 @@ func (t *task) IsDisable() (disable bool) {
 	return
 }
 
-func (t *task) Env() backend.IEnv {
+func (t *task) Env() IEnv {
 	if t.env == nil {
 		t.env = &taskEnv{
 			DB:    t.DB,
@@ -78,7 +76,7 @@ func (t *task) Env() backend.IEnv {
 }
 
 func (t *task) Timeout() (res time.Duration, err error) {
-	err = t.Model(&tables.Task{}).
+	err = t.Model(&models.Task{}).
 		Select("timeout").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -90,7 +88,7 @@ func (t *task) Timeout() (res time.Duration, err error) {
 
 func (t *task) Get() (res *models.Task, err error) {
 	res = new(models.Task)
-	err = t.Model(&tables.Task{}).
+	err = t.Model(&models.Task{}).
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).
@@ -101,16 +99,14 @@ func (t *task) Get() (res *models.Task, err error) {
 
 func (t *task) Insert(task *models.Task) (err error) {
 	task.Name = t.tName
-	return t.Create(&tables.Task{
-		Task: *task,
-	}).Error
+	return t.Create(task).Error
 }
 
 func (t *task) Update(value *models.TaskUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return t.Model(&tables.Task{}).
+	return t.Model(&models.Task{}).
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).
@@ -118,7 +114,7 @@ func (t *task) Update(value *models.TaskUpdate) (err error) {
 		Error
 }
 
-func (t *task) Step(name string) backend.IStep {
+func (t *task) Step(name string) IStep {
 	return &step{
 		DB:    t.DB,
 		genv:  t.Env(),
@@ -128,12 +124,12 @@ func (t *task) Step(name string) backend.IStep {
 }
 
 func (t *task) StepCount() (res int64) {
-	t.Model(&tables.Step{}).Count(&res)
+	t.Model(&models.Step{}).Count(&res)
 	return
 }
 
 func (t *task) StepNameList(str string) (res []string) {
-	query := t.Model(&tables.Step{}).
+	query := t.Model(&models.Step{}).
 		Select("name").
 		Order("id ASC").
 		Where(map[string]interface{}{
@@ -147,7 +143,7 @@ func (t *task) StepNameList(str string) (res []string) {
 }
 
 func (t *task) StepList(str string) (res models.Steps) {
-	query := t.Model(&tables.Step{}).
+	query := t.Model(&models.Step{}).
 		Order("id ASC").
 		Where(map[string]interface{}{
 			"task_name": t.tName,

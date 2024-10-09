@@ -1,10 +1,9 @@
-package sqlite
+package storage
 
 import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 
-	"github.com/xmapst/AutoExecFlow/internal/storage/backend/sqlite/tables"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
@@ -15,7 +14,7 @@ type stepEnv struct {
 }
 
 func (s *stepEnv) List() (res models.Envs) {
-	s.Model(&tables.StepEnv{}).
+	s.Model(&models.StepEnv{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"step_name": s.sName,
@@ -29,9 +28,9 @@ func (s *stepEnv) Insert(envs ...*models.Env) (err error) {
 	if len(envs) == 0 {
 		return
 	}
-	var _envs []tables.StepEnv
+	var _envs []models.StepEnv
 	for _, env := range envs {
-		_envs = append(_envs, tables.StepEnv{
+		_envs = append(_envs, models.StepEnv{
 			TaskName: s.tName,
 			StepName: s.sName,
 			Env:      *env,
@@ -44,7 +43,7 @@ func (s *stepEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
-	err = s.Model(&tables.StepEnv{}).
+	err = s.Model(&models.StepEnv{}).
 		Select("value").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -64,12 +63,12 @@ func (s *stepEnv) Remove(name string) (err error) {
 		"task_name": s.tName,
 		"step_name": s.sName,
 		"name":      name,
-	}).Delete(&tables.StepEnv{}).Error
+	}).Delete(&models.StepEnv{}).Error
 }
 
 func (s *stepEnv) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,
-	}).Delete(&tables.StepEnv{}).Error
+	}).Delete(&models.StepEnv{}).Error
 }
