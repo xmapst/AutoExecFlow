@@ -78,7 +78,8 @@ func (p *Program) init() error {
 		return err
 	}
 
-	return nil
+	// 启动任务执行器
+	return worker.Start()
 }
 
 func (p *Program) Start(service.Service) error {
@@ -182,9 +183,7 @@ func (p *Program) Stop(service.Service) error {
 	p.close()
 	p.wg.Wait()
 	p.cron.Stop()
-
-	logx.Infoln("wait for workers to converge")
-	worker.StopWait()
+	worker.Shutdown()
 
 	logx.Infoln("put data to disk and close data storage")
 	if err := storage.Close(); err != nil {

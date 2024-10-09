@@ -2,17 +2,19 @@ package tunny
 
 import "sync/atomic"
 
+type Handler func() error
+
 // workRequest is a struct containing context representing a workers intention
 // to receive a work payload.
 type workRequest struct {
 	// jobChan is used to send the payload to this worker.
-	jobChan chan<- interface{}
+	jobChan chan<- Handler
 
-	// jobChan is used to send the payload to this worker.
-	asyncJobChan chan<- interface{}
+	// asyncJobChan is used to send the payload to this worker.
+	asyncJobChan chan<- Handler
 
 	// retChan is used to read the result from this worker.
-	retChan <-chan interface{}
+	retChan <-chan error
 
 	// interruptFunc can be called to cancel a running job. When called it is no
 	// longer necessary to read from retChan.
@@ -59,7 +61,7 @@ func (w *workerWrapper) interrupt() {
 }
 
 func (w *workerWrapper) run() {
-	jobChan, retChan, asyncJobChan := make(chan interface{}), make(chan interface{}), make(chan interface{})
+	jobChan, retChan, asyncJobChan := make(chan Handler), make(chan error), make(chan Handler)
 	defer func() {
 		w.worker.Terminate()
 		close(retChan)

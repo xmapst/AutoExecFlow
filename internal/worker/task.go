@@ -121,8 +121,7 @@ func (t *task) name() string {
 	return t.graph.Name()
 }
 
-func (t *task) run() {
-	var err error
+func (t *task) run() (err error) {
 	if err = t.storage.Update(&models.TaskUpdate{
 		State:    models.Pointer(models.StateRunning),
 		OldState: models.Pointer(models.StatePending),

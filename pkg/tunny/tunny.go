@@ -11,7 +11,6 @@ import (
 // Errors that are used throughout the Tunny API.
 var (
 	ErrPoolNotRunning = errors.New("the pool is not running")
-	ErrJobNotFunc     = errors.New("generic worker not given a func()")
 	ErrWorkerClosed   = errors.New("worker was closed")
 	ErrJobTimedOut    = errors.New("job request timed out")
 )
@@ -25,7 +24,7 @@ var (
 // when not needed by simply implementing an empty func.
 type Worker interface {
 	// Process will synchronously perform a job and return the result.
-	Process(interface{}) interface{}
+	Process(Handler) error
 
 	// BlockUntilReady is called before each job is processed and must block the
 	// calling goroutine until the Worker is ready to process the next job.
@@ -48,10 +47,10 @@ type Worker interface {
 // func(interface{}) interface{}
 type closureWorker struct {
 	pool      *Pool
-	processor func(interface{}) interface{}
+	processor func(Handler) error
 }
 
-func (w *closureWorker) Process(payload interface{}) interface{} {
+func (w *closureWorker) Process(payload Handler) error {
 	return w.processor(payload)
 }
 
@@ -67,13 +66,8 @@ type callbackWorker struct {
 	pool *Pool
 }
 
-func (w *callbackWorker) Process(payload interface{}) interface{} {
-	f, ok := payload.(func())
-	if !ok {
-		return ErrJobNotFunc
-	}
-	f()
-	return nil
+func (w *callbackWorker) Process(payload Handler) error {
+	return payload()
 }
 
 func (w *callbackWorker) BlockUntilReady()        {}
@@ -110,7 +104,7 @@ func New(n int, ctor func() Worker) *Pool {
 
 // NewFunc creates a new Pool of workers where each worker will process using
 // the provided func.
-func NewFunc(n int, f func(interface{}) interface{}) *Pool {
+func NewFunc(n int, f func(Handler) error) *Pool {
 	return New(n, func() Worker {
 		return &closureWorker{
 			processor: f,
@@ -129,22 +123,23 @@ func NewCallback(n int) *Pool {
 // Process will use the Pool to process a payload and synchronously return the
 // result. Process can be called safely by any goroutines, but will panic if the
 // Pool has been stopped.
-func (p *Pool) Process(payload interface{}) interface{} {
+func (p *Pool) Process(payload Handler) error {
 	atomic.AddInt64(&p.queuedJobs, 1)
 	defer atomic.AddInt64(&p.queuedJobs, -1)
 
 	request, open := <-p.reqChan
 	if !open {
-		panic(ErrPoolNotRunning)
+		return ErrPoolNotRunning
 	}
 
 	request.jobChan <- payload
 
-	payload, open = <-request.retChan
+	var ret error
+	ret, open = <-request.retChan
 	if !open {
-		panic(ErrWorkerClosed)
+		return ErrWorkerClosed
 	}
-	return payload
+	return ret
 }
 
 // ProcessTimed will use the Pool to process a payload and synchronously return
@@ -152,9 +147,9 @@ func (p *Pool) Process(payload interface{}) interface{} {
 // be interrupted and ErrJobTimedOut will be returned. ProcessTimed can be
 // called safely by any goroutines.
 func (p *Pool) ProcessTimed(
-	payload interface{},
+	payload Handler,
 	timeout time.Duration,
-) (interface{}, error) {
+) error {
 	atomic.AddInt64(&p.queuedJobs, 1)
 	defer atomic.AddInt64(&p.queuedJobs, -1)
 
@@ -166,38 +161,39 @@ func (p *Pool) ProcessTimed(
 	select {
 	case request, open = <-p.reqChan:
 		if !open {
-			return nil, ErrPoolNotRunning
+			return ErrPoolNotRunning
 		}
 	case <-tout.C:
-		return nil, ErrJobTimedOut
+		return ErrJobTimedOut
 	}
 
 	select {
 	case request.jobChan <- payload:
 	case <-tout.C:
 		request.interruptFunc()
-		return nil, ErrJobTimedOut
+		return ErrJobTimedOut
 	}
 
+	var ret error
 	select {
-	case payload, open = <-request.retChan:
+	case ret, open = <-request.retChan:
 		if !open {
-			return nil, ErrWorkerClosed
+			return ErrWorkerClosed
 		}
 	case <-tout.C:
 		request.interruptFunc()
-		return nil, ErrJobTimedOut
+		return ErrJobTimedOut
 	}
 
 	tout.Stop()
-	return payload, nil
+	return ret
 }
 
 // ProcessCtx will use the Pool to process a payload and synchronously return
 // the result. If the context cancels before the job has finished the worker will
 // be interrupted and ErrJobTimedOut will be returned. ProcessCtx can be
 // called safely by any goroutines.
-func (p *Pool) ProcessCtx(ctx context.Context, payload interface{}) (interface{}, error) {
+func (p *Pool) ProcessCtx(ctx context.Context, payload Handler) error {
 	atomic.AddInt64(&p.queuedJobs, 1)
 	defer atomic.AddInt64(&p.queuedJobs, -1)
 
@@ -207,42 +203,43 @@ func (p *Pool) ProcessCtx(ctx context.Context, payload interface{}) (interface{}
 	select {
 	case request, open = <-p.reqChan:
 		if !open {
-			return nil, ErrPoolNotRunning
+			return ErrPoolNotRunning
 		}
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return ctx.Err()
 	}
 
 	select {
 	case request.jobChan <- payload:
 	case <-ctx.Done():
 		request.interruptFunc()
-		return nil, ctx.Err()
+		return ctx.Err()
 	}
 
+	var ret error
 	select {
-	case payload, open = <-request.retChan:
+	case ret, open = <-request.retChan:
 		if !open {
-			return nil, ErrWorkerClosed
+			return ErrWorkerClosed
 		}
 	case <-ctx.Done():
 		request.interruptFunc()
-		return nil, ctx.Err()
+		return ctx.Err()
 	}
 
-	return payload, nil
+	return ret
 }
 
-func (p *Pool) Submit(payload interface{}) bool {
+func (p *Pool) Submit(payload Handler) error {
 	atomic.AddInt64(&p.queuedJobs, 1)
 
 	request, open := <-p.reqChan
 	if !open {
-		panic(ErrPoolNotRunning)
+		return ErrPoolNotRunning
 	}
 
 	request.asyncJobChan <- payload
-	return true
+	return nil
 }
 
 // QueueLength returns the current count of pending queued jobs.

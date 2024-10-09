@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 const defaultQueueSize = 1000
 
-// InMemoryBroker a very simple implementation of the Broker interface
+// memoryBroker a very simple implementation of the Broker interface
 // which uses in-memory channels to exchange messages. Meant for local
 // development, tests etc.
-type InMemoryBroker struct {
+type memoryBroker struct {
 	queues    sync.Map
 	terminate atomic.Bool
 }
@@ -51,7 +53,7 @@ func (q *queue) send(m any) {
 	case q.ch <- m:
 	default:
 		// Handle full queue channel scenario, maybe log or drop the message
-		fmt.Println("queue full")
+		logx.Warningln("queue full")
 	}
 }
 
@@ -78,7 +80,7 @@ func (q *queue) close() {
 	q.wg.Wait()
 }
 
-func (q *queue) subscribe(ctx context.Context, sub func(m any)) {
+func (q *queue) subscribe(ctx context.Context, sub SubHandle) {
 	q.mu.Lock()
 	ctx, cancel := context.WithCancel(ctx)
 	q.subs = append(q.subs, &qsub{ctx: ctx, cancel: cancel})
@@ -100,46 +102,28 @@ func (q *queue) subscribe(ctx context.Context, sub func(m any)) {
 					return
 				}
 				atomic.AddInt32(&q.unacked, 1)
-				sub(m)
+				if err := sub(m); err != nil {
+					logx.Errorln("unexpected error occurred while processing task", err)
+				}
 				atomic.AddInt32(&q.unacked, -1)
 			}
 		}
 	}()
 }
 
-func NewInMemoryBroker() *InMemoryBroker {
-	return &InMemoryBroker{}
+func inMemoryBroker() *memoryBroker {
+	return &memoryBroker{}
 }
 
-func (b *InMemoryBroker) Subscribe(ctx context.Context, qname string, handler func(m any)) {
+func (b *memoryBroker) Subscribe(ctx context.Context, qname string, handler SubHandle) {
+	logx.Debugf("subscribing to queue %s", qname)
 	q, _ := b.queues.LoadOrStore(qname, newQueue(qname))
 	qq, _ := q.(*queue)
 	qq.subscribe(ctx, handler)
 }
 
-type Info struct {
-	Name        string `json:"name"`
-	Size        int    `json:"size"`
-	Subscribers int    `json:"subscribers"`
-	Unacked     int    `json:"unacked"`
-}
-
-func (b *InMemoryBroker) Queues(ctx context.Context) ([]Info, error) {
-	var qi []Info
-	b.queues.Range(func(_, value any) bool {
-		q := value.(*queue)
-		qi = append(qi, Info{
-			Name:        q.name,
-			Size:        q.size(),
-			Subscribers: len(q.subs),
-			Unacked:     int(atomic.LoadInt32(&q.unacked)),
-		})
-		return true
-	})
-	return qi, nil
-}
-
-func (b *InMemoryBroker) Publish(qname string, m any) error {
+func (b *memoryBroker) Publish(qname string, m any) error {
+	logx.Debugf("publishing to queue %s", qname)
 	q, _ := b.queues.LoadOrStore(qname, newQueue(qname))
 	qq, ok := q.(*queue)
 	if !ok {
@@ -149,7 +133,7 @@ func (b *InMemoryBroker) Publish(qname string, m any) error {
 	return nil
 }
 
-func (b *InMemoryBroker) Shutdown(ctx context.Context) {
+func (b *memoryBroker) Shutdown(ctx context.Context) {
 	if !b.terminate.CompareAndSwap(false, true) {
 		return
 	}
@@ -158,6 +142,7 @@ func (b *InMemoryBroker) Shutdown(ctx context.Context) {
 	b.queues.Range(func(_, value any) bool {
 		wg.Add(1)
 		go func(q *queue) {
+			logx.Debugf("shutting down channel %s", q.name)
 			defer wg.Done()
 			select {
 			case <-ctx.Done():
@@ -179,11 +164,4 @@ func (b *InMemoryBroker) Shutdown(ctx context.Context) {
 	case <-doneChan:
 		return
 	}
-}
-
-func (b *InMemoryBroker) HealthCheck(ctx context.Context) error {
-	if b.terminate.Load() {
-		return fmt.Errorf("broker is terminated")
-	}
-	return nil
 }
