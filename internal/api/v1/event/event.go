@@ -1,22 +1,20 @@
 package event
 
 import (
+	"context"
 	"io"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/xmapst/AutoExecFlow/pkg/dag"
+	"github.com/xmapst/AutoExecFlow/internal/service"
 )
 
 func Stream(c *gin.Context) {
-	event, id, err := dag.SubscribeEvent()
-	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	defer dag.UnSubscribeEvent(id)
+	ctx, cancel := context.WithCancel(c)
+	defer cancel()
+	var event = make(chan string, 65534)
+	service.Event().Subscribe(ctx, event)
 	ticker := time.NewTicker(30 * time.Second) // 每30秒发送心跳
 	defer ticker.Stop()
 	c.Stream(func(w io.Writer) bool {

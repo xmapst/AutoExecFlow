@@ -84,6 +84,27 @@ func newDB(rawURL string) (*database, error) {
 		logx.Errorln(err)
 		return nil, err
 	}
+
+	// 修正非正常关机时任务状态不为停止和失败的状态强制为错误
+	d.Model(&models.Task{}).
+		//Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", utils.HostName(), models.StateStop, models.StateFailed).
+		Where("state <> ? AND state <> ?", models.StateStop, models.StateFailed).
+		Updates(map[string]interface{}{
+			//"node":    utils.HostName(),
+			"state":   models.StateFailed,
+			"message": "execution failed due to system error",
+		})
+	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
+	d.Model(&models.Step{}).
+		//Where("(node IS NULL OR node = ?) AND (state = ? OR state = ?)", utils.HostName(), models.StateRunning, models.StatePaused).
+		Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
+		Updates(map[string]interface{}{
+			//"node":    utils.HostName(),
+			"state":   models.StateFailed,
+			"code":    common.CodeSystemErr,
+			"message": "execution failed due to system error",
+		})
+
 	return d, nil
 }
 
@@ -100,22 +121,6 @@ func (d *database) initSqlite() {
 	d.Exec("PRAGMA busy_timeout=999999;")
 	d.Exec("PRAGMA cache=shared;")
 	d.Exec("PRAGMA mode=rwc;")
-
-	// 修正非正常关机时任务状态不为停止和失败的状态强制为错误
-	d.Model(&models.Task{}).
-		Where("state <> ? AND state <> ?", models.StateStop, models.StateFailed).
-		Updates(map[string]interface{}{
-			"state":   models.StateFailed,
-			"message": "execution failed due to system error",
-		})
-	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
-	d.Model(&models.Step{}).
-		Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
-		Updates(map[string]interface{}{
-			"state":   models.StateFailed,
-			"code":    common.CodeSystemErr,
-			"message": "execution failed due to system error",
-		})
 }
 
 func (d *database) Name() string {

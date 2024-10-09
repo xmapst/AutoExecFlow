@@ -130,7 +130,7 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 		}
 	}
 	// 提交任务
-	return queues.Publish(queues.TYPE_DIRECT, config.TaskQueueName, ts.name)
+	return queues.Publish(queues.TYPE_DIRECT, queues.TaskQueueName+task.Node, ts.name)
 }
 
 func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
@@ -149,6 +149,9 @@ func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
 	task.Name = reg.ReplaceAllString(task.Name, "")
 	if task.Name == "" {
 		task.Name = ksuid.New().String()
+	}
+	if task.Node == "" {
+		task.Node = utils.HostName()
 	}
 	timeout, err := time.ParseDuration(task.Timeout)
 	if err != nil {

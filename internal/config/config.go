@@ -15,10 +15,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-var (
-	App           = new(Config)
-	TaskQueueName = fmt.Sprintf("%s_Worker_%s", utils.ServiceName, utils.HostName())
-)
+var App = new(Config)
 
 const (
 	RUN_MODE_Standalone = "standalone"

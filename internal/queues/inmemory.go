@@ -5,7 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/xmapst/AutoExecFlow/internal/wildcard"
+	"github.com/xmapst/AutoExecFlow/internal/utils/wildcard"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
@@ -16,59 +16,56 @@ type memQueue struct {
 	ch      chan any
 	subs    []*qsub
 	unacked int32
-	closed  bool
-	mu      sync.Mutex
+	closed  atomic.Bool
+	mu      sync.RWMutex // 使用读写锁来提高并发效率
 	wg      sync.WaitGroup
 }
 
 func newMemQueue(name string) *memQueue {
 	return &memQueue{
-		name:    name,
-		ch:      make(chan any, defaultQueueSize),
-		subs:    make([]*qsub, 0),
-		unacked: 0,
+		name: name,
+		ch:   make(chan any, defaultQueueSize),
+		subs: make([]*qsub, 0),
 	}
 }
 
 type qsub struct {
 	ctx    context.Context
 	cancel context.CancelFunc
+	ch     chan any
 }
 
 func (q *memQueue) send(m any) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	if q.closed {
+	q.mu.RLock()
+	defer q.mu.RUnlock()
+	if q.closed.Load() {
 		return
 	}
 	select {
 	case q.ch <- m:
 	default:
-		// Handle full queue channel scenario, maybe log or drop the message
-		logx.Warningln("queue full")
+		logx.Warnln("subscriber channel full, dropping message")
 	}
 }
 
 func (q *memQueue) size() int {
+	q.mu.RLock()
+	defer q.mu.RUnlock()
 	return len(q.ch)
 }
 
 func (q *memQueue) close() {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	if q.closed {
+	if !q.closed.CompareAndSwap(false, true) {
 		return
 	}
-
-	// Mark the queue as closed and stop new messages
-	q.closed = true
 	close(q.ch)
 
+	q.mu.Lock()
+	defer q.mu.Unlock()
 	for _, sub := range q.subs {
 		sub.cancel()
 	}
 
-	// Wait for all in-flight message processing to finish
 	q.wg.Wait()
 }
 
@@ -78,17 +75,14 @@ func (q *memQueue) subscribe(ctx context.Context, sub Handle) {
 	q.subs = append(q.subs, &qsub{ctx: ctx, cancel: cancel})
 	q.mu.Unlock()
 
-	// Increase waitgroup counter when a new subscriber is added
 	q.wg.Add(1)
 
 	go func() {
-		defer q.wg.Done() // Mark as done when subscription finishes
+		defer q.wg.Done()
 		for {
 			select {
 			case <-ctx.Done():
-				if q.size() == 0 {
-					return
-				}
+				return
 			case m, ok := <-q.ch:
 				if !ok {
 					return
@@ -104,60 +98,71 @@ func (q *memQueue) subscribe(ctx context.Context, sub Handle) {
 }
 
 type memTopic struct {
-	name       string
-	ch         chan any
-	subs       []Handle
-	terminate  chan any
-	terminated chan any
-	mu         sync.RWMutex
+	name      string
+	subs      []*qsub
+	terminate chan struct{}
+	mu        sync.RWMutex
 }
 
 func newMemTopic(name string) *memTopic {
-	t := &memTopic{
-		name:       name,
-		ch:         make(chan any),
-		terminate:  make(chan any),
-		terminated: make(chan any),
+	return &memTopic{
+		name:      name,
+		terminate: make(chan struct{}),
 	}
-	go func() {
-		for {
-			select {
-			case <-t.terminate:
-				close(t.terminated)
-				return
-			case m := <-t.ch:
-				t.mu.RLock()
-				for _, sub := range t.subs {
-					if err := sub(m); err != nil {
-						logx.Errorln("unexpected error occurred while processing task", err)
-					}
-				}
-				t.mu.RUnlock()
-			}
-		}
-	}()
-
-	return t
 }
 
 func (t *memTopic) publish(event any) {
-	t.ch <- event
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	for _, sub := range t.subs {
+		select {
+		case sub.ch <- event:
+		case <-sub.ctx.Done():
+			continue
+		default:
+			logx.Warnln("subscriber channel full, dropping message")
+		}
+	}
 }
 
-func (t *memTopic) subscribe(handler Handle) {
+func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.subs = append(t.subs, handler)
+
+	subCtx, cancel := context.WithCancel(ctx)
+	sub := &qsub{
+		ctx:    subCtx,
+		cancel: cancel,
+		ch:     make(chan any, 100),
+	}
+	t.subs = append(t.subs, sub)
+
+	go func() {
+		defer cancel()
+		for {
+			select {
+			case <-sub.ctx.Done():
+				return
+			case m := <-sub.ch:
+				if err := handler(m); err != nil {
+					logx.Errorln("unexpected error occurred while processing task", err)
+				}
+			}
+		}
+	}()
 }
 
 func (t *memTopic) close() {
-	t.terminate <- 1
-	<-t.terminated
+	close(t.terminate)
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	for _, sub := range t.subs {
+		sub.cancel()
+	}
 }
 
-// memoryBroker a very simple implementation of the Broker interface
-// which uses in-memory channels to exchange messages. Meant for local
-// development, tests etc.
 type memoryBroker struct {
 	queues    sync.Map
 	topics    sync.Map
@@ -169,32 +174,25 @@ func newInMemoryBroker() *memoryBroker {
 }
 
 func (b *memoryBroker) Subscribe(ctx context.Context, class string, qname string, handler Handle) {
-	logx.Debugf("subscribing to queue %s", qname)
 	switch class {
 	case TYPE_DIRECT:
 		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
-		qq, _ := q.(*memQueue)
-		qq.subscribe(ctx, handler)
+		q.(*memQueue).subscribe(ctx, handler)
 	case TYPE_TOPIC:
 		t, _ := b.topics.LoadOrStore(qname, newMemTopic(qname))
-		tt, _ := t.(*memTopic)
-		tt.subscribe(handler)
+		t.(*memTopic).subscribe(ctx, handler)
 	}
 }
 
 func (b *memoryBroker) Publish(class string, qname string, m any) error {
-	logx.Debugf("publishing to queue %s", qname)
 	switch class {
 	case TYPE_DIRECT:
 		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
-		qq, _ := q.(*memQueue)
-		qq.send(m)
+		q.(*memQueue).send(m)
 	case TYPE_TOPIC:
 		b.topics.Range(func(key any, value any) bool {
-			name := key.(string)
-			if wildcard.Match(name, qname) {
-				tt, _ := value.(*memTopic)
-				tt.publish(m)
+			if wildcard.Match(key.(string), qname) {
+				value.(*memTopic).publish(m)
 			}
 			return true
 		})
@@ -206,45 +204,33 @@ func (b *memoryBroker) Shutdown(ctx context.Context) {
 	if !b.terminate.CompareAndSwap(false, true) {
 		return
 	}
-	var wg sync.WaitGroup
 
+	var wg sync.WaitGroup
 	b.queues.Range(func(_, value any) bool {
 		wg.Add(1)
 		go func(q *memQueue) {
-			logx.Debugf("shutting down channel %s", q.name)
 			defer wg.Done()
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				q.close()
-			}
+			q.close()
 		}(value.(*memQueue))
 		return true
 	})
 	b.topics.Range(func(_, value any) bool {
 		wg.Add(1)
 		go func(t *memTopic) {
-			logx.Debugf("shutting down topic %s", t.name)
 			defer wg.Done()
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				t.close()
-			}
+			t.close()
 		}(value.(*memTopic))
 		return true
 	})
+
 	doneChan := make(chan struct{})
 	go func() {
 		wg.Wait()
 		close(doneChan)
 	}()
+
 	select {
 	case <-ctx.Done():
-		return
 	case <-doneChan:
-		return
 	}
 }

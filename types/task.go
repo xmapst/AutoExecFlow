@@ -121,6 +121,8 @@ type TaskStepReq struct {
 type TaskReq struct {
 	// 任务名称
 	Name string `json:"name" query:"name"  form:"name" yaml:"Name" example:"task_name"`
+	// Node 执行节点
+	Node string `json:"node" query:"node" form:"node" yaml:"Node" example:""`
 	// 任务超时时间
 	Timeout string `json:"timeout" query:"timeout" form:"timeout" yaml:"Timeout" example:"24h"`
 	// 任务环境变量

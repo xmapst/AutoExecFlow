@@ -5,15 +5,16 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
+	"github.com/xmapst/AutoExecFlow/internal/utils"
+	"github.com/xmapst/AutoExecFlow/pkg/dag"
 	"github.com/xmapst/AutoExecFlow/pkg/tunny"
 )
 
 var pool = tunny.NewCallback(1)
 
 func Start() (err error) {
-	queues.Subscribe(context.Background(), queues.TYPE_DIRECT, config.TaskQueueName, func(m any) error {
+	queues.Subscribe(context.Background(), queues.TYPE_DIRECT, queues.TaskQueueName+utils.HostName(), func(m any) error {
 		name, ok := m.(string)
 		if !ok {
 			return errors.New("invalid task name")
@@ -24,6 +25,18 @@ func Start() (err error) {
 		}
 		return pool.Submit(t.run)
 	})
+	event, _, err := dag.SubscribeEvent()
+	if err != nil {
+		return err
+	}
+	go func() {
+		for {
+			select {
+			case e := <-event:
+				_ = queues.Publish(queues.TYPE_TOPIC, queues.EventQueueName, e)
+			}
+		}
+	}()
 	return
 }
 

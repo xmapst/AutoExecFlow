@@ -2,22 +2,25 @@ package queues
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 
 	"github.com/pkg/errors"
+
+	"github.com/xmapst/AutoExecFlow/internal/utils"
 )
 
-var broker Broker
+var (
+	broker         Broker
+	TaskQueueName  = fmt.Sprintf("%s_Worker_", utils.ServiceName)
+	EventQueueName = fmt.Sprintf("%s_Event", utils.ServiceName)
+)
 
 type Handle func(m any) error
 
 const (
 	BROKER_INMEMORY = "inmemory"
-	BROKER_REDIS    = "redis"
 	BROKER_RABBITMQ = "rabbitmq"
-	BROKER_NATS     = "nats"
-	BROKER_KAFKA    = "kafka"
-	BROKER_PULSAR   = "pulsar"
 
 	TYPE_DIRECT = "direct"
 	TYPE_TOPIC  = "topic"
