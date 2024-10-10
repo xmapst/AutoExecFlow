@@ -13,8 +13,8 @@ import (
 
 var pool = tunny.NewCallback(1)
 
-func Start() (err error) {
-	queues.Subscribe(context.Background(), queues.TYPE_DIRECT, queues.TaskQueueName+utils.HostName(), func(m any) error {
+func Start(ctx context.Context) (err error) {
+	queues.Subscribe(ctx, queues.TYPE_DIRECT, queues.TaskQueueName+utils.HostName(), func(m any) error {
 		name, ok := m.(string)
 		if !ok {
 			return errors.New("invalid task name")
@@ -32,6 +32,8 @@ func Start() (err error) {
 	go func() {
 		for {
 			select {
+			case <-ctx.Done():
+				return
 			case e := <-event:
 				_ = queues.Publish(queues.TYPE_TOPIC, queues.EventQueueName, e)
 			}

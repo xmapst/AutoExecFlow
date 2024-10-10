@@ -35,7 +35,7 @@ type qsub struct {
 	ch     chan any
 }
 
-func (q *memQueue) send(m any) {
+func (q *memQueue) publish(m any) {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 	if q.closed.Load() {
@@ -43,8 +43,9 @@ func (q *memQueue) send(m any) {
 	}
 	select {
 	case q.ch <- m:
+		logx.Infof("published message to subscriber queue %s", q.name)
 	default:
-		logx.Warnln("subscriber channel full, dropping message")
+		logx.Warnln("subscriber queue full, dropping message")
 	}
 }
 
@@ -70,6 +71,7 @@ func (q *memQueue) close() {
 }
 
 func (q *memQueue) subscribe(ctx context.Context, sub Handle) {
+	logx.Infof("subscribing to queue %s", q.name)
 	q.mu.Lock()
 	ctx, cancel := context.WithCancel(ctx)
 	q.subs = append(q.subs, &qsub{ctx: ctx, cancel: cancel})
@@ -82,9 +84,11 @@ func (q *memQueue) subscribe(ctx context.Context, sub Handle) {
 		for {
 			select {
 			case <-ctx.Done():
+				logx.Infof("subscribe queue closed %s", q.name)
 				return
 			case m, ok := <-q.ch:
 				if !ok {
+					logx.Infof("subscribe queue closed %s", q.name)
 					return
 				}
 				atomic.AddInt32(&q.unacked, 1)
@@ -117,15 +121,17 @@ func (t *memTopic) publish(event any) {
 	for _, sub := range t.subs {
 		select {
 		case sub.ch <- event:
+			logx.Infof("published message to subscriber topic %s", t.name)
 		case <-sub.ctx.Done():
 			continue
 		default:
-			logx.Warnln("subscriber channel full, dropping message")
+			logx.Warnln("subscriber topic full, dropping message")
 		}
 	}
 }
 
 func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
+	logx.Infof("subscribing to topic %s", t.name)
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -142,6 +148,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		for {
 			select {
 			case <-sub.ctx.Done():
+				logx.Infof("subscribe topic closed %s", t.name)
 				return
 			case m := <-sub.ch:
 				if err := handler(m); err != nil {
@@ -188,7 +195,7 @@ func (b *memoryBroker) Publish(class string, qname string, m any) error {
 	switch class {
 	case TYPE_DIRECT:
 		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
-		q.(*memQueue).send(m)
+		q.(*memQueue).publish(m)
 	case TYPE_TOPIC:
 		b.topics.Range(func(key any, value any) bool {
 			if wildcard.Match(key.(string), qname) {
@@ -231,6 +238,8 @@ func (b *memoryBroker) Shutdown(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
+		logx.Infoln("shutting down broker")
 	case <-doneChan:
+		logx.Infoln("broker shutdown complete")
 	}
 }

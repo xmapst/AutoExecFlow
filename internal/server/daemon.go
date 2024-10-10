@@ -28,6 +28,8 @@ import (
 )
 
 type Program struct {
+	ctx       context.Context
+	cancel    context.CancelFunc
 	sHash     []byte
 	sURL      string
 	listeners []net.Listener
@@ -42,6 +44,7 @@ func New() *Program {
 		cron: cron.New(),
 		wg:   new(sync.WaitGroup),
 	}
+	p.ctx, p.cancel = context.WithCancel(context.Background())
 	// 获取当前程序的hash
 	p.localSha256sum()
 	return p
@@ -80,7 +83,7 @@ func (p *Program) init() error {
 	utils.ClearDir(config.App.WorkSpace())
 
 	// 启动任务执行器
-	return worker.Start()
+	return worker.Start(p.ctx)
 }
 
 func (p *Program) Start(service.Service) error {
@@ -183,7 +186,7 @@ func (p *Program) Stop(service.Service) error {
 	p.cron.Stop()
 
 	logx.Info("waiting for all tasks to complete")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	ctx, cancel := context.WithTimeout(p.ctx, time.Second*15)
 	defer cancel()
 	queues.Shutdown(ctx)
 
@@ -191,6 +194,7 @@ func (p *Program) Stop(service.Service) error {
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)
 	}
+	p.cancel()
 	logx.CloseLogger()
 	time.Sleep(1 * time.Second)
 	return nil
