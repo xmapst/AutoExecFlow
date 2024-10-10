@@ -860,6 +860,7 @@ class TaskTable {
             const color = Utils.getStatusColor(task.state || 'unknown');
             row.innerHTML = `
                     <td id="${task.name+'-name'}">${task.name}</td>
+                    <td id="${task.name+'-node'}">${task.node}</td>
                     <td id="${task.name+'-count'}">${task.count}</td>
                     <td id="${task.name+'-message'}" class="message" title=""></td>
                     <td id="${task.name+'-start'}">${task.time.start ? task.time.start : '---'}</td>
@@ -1001,6 +1002,7 @@ class Main {
                         <thead>
                             <tr>
                                 <th>名称</th>
+                                <th>节点</th>
                                 <th style="width: 48px;">步骤数</th>
                                 <th>消息</th>
                                 <th style="width: 162px;">开始时间</th>

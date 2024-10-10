@@ -13,6 +13,8 @@ type IStorage interface {
 	Close() (err error)
 
 	Task(name string) ITask
+	// TaskCreate 创建任务
+	TaskCreate(task *models.Task) (err error)
 	// TaskCount 指定状态任务总数, -1为所有
 	TaskCount(state models.State) (res int64)
 	// TaskList 获取任务,支持分页, 模糊匹配
@@ -41,13 +43,13 @@ type ITask interface {
 	Timeout() (res time.Duration, err error)
 	// Get 根据名称获取指定任务
 	Get() (res *models.Task, err error)
-	// Insert 插入
-	Insert(task *models.Task) (err error)
 	// Update 更新
 	Update(value *models.TaskUpdate) (err error)
 
 	// Step 步骤接口
 	Step(name string) IStep
+	// StepCreate 创建步骤
+	StepCreate(step *models.Step) (err error)
 	// StepCount 任务总数
 	StepCount() (res int64)
 	// StepNameList 所有步骤名称
@@ -68,8 +70,6 @@ type IStep interface {
 	Content() (res string, err error)
 	// Get 根据名称获取指定步骤
 	Get() (res *models.Step, err error)
-	// Insert 插入
-	Insert(step *models.Step) (err error)
 	// Update 更新
 	Update(value *models.StepUpdate) (err error)
 	// GlobalEnv 全局环境变量接口

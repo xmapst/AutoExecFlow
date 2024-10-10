@@ -35,6 +35,8 @@ type PageRes struct {
 type TaskRes struct {
 	// 任务名称
 	Name string `json:"name" yaml:"Name"`
+	// 节点名称
+	Node string `json:"node" yaml:"Node"`
 	// 任务状态
 	State string `json:"state" yaml:"State"`
 	// 任务信息

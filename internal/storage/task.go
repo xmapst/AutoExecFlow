@@ -97,11 +97,6 @@ func (t *task) Get() (res *models.Task, err error) {
 	return
 }
 
-func (t *task) Insert(task *models.Task) (err error) {
-	task.Name = t.tName
-	return t.Create(task).Error
-}
-
 func (t *task) Update(value *models.TaskUpdate) (err error) {
 	if value == nil {
 		return
@@ -121,6 +116,11 @@ func (t *task) Step(name string) IStep {
 		tName: t.tName,
 		sName: name,
 	}
+}
+
+func (t *task) StepCreate(step *models.Step) (err error) {
+	step.TaskName = t.tName
+	return t.Create(step).Error
 }
 
 func (t *task) StepCount() (res int64) {

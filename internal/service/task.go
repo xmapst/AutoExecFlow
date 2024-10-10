@@ -50,6 +50,7 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 	for _, task := range tasks {
 		res := &types.TaskRes{
 			Name:    task.Name,
+			Node:    task.Node,
 			State:   models.StateMap[*task.State],
 			Message: task.Message,
 			Env:     make(map[string]string),
@@ -113,7 +114,7 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 		}
 	}()
 
-	if timeout, err = ts.saveTask(db, timeout, task); err != nil {
+	if timeout, err = ts.saveTask(timeout, task); err != nil {
 		return err
 	}
 
@@ -194,9 +195,11 @@ func (ts *TaskService) uniqStepsName(steps types.TaskStepsReq) error {
 	}
 	return fmt.Errorf("%v", errs)
 }
-func (ts *TaskService) saveTask(db storage.ITask, timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
+func (ts *TaskService) saveTask(timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
 	// save task
-	err := db.Insert(&models.Task{
+	err := storage.TaskCreate(&models.Task{
+		Name:    task.Name,
+		Node:    task.Node,
 		Async:   models.Pointer(task.Async),
 		Count:   models.Pointer(len(task.Step)),
 		Timeout: timeout,
@@ -213,7 +216,7 @@ func (ts *TaskService) saveTask(db storage.ITask, timeout time.Duration, task *t
 
 	// save task env
 	for name, value := range task.Env {
-		if err = db.Env().Insert(&models.Env{
+		if err = storage.Task(task.Name).Env().Insert(&models.Env{
 			Name:  name,
 			Value: value,
 		}); err != nil {
@@ -237,6 +240,7 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 
 	data := &types.TaskRes{
 		Name:    task.Name,
+		Node:    task.Node,
 		State:   models.StateMap[*task.State],
 		Message: task.Message,
 		Env:     make(map[string]string),
@@ -280,8 +284,8 @@ func (ts *TaskService) Dump() (*types.TaskReq, error) {
 		return nil, err
 	}
 	res := &types.TaskReq{
-		Name: task.Name,
-		//Node:    task.Node,
+		Name:    task.Name,
+		Node:    task.Node,
 		Timeout: task.Timeout.String(),
 		Env:     make(map[string]string),
 		Async:   *task.Async,

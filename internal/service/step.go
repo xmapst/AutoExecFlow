@@ -44,8 +44,7 @@ func (ss *StepService) Create(globalTimeout time.Duration, step *types.TaskStepR
 	if timeout <= 0 || timeout > globalTimeout {
 		timeout = globalTimeout
 	}
-	var db = storage.Task(ss.taskName).Step(step.Name)
-	if err = ss.saveStep(db, timeout, step); err != nil {
+	if err = ss.saveStep(timeout, step); err != nil {
 		return err
 	}
 	return nil
@@ -82,17 +81,19 @@ func (ss *StepService) review(step *types.TaskStepReq) (time.Duration, error) {
 	return timeout, nil
 }
 
-func (ss *StepService) saveStep(db storage.IStep, timeout time.Duration, step *types.TaskStepReq) (err error) {
+func (ss *StepService) saveStep(timeout time.Duration, step *types.TaskStepReq) (err error) {
 	defer func() {
 		if err != nil {
-			_ = db.ClearAll()
+			_ = storage.Task(ss.taskName).Step(step.Name).ClearAll()
 		}
 	}()
-	err = db.Insert(&models.Step{
-		Type:    step.Type,
-		Content: step.Content,
-		Timeout: timeout,
-		Disable: models.Pointer(step.Disable),
+	err = storage.Task(ss.taskName).StepCreate(&models.Step{
+		TaskName: ss.taskName,
+		Name:     step.Name,
+		Type:     step.Type,
+		Content:  step.Content,
+		Timeout:  timeout,
+		Disable:  models.Pointer(step.Disable),
 		StepUpdate: models.StepUpdate{
 			Message:  "the step is waiting to be scheduled for execution",
 			Code:     models.Pointer(int64(0)),
@@ -105,7 +106,7 @@ func (ss *StepService) saveStep(db storage.IStep, timeout time.Duration, step *t
 	}
 	// save step env
 	for name, value := range step.Env {
-		if err = db.Env().Insert(&models.Env{
+		if err = storage.Task(ss.taskName).Step(step.Name).Env().Insert(&models.Env{
 			Name:  name,
 			Value: value,
 		}); err != nil {
@@ -113,11 +114,11 @@ func (ss *StepService) saveStep(db storage.IStep, timeout time.Duration, step *t
 		}
 	}
 	// save step depend
-	err = db.Depend().Insert(step.Depends...)
+	err = storage.Task(ss.taskName).Step(step.Name).Depend().Insert(step.Depends...)
 	if err != nil {
 		return err
 	}
-	return nil
+	return
 }
 
 func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {

@@ -15,6 +15,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
@@ -85,25 +86,30 @@ func newDB(rawURL string) (*database, error) {
 		return nil, err
 	}
 
-	// 修正非正常关机时任务状态不为停止和失败的状态强制为错误
+	// 查找当前节点的所有任务, 包括空的任务名称列表
+	var tasks []string
 	d.Model(&models.Task{}).
-		//Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", utils.HostName(), models.StateStop, models.StateFailed).
-		Where("state <> ? AND state <> ?", models.StateStop, models.StateFailed).
-		Updates(map[string]interface{}{
-			//"node":    utils.HostName(),
-			"state":   models.StateFailed,
-			"message": "execution failed due to system error",
-		})
+		Select("name").
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", utils.HostName(), models.StateStop, models.StateFailed).
+		Find(&tasks)
+
 	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
-	d.Model(&models.Step{}).
-		//Where("(node IS NULL OR node = ?) AND (state = ? OR state = ?)", utils.HostName(), models.StateRunning, models.StatePaused).
-		Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
-		Updates(map[string]interface{}{
-			//"node":    utils.HostName(),
-			"state":   models.StateFailed,
-			"code":    common.CodeSystemErr,
-			"message": "execution failed due to system error",
-		})
+	for _, taskName := range tasks {
+		d.Model(&models.Task{}).
+			Where("name = ?", taskName).
+			Updates(map[string]interface{}{
+				"node":    utils.HostName(),
+				"state":   models.StateFailed,
+				"message": "execution failed due to system error",
+			})
+		d.Model(&models.Step{}).
+			Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
+			Updates(map[string]interface{}{
+				"state":   models.StateFailed,
+				"code":    common.CodeSystemErr,
+				"message": "execution failed due to system error",
+			})
+	}
 
 	return d, nil
 }
@@ -140,6 +146,10 @@ func (d *database) Task(name string) ITask {
 		DB:    d.DB,
 		tName: name,
 	}
+}
+
+func (d *database) TaskCreate(task *models.Task) (err error) {
+	return d.Create(task).Error
 }
 
 func (d *database) TaskCount(state models.State) (res int64) {

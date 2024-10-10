@@ -32,6 +32,10 @@ func Task(name string) ITask {
 	return storage.Task(name)
 }
 
+func TaskCreate(task *models.Task) (err error) {
+	return storage.TaskCreate(task)
+}
+
 func TaskCount(state models.State) (res int64) {
 	return storage.TaskCount(state)
 }

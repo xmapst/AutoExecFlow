@@ -180,22 +180,23 @@ func (p *Program) close() {
 }
 
 func (p *Program) Stop(service.Service) error {
-	logx.Infoln("receive a shutdown event and start shutting down")
+	logx.Infoln("stop service")
 	p.close()
 	p.wg.Wait()
 	p.cron.Stop()
 
-	logx.Info("waiting for all tasks to complete")
 	ctx, cancel := context.WithTimeout(p.ctx, time.Second*15)
 	defer cancel()
+	logx.Infoln("shutdown queue")
 	queues.Shutdown(ctx)
 
-	logx.Infoln("put data to disk and close data storage")
+	logx.Infoln("close storage")
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)
 	}
 	p.cancel()
+	logx.Infoln("service stopped")
 	logx.CloseLogger()
-	time.Sleep(1 * time.Second)
+	time.Sleep(300 * time.Millisecond)
 	return nil
 }

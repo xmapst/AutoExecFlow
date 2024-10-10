@@ -132,12 +132,6 @@ func (s *step) Get() (res *models.Step, err error) {
 	return
 }
 
-func (s *step) Insert(step *models.Step) (err error) {
-	step.TaskName = s.tName
-	step.Name = s.sName
-	return s.Create(step).Error
-}
-
 func (s *step) Update(value *models.StepUpdate) (err error) {
 	if value == nil {
 		return
