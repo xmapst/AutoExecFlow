@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -26,7 +25,6 @@ func main() {
 		Version: info.Version,
 	}
 
-	cmd.SetFlagErrorFunc(flagErrorFunc)
 	cmd.SetVersionTemplate("{{.Version}}\n")
 	cmd.SetHelpTemplate(`{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`)
 	cmd.PersistentFlags().BoolP("help", "h", false, "Print usage")
@@ -46,16 +44,4 @@ func main() {
 	if err := cmd.Execute(); err != nil {
 		os.Exit(128)
 	}
-}
-
-func flagErrorFunc(cmd *cobra.Command, err error) error {
-	if err == nil {
-		return nil
-	}
-
-	usage := ""
-	if cmd.HasSubCommands() {
-		usage = "\n\n" + cmd.UsageString()
-	}
-	return fmt.Errorf("%s\nSee '%s --help'.%s", err, cmd.CommandPath(), usage)
 }

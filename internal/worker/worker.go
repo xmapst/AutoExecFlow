@@ -16,26 +16,21 @@ import (
 var pool = tunny.NewCallback(1)
 
 func Start(ctx context.Context) error {
-	queues.Subscribe(ctx, queues.TYPE_DIRECT, queues.TaskQueueName+utils.HostName(), func(m any) error {
-		name, ok := m.(string)
-		if !ok {
-			return errors.New("invalid task name")
-		}
-		t := newTask(name)
+	if err := queues.Subscribe(ctx, queues.TYPE_DIRECT, queues.TaskQueueName+utils.HostName(), func(data string) error {
+		t := newTask(data)
 		if t == nil {
 			return errors.New("task not found")
 		}
 		return pool.Submit(t.run)
-	})
-	queues.Subscribe(ctx, queues.TYPE_TOPIC, queues.ManagerQueueName, func(m any) error {
-		str, ok := m.(string)
-		if !ok {
+	}); err != nil {
+		return err
+	}
+
+	if err := queues.Subscribe(ctx, queues.TYPE_TOPIC, queues.ManagerQueueName, func(data string) error {
+		if !utils.ContainsInvisibleChar(data) {
 			return errors.New("invalid manager operate")
 		}
-		if !utils.ContainsInvisibleChar(m.(string)) {
-			return errors.New("invalid manager operate")
-		}
-		slice := utils.SplitByInvisibleChar(str)
+		slice := utils.SplitByInvisibleChar(data)
 		switch len(slice) {
 		case 3:
 			taskName := slice[0]
@@ -51,7 +46,9 @@ func Start(ctx context.Context) error {
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
 	event, _, err := dag.SubscribeEvent()
 	if err != nil {
 		return err

@@ -15,9 +15,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-var App = &Config{
-	Queue: "inmemory://localhost",
-}
+var App = new(Config)
 
 type Config struct {
 	ListenAddress string
@@ -65,6 +63,9 @@ func (c *Config) Init() error {
 		"workspace": c.WorkSpace(),
 	}
 	for name, dir := range dirs {
+		if name == "log" && c.LogOutput != "file" {
+			continue
+		}
 		if err = utils.EnsureDirExist(dir); err != nil {
 			return fmt.Errorf("failed to ensure directory %s: %v", dir, err)
 		}

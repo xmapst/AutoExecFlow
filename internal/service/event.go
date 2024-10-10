@@ -14,8 +14,8 @@ func Event() *EventService {
 }
 
 func (e *EventService) Subscribe(ctx context.Context, event chan string) {
-	queues.Subscribe(ctx, queues.TYPE_TOPIC, queues.EventQueueName, func(m any) error {
-		event <- m.(string)
+	queues.Subscribe(ctx, queues.TYPE_TOPIC, queues.EventQueueName, func(data string) error {
+		event <- data
 		return nil
 	})
 }

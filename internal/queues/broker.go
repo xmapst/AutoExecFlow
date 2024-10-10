@@ -17,11 +17,11 @@ var (
 	EventQueueName   = fmt.Sprintf("%s_Event", utils.ServiceName)
 )
 
-type Handle func(m any) error
+type Handle func(data string) error
 
 const (
 	BROKER_INMEMORY = "inmemory"
-	BROKER_RABBITMQ = "rabbitmq"
+	BROKER_AMQP     = "amqp"
 
 	TYPE_DIRECT = "direct"
 	TYPE_TOPIC  = "topic"
@@ -29,8 +29,8 @@ const (
 
 type Broker interface {
 	// queue management
-	Publish(class string, qname string, m any) error
-	Subscribe(ctx context.Context, class string, qname string, handler Handle)
+	Publish(class string, qname string, data string) error
+	Subscribe(ctx context.Context, class string, qname string, handler Handle) error
 	Shutdown(ctx context.Context)
 }
 
@@ -40,6 +40,9 @@ func New(rawURL string) error {
 		return err
 	}
 	switch u.Scheme {
+	case BROKER_AMQP:
+		broker, err = newAmqpBroker(rawURL)
+		return err
 	case BROKER_INMEMORY:
 		broker = newInMemoryBroker()
 		return nil
@@ -48,12 +51,12 @@ func New(rawURL string) error {
 	}
 }
 
-func Publish(class string, name string, m any) error {
-	return broker.Publish(class, name, m)
+func Publish(class string, name string, data string) error {
+	return broker.Publish(class, name, data)
 }
 
-func Subscribe(ctx context.Context, class string, name string, handler Handle) {
-	broker.Subscribe(ctx, class, name, handler)
+func Subscribe(ctx context.Context, class string, name string, handler Handle) error {
+	return broker.Subscribe(ctx, class, name, handler)
 }
 
 func Shutdown(ctx context.Context) {

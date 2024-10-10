@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/AutoExecFlow/internal/utils/wildcard"
@@ -15,7 +16,7 @@ const defaultQueueSize = 1000
 
 type memQueue struct {
 	name    string
-	ch      chan any
+	ch      chan string
 	subs    []*qsub
 	unacked int32
 	closed  atomic.Bool
@@ -26,7 +27,7 @@ type memQueue struct {
 func newMemQueue(name string) *memQueue {
 	return &memQueue{
 		name: name,
-		ch:   make(chan any, defaultQueueSize),
+		ch:   make(chan string, defaultQueueSize),
 		subs: make([]*qsub, 0),
 	}
 }
@@ -37,17 +38,17 @@ type qsub struct {
 
 	// topic only
 	cname string
-	ch    chan any
+	ch    chan string
 }
 
-func (q *memQueue) publish(m any) {
+func (q *memQueue) publish(data string) {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 	if q.closed.Load() {
 		return
 	}
 	select {
-	case q.ch <- m:
+	case q.ch <- data:
 		logx.Infof("published message to subscriber queue %s", q.name)
 	default:
 		logx.Warnln("subscriber queue full, dropping message")
@@ -120,7 +121,7 @@ func newMemTopic(name string) *memTopic {
 	}
 }
 
-func (t *memTopic) publish(event any) {
+func (t *memTopic) publish(event string) {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	for _, sub := range t.subs {
@@ -145,7 +146,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		cname:  ksuid.New().String(),
 		ctx:    subCtx,
 		cancel: cancel,
-		ch:     make(chan any, 100),
+		ch:     make(chan string, 100),
 	}
 	t.subs = append(t.subs, sub)
 
@@ -186,7 +187,7 @@ func newInMemoryBroker() *memoryBroker {
 	return &memoryBroker{}
 }
 
-func (b *memoryBroker) Subscribe(ctx context.Context, class string, qname string, handler Handle) {
+func (b *memoryBroker) Subscribe(ctx context.Context, class string, qname string, handler Handle) error {
 	switch class {
 	case TYPE_DIRECT:
 		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
@@ -194,21 +195,26 @@ func (b *memoryBroker) Subscribe(ctx context.Context, class string, qname string
 	case TYPE_TOPIC:
 		t, _ := b.topics.LoadOrStore(qname, newMemTopic(qname))
 		t.(*memTopic).subscribe(ctx, handler)
+	default:
+		return errors.New("unknown queue type")
 	}
+	return nil
 }
 
-func (b *memoryBroker) Publish(class string, qname string, m any) error {
+func (b *memoryBroker) Publish(class string, qname string, data string) error {
 	switch class {
 	case TYPE_DIRECT:
 		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
-		q.(*memQueue).publish(m)
+		q.(*memQueue).publish(data)
 	case TYPE_TOPIC:
 		b.topics.Range(func(key any, value any) bool {
 			if wildcard.Match(key.(string), qname) {
-				value.(*memTopic).publish(m)
+				value.(*memTopic).publish(data)
 			}
 			return true
 		})
+	default:
+		return errors.New("unknown queue type")
 	}
 	return nil
 }
