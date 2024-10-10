@@ -81,3 +81,15 @@ func HostName() string {
 	}
 	return name
 }
+
+func JoinWithInvisibleChar(strs ...string) string {
+	return strings.Join(strs, "\uFEFF")
+}
+
+func SplitByInvisibleChar(str string) []string {
+	return strings.Split(str, "\uFEFF")
+}
+
+func ContainsInvisibleChar(str string) bool {
+	return strings.Contains(str, "\uFEFF")
+}

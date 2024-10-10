@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	broker         Broker
-	TaskQueueName  = fmt.Sprintf("%s_Worker_", utils.ServiceName)
-	EventQueueName = fmt.Sprintf("%s_Event", utils.ServiceName)
+	broker           Broker
+	TaskQueueName    = fmt.Sprintf("%s_Worker_", utils.ServiceName)
+	ManagerQueueName = fmt.Sprintf("%s_Manager", utils.ServiceName)
+	EventQueueName   = fmt.Sprintf("%s_Event", utils.ServiceName)
 )
 
 type Handle func(m any) error

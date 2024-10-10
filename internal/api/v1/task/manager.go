@@ -31,7 +31,7 @@ func Manager(c *gin.Context) {
 		return
 	}
 	action := c.DefaultQuery("action", "paused")
-	duration := c.Query("duration")
+	duration := c.DefaultQuery("duration", "-1")
 	err := service.Task(taskName).Manager(action, duration)
 	if err != nil {
 		logx.Errorln(err)

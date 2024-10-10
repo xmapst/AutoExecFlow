@@ -5,6 +5,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/segmentio/ksuid"
+
 	"github.com/xmapst/AutoExecFlow/internal/utils/wildcard"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
@@ -32,7 +34,10 @@ func newMemQueue(name string) *memQueue {
 type qsub struct {
 	ctx    context.Context
 	cancel context.CancelFunc
-	ch     chan any
+
+	// topic only
+	cname string
+	ch    chan any
 }
 
 func (q *memQueue) publish(m any) {
@@ -120,10 +125,10 @@ func (t *memTopic) publish(event any) {
 	defer t.mu.RUnlock()
 	for _, sub := range t.subs {
 		select {
-		case sub.ch <- event:
-			logx.Infof("published message to subscriber topic %s", t.name)
 		case <-sub.ctx.Done():
 			continue
+		case sub.ch <- event:
+			logx.Infof("published message to subscriber topic %s cname %s", t.name, sub.cname)
 		default:
 			logx.Warnln("subscriber topic full, dropping message")
 		}
@@ -137,6 +142,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 
 	subCtx, cancel := context.WithCancel(ctx)
 	sub := &qsub{
+		cname:  ksuid.New().String(),
 		ctx:    subCtx,
 		cancel: cancel,
 		ch:     make(chan any, 100),

@@ -262,11 +262,6 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 }
 
 func (ts *TaskService) Manager(action string, duration string) error {
-	manager, err := dag.GraphManager(ts.name)
-	if err != nil {
-		logx.Errorln(err)
-		return err
-	}
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
 		logx.Errorln(err)
@@ -275,36 +270,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 	if *task.State != models.StateRunning && *task.State != models.StatePending && *task.State != models.StatePaused {
 		return errors.New("task is no running")
 	}
-	switch action {
-	case "kill":
-		err = manager.Kill()
-		if err == nil {
-			return storage.Task(ts.name).Update(&models.TaskUpdate{
-				State:    models.Pointer(models.StateFailed),
-				OldState: task.State,
-				Message:  "has been killed",
-			})
-		}
-	case "pause":
-		if manager.State() != dag.StatePaused {
-			_ = manager.Pause(duration)
-			return storage.Task(ts.name).Update(&models.TaskUpdate{
-				State:    models.Pointer(models.StatePaused),
-				OldState: task.State,
-				Message:  "has been paused",
-			})
-		}
-	case "resume":
-		if manager.State() == dag.StatePaused {
-			manager.Resume()
-			return storage.Task(ts.name).Update(&models.TaskUpdate{
-				State:    task.OldState,
-				OldState: task.State,
-				Message:  "has been resumed",
-			})
-		}
-	}
-	return nil
+	return queues.Publish(queues.TYPE_TOPIC, queues.ManagerQueueName, utils.JoinWithInvisibleChar(ts.name, action, duration))
 }
 
 func (ts *TaskService) Dump() (*types.TaskCreateRes, error) {

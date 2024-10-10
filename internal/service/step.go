@@ -11,11 +11,11 @@ import (
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
+	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
-	"github.com/xmapst/AutoExecFlow/pkg/dag"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"
 )
@@ -151,11 +151,6 @@ func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
 }
 
 func (ss *StepService) Manager(action string, duration string) error {
-	manager, err := dag.VertexManager(ss.taskName, ss.stepName)
-	if err != nil {
-		logx.Errorln(err)
-		return err
-	}
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
 		logx.Errorln(err)
@@ -164,39 +159,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 	if *step.State != models.StateRunning && *step.State != models.StatePending && *step.State != models.StatePaused {
 		return errors.New("step is no running")
 	}
-	switch action {
-	case "kill":
-		err = manager.Kill()
-		if err == nil {
-			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
-				State:    models.Pointer(models.StateFailed),
-				OldState: step.State,
-				Message:  "has been killed",
-			})
-		}
-	case "pause":
-		if *step.State == models.StateRunning {
-			return dag.ErrRunning
-		}
-		if manager.State() != dag.StatePaused {
-			_ = manager.Pause(duration)
-			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
-				State:    models.Pointer(models.StatePaused),
-				OldState: step.State,
-				Message:  "has been paused",
-			})
-		}
-	case "resume":
-		if manager.State() == dag.StatePaused {
-			manager.Resume()
-			return storage.Task(ss.taskName).Step(ss.stepName).Update(&models.StepUpdate{
-				State:    step.OldState,
-				OldState: step.State,
-				Message:  "has been resumed",
-			})
-		}
-	}
-	return nil
+	return queues.Publish(queues.TYPE_TOPIC, queues.ManagerQueueName, utils.JoinWithInvisibleChar(ss.taskName, ss.stepName, action, duration))
 }
 
 func (ss *StepService) Delete() error {
