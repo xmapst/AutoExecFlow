@@ -197,6 +197,7 @@ func (ts *TaskService) uniqStepsName(steps types.TaskStepsReq) error {
 func (ts *TaskService) saveTask(db storage.ITask, timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
 	// save task
 	err := db.Insert(&models.Task{
+		Async:   models.Pointer(task.Async),
 		Count:   models.Pointer(len(task.Step)),
 		Timeout: timeout,
 		Disable: models.Pointer(task.Disable),
@@ -273,8 +274,40 @@ func (ts *TaskService) Manager(action string, duration string) error {
 	return queues.Publish(queues.TYPE_TOPIC, queues.ManagerQueueName, utils.JoinWithInvisibleChar(ts.name, action, duration))
 }
 
-func (ts *TaskService) Dump() (*types.TaskCreateRes, error) {
-	return nil, nil
+func (ts *TaskService) Dump() (*types.TaskReq, error) {
+	task, err := storage.Task(ts.name).Get()
+	if err != nil {
+		return nil, err
+	}
+	res := &types.TaskReq{
+		Name: task.Name,
+		//Node:    task.Node,
+		Timeout: task.Timeout.String(),
+		Env:     make(map[string]string),
+		Async:   *task.Async,
+		Disable: *task.Disable,
+	}
+	for _, v := range storage.Task(ts.name).Env().List() {
+		res.Env[v.Name] = v.Value
+	}
+	steps := storage.Task(ts.name).StepList(storage.All)
+	for _, step := range steps {
+		stepRes := &types.TaskStepReq{
+			Name:    step.Name,
+			Type:    step.Type,
+			Content: step.Content,
+			Env:     make(map[string]string),
+			Timeout: step.Timeout.String(),
+			Disable: *step.Disable,
+		}
+		envs := storage.Task(ts.name).Step(step.Name).Env().List()
+		for _, env := range envs {
+			stepRes.Env[env.Name] = env.Value
+		}
+		stepRes.Depends = storage.Task(ts.name).Step(step.Name).Depend().List()
+		res.Step = append(res.Step, stepRes)
+	}
+	return res, nil
 }
 
 func (ts *TaskService) Steps() (code types.Code, data []*types.TaskStepRes, err error) {

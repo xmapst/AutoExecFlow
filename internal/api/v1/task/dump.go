@@ -3,6 +3,7 @@ package task
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
@@ -18,7 +19,7 @@ import (
 // @Produce		application/json
 // @Produce		application/yaml
 // @Param		task path string true "task name"
-// @Success		200 {object} types.Base[types.TaskCreateRes]
+// @Success		200 {object} types.Base[string]
 // @Failure		500 {object} types.Base[any]
 // @Router		/api/v1/task/{task}/dump [get]
 
@@ -33,5 +34,10 @@ func Dump(c *gin.Context) {
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
 	}
-	base.Send(c, base.WithData[*types.TaskCreateRes](res))
+	data, err := yaml.Marshal(res)
+	if err != nil {
+		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
+		return
+	}
+	base.Send(c, base.WithData[string](string(data)))
 }

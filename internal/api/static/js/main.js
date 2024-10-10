@@ -1,11 +1,15 @@
 let highestZIndex = 1000;
 require.config({ paths: { 'vs': baseUrl+basePath+'/vs' } });
-const taskTpl = `# 异步执行, 可选, 默认并行,自定义编排时需要设置为true
+const taskTpl = `# 任务名称, 可选, 默认自动生成
+Name: 测试
+# 允许节点, 可选, 默认为当前节点
+#Node: node-01
+# 异步执行, 可选, 默认并行,自定义编排时需要设置为true
 Async: true
+# 禁用, 可选, 默认false
+#Disable: false
 # 超时时间, 可选, 默认48小时
 Timeout: 2m
-# 任务名称, 可选, 默认自动生成
-Name: 测试
 # 全局环境变量, 可选, key: value形式
 Env:
   Test: "test_env"
@@ -15,6 +19,8 @@ Step:
   - Name: 步骤2
     # 超时时间, 可选, 默认任务级超时时间
     Timeout: 2m
+    # 禁用, 可选, 默认false
+    #Disable: false
     # 依赖步骤, 可选[自定义编排时用到]
     Depends:
       - 步骤1
@@ -737,7 +743,7 @@ class TaskAddCard {
                 foldingStrategy: 'indentation',
                 lineNumbers: 'on',
                 minimap: { enabled: false },
-                tabSize: 2,
+                tabSize: 4,
                 mouseWheelZoom: true,
                 formatOnType: true,
                 formatOnPaste: true,
@@ -864,6 +870,7 @@ class TaskTable {
                             <button class="dropbtn">Actions</button>
                             <div class="dropdown-content">
                                 <a href="#" id="detail-task">详情</a>
+                                <a href="#" id="dump-task">导出</a>
                                 ${task.state === 'running' ? '<a href="#" id="kill-task">强杀</a>' : ''}
                                 ${task.state === 'stopped' || task.state === 'failed' ? '<a href="#" id="delete-task">删除</a>' : ''}
                             </div>
@@ -877,6 +884,7 @@ class TaskTable {
                 msgDocument.setAttribute('title', task.msg);
             }
             row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task));
+            row.querySelector("#dump-task").addEventListener("click", () => this.dumpTask(task));
             if (row.querySelector("#kill-task") !== null) {
                 row.querySelector("#kill-task").addEventListener("click", () => Utils.taskManager(task.name, 'kill'));
             }
@@ -938,6 +946,32 @@ class TaskTable {
 
     showTaskCard(task) {
         new TaskModal(task);
+    };
+
+    dumpTask(task) {
+        fetch(`${baseUrl}${taskUrl}/${task.name}/dump`, {
+            method: 'GET',
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }).then(res => {
+            if (res.code !== 0) {
+                alert(res.msg);
+                throw new Error(res.msg);
+            }
+            const blob = new Blob([res.data], { type: 'application/yaml' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${task.name}.yaml`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }).catch(error => {
+            console.log('There was a problem with the fetch operation:', error);
+            throw error;
+        })
     };
 }
 

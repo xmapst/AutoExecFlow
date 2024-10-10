@@ -96,46 +96,46 @@ type TaskStepLogRes struct {
 
 type TaskStepReq struct {
 	// 步骤名称
-	Name string `json:"name" form:"name" yaml:"Name" example:"script.ps1"`
+	Name string `json:"name,omitempty" form:"name" yaml:"Name,omitempty" example:"script.ps1"`
 	// 步骤超时时间
-	Type string `json:"type" form:"type" yaml:"Type" example:"powershell"`
-	// 步骤内容
-	Content string `json:"content" form:"content" yaml:"Content" example:"sleep 10"`
-	// 步骤环境变量
-	Env map[string]string `json:"env" form:"env" yaml:"Env" example:"key:value,key1:value1"`
-	// 步骤依赖
-	Depends []string `json:"depends" form:"depends" yaml:"Depends" example:""`
-	// 步骤超时时间
-	Timeout string `json:"timeout" form:"timeout" yaml:"Timeout" example:"3m"`
+	Timeout string `json:"timeout,omitempty" form:"timeout" yaml:"Timeout,omitempty" example:"3m"`
 	// 是否禁用
-	Disable bool `json:"disable" form:"disable" yaml:"Disable" example:"false"`
+	Disable bool `json:"disable,omitempty" form:"disable" yaml:"Disable,omitempty" example:"false"`
+	// 步骤依赖
+	Depends []string `json:"depends,omitempty" form:"depends" yaml:"Depends,omitempty" example:""`
+	// 步骤环境变量
+	Env map[string]string `json:"env,omitempty" form:"env" yaml:"Env,omitempty" example:"key:value,key1:value1"`
+	// 步骤超时时间
+	Type string `json:"type,omitempty" form:"type" yaml:"Type,omitempty" example:"powershell"`
+	// 步骤内容
+	Content string `json:"content,omitempty" form:"content" yaml:"Content,omitempty" example:"sleep 10"`
 
 	// Deprecated, use Env
-	EnvVars []string `json:"env_vars" form:"env_vars" yaml:"EnvVars" example:"env1=value1,env2=value2" swaggerignore:"true"`
+	EnvVars []string `json:"env_vars,omitempty" form:"env_vars" yaml:"EnvVars,omitempty" example:"env1=value1,env2=value2" swaggerignore:"true"`
 	// Deprecated, use Type
-	CommandType string `json:"command_type" form:"command_type" yaml:"CommandType" example:"powershell" swaggerignore:"true"`
+	CommandType string `json:"command_type,omitempty" form:"command_type" yaml:"CommandType,omitempty" example:"powershell" swaggerignore:"true"`
 	// Deprecated, use Content
-	CommandContent string `json:"command_content" form:"command_content" yaml:"CommandContent" example:"sleep 10" swaggerignore:"true"`
+	CommandContent string `json:"command_content,omitempty" form:"command_content" yaml:"CommandContent,omitempty" example:"sleep 10" swaggerignore:"true"`
 }
 
 type TaskReq struct {
 	// 任务名称
-	Name string `json:"name" query:"name"  form:"name" yaml:"Name" example:"task_name"`
+	Name string `json:"name,omitempty" query:"name"  form:"name" yaml:"Name,omitempty" example:"task_name"`
 	// Node 执行节点
-	Node string `json:"node" query:"node" form:"node" yaml:"Node" example:""`
-	// 任务超时时间
-	Timeout string `json:"timeout" query:"timeout" form:"timeout" yaml:"Timeout" example:"24h"`
-	// 任务环境变量
-	Env map[string]string `json:"env" query:"env" form:"env" yaml:"Env" example:"key:value,key1:value1"`
+	Node string `json:"node,omitempty" query:"node" form:"node" yaml:"Node,omitempty" example:""`
 	// 是否异步执行
-	Async bool `json:"async" query:"async" form:"async" yaml:"Async" example:"false"`
+	Async bool `json:"async,omitempty" query:"async" form:"async" yaml:"Async,omitempty" example:"false"`
 	// 是否禁用
-	Disable bool `json:"disable" query:"disable" form:"disable" yaml:"Disable" example:"false"`
+	Disable bool `json:"disable,omitempty" query:"disable" form:"disable" yaml:"Disable,omitempty" example:"false"`
+	// 任务超时时间
+	Timeout string `json:"timeout,omitempty" query:"timeout" form:"timeout,omitempty" yaml:"Timeout,omitempty" example:"24h"`
+	// 任务环境变量
+	Env map[string]string `json:"env,omitempty" query:"env" form:"env" yaml:"Env,omitempty" example:"key:value,key1:value1"`
 	// 任务步骤
-	Step TaskStepsReq `json:"step" form:"step" yaml:"Step"`
+	Step TaskStepsReq `json:"step,omitempty" form:"step" yaml:"Step,omitempty"`
 
 	// Deprecated, use Env
-	EnvVars []string `json:"env_vars" query:"env_vars" form:"env_vars" yaml:"EnvVars" example:"" swaggerignore:"true"`
+	EnvVars []string `json:"env_vars,omitempty" query:"env_vars" form:"env_vars" yaml:"EnvVars,omitempty" example:"" swaggerignore:"true"`
 }
 
 type TaskStepsReq []*TaskStepReq
