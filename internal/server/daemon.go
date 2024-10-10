@@ -69,10 +69,6 @@ func (p *Program) init() error {
 		return err
 	}
 
-	if config.App.Mode == config.RUN_MODE_Api {
-		return nil
-	}
-
 	// 调整工作池的大小
 	worker.SetSize(config.App.PoolSize)
 	logx.Infoln("number of workers", worker.GetSize())
@@ -94,9 +90,6 @@ func (p *Program) Start(service.Service) error {
 	if err != nil {
 		logx.Errorln(err)
 		return err
-	}
-	if config.App.Mode == config.RUN_MODE_Worker {
-		return nil
 	}
 	return p.startServer()
 }

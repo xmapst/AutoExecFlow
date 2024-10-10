@@ -206,28 +206,68 @@ class Utils {
 
 // 通用的WebSocket管理器
 class WebSocketManager {
-    constructor(url, onMessage, onError) {
-        this.socket = new WebSocket(url);
-        this.socket.onopen = () => console.log("WebSocket connection established.");
-        this.socket.onmessage = (event) => {
-            const data = JSON.parse(event.data)
-            onMessage(data)
+    constructor(url, onMessage, onError, reconnectInterval = 5000) {
+        this.url = url;
+        this.onMessage = onMessage;
+        this.onError = onError;
+        this.reconnectInterval = reconnectInterval;
+        this.socket = null;
+        this.isManuallyClosed = false;
+        this.connect();
+    }
+
+    connect() {
+        if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+            console.log("WebSocket is already open or connecting.");
+            return;
+        }
+        this.isManuallyClosed = false;
+        this.socket = new WebSocket(this.url);
+
+        this.socket.onopen = () => {
+            console.log("WebSocket connection established.");
         };
+
+        this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.onMessage(data);
+        };
+
         this.socket.onerror = (error) => {
             console.error('WebSocket error:', error);
-            if (onError) onError(error);
+            if (this.onError) this.onError(error);
+            this.reconnect();
         };
-        this.socket.onclose = () => console.log("WebSocket connection closed.");
+
+        this.socket.onclose = (event) => {
+            if (event.wasClean) {
+                console.log("WebSocket connection closed cleanly.");
+            } else {
+                console.warn("WebSocket connection closed unexpectedly.");
+                this.reconnect();
+            }
+        };
+    }
+
+    reconnect() {
+        if (this.isManuallyClosed) return;
+        setTimeout(() => {
+            console.log("Attempting to reconnect...");
+            this.connect();
+        }, this.reconnectInterval);
     }
 
     send(data) {
-        if (this.socket.readyState === WebSocket.OPEN) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(data));
+        } else {
+            console.warn("WebSocket is not open. Unable to send data.");
         }
     }
 
     close() {
         if (this.socket) {
+            this.isManuallyClosed = true;
             this.socket.close(1000, "Normal closure");
         }
     }
@@ -338,7 +378,7 @@ class TaskModal {
         });
         const toolbar = new G6.ToolBar({
             getContent: () => {
-                return `<ul class="g6-component-toolbar" style="top: 0px; left: 1011px;">
+                return `<ul class="g6-component-toolbar" style="top: 0; left: 1011px;">
                     <li code="zoomOut">
                         <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
                             <path d="M658.432 428.736a33.216 33.216 0 0 1-33.152 33.152H525.824v99.456a33.216 33.216 0 0 1-66.304 0V461.888H360.064a33.152 33.152 0 0 1 0-66.304H459.52V296.128a33.152 33.152 0 0 1 66.304 0V395.52H625.28c18.24 0 33.152 14.848 33.152 33.152z m299.776 521.792a43.328 43.328 0 0 1-60.864-6.912l-189.248-220.992a362.368 362.368 0 0 1-215.36 70.848 364.8 364.8 0 1 1 364.8-364.736 363.072 363.072 0 0 1-86.912 235.968l192.384 224.64a43.392 43.392 0 0 1-4.8 61.184z m-465.536-223.36a298.816 298.816 0 0 0 298.432-298.432 298.816 298.816 0 0 0-298.432-298.432A298.816 298.816 0 0 0 194.24 428.8a298.816 298.816 0 0 0 298.432 298.432z"></path>

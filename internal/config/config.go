@@ -15,16 +15,11 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-var App = new(Config)
-
-const (
-	RUN_MODE_Standalone = "standalone"
-	RUN_MODE_Worker     = "worker"
-	RUN_MODE_Api        = "api"
-)
+var App = &Config{
+	Queue: "inmemory://localhost",
+}
 
 type Config struct {
-	Mode          string
 	ListenAddress string
 	PoolSize      int
 	ExecTimeOut   time.Duration
@@ -48,16 +43,6 @@ func (c *Config) Init() error {
 		return fmt.Errorf("invalid log level: %v", err)
 	}
 	logx.SetLevel(level)
-	logx.Infof("run mode: %s", c.Mode)
-	if c.Mode != RUN_MODE_Standalone {
-		// 不能使用内存队列
-		if strings.HasPrefix(c.Queue, queues.BROKER_INMEMORY) {
-			return fmt.Errorf("can not use memory queue in worker or api mode")
-		}
-		if strings.HasPrefix(c.Database, storage.TYPE_SQLITE) {
-			logx.Warnln("sqlite is not recommended for production use")
-		}
-	}
 
 	before, _, found := strings.Cut(c.Database, "://")
 	if !found {
@@ -80,12 +65,6 @@ func (c *Config) Init() error {
 		"workspace": c.WorkSpace(),
 	}
 	for name, dir := range dirs {
-		if c.Mode == RUN_MODE_Api && name == "script" {
-			continue
-		}
-		if c.Mode == RUN_MODE_Api && name == "workspace" {
-			continue
-		}
 		if err = utils.EnsureDirExist(dir); err != nil {
 			return fmt.Errorf("failed to ensure directory %s: %v", dir, err)
 		}
