@@ -52,7 +52,7 @@ func Start(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
-	event, _, err := dag.SubscribeEvent()
+	event, id, err := dag.SubscribeEvent()
 	if err != nil {
 		return err
 	}
@@ -60,6 +60,7 @@ func Start(ctx context.Context) error {
 		for {
 			select {
 			case <-ctx.Done():
+				dag.UnSubscribeEvent(id)
 				return
 			case e := <-event:
 				_ = queues.PublishEvent(e)

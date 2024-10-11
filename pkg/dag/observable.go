@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	eventChan  = make(chan string, 65535)
+	eventChan  = make(chan string, 15)
 	observable = newEvent(eventChan)
 )
 
@@ -18,13 +18,6 @@ func SubscribeEvent() (EventStream, int64, error) {
 func UnSubscribeEvent(id int64) {
 	observable.UnSubscribe(id)
 }
-
-type EventType int
-
-const (
-	TaskEventType EventType = iota + 1
-	StepEventType
-)
 
 // EventStream 是一个只接收的通道，表示事件流
 type EventStream <-chan string
