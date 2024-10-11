@@ -55,6 +55,7 @@ func (ss *StepService) review(step *types.TaskStepReq) (time.Duration, error) {
 	if step.Name == "" {
 		step.Name = ksuid.New().String()
 	}
+	ss.stepName = step.Name
 	if step.CommandType != "" && step.Type == "" {
 		step.Type = step.CommandType
 	}
@@ -248,7 +249,7 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 		models.StatePaused:  ss.createOnceHandler(onceMap[models.StatePaused], types.CodePaused, "step is paused"),
 		models.StateUnknown: ss.createOnceHandler(onceMap[models.StateUnknown], types.CodeNoData, "step status unknown"),
 		models.StateRunning: ss.handleRunningState,
-		models.StateStop:    ss.handleFinalState(types.CodeSuccess),
+		models.StateStopped: ss.handleFinalState(types.CodeSuccess),
 		models.StateFailed:  ss.handleFinalState(types.CodeFailed),
 	}
 

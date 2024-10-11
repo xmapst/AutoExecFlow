@@ -17,9 +17,12 @@ var pool = tunny.NewCallback(1)
 
 func Start(ctx context.Context) error {
 	if err := queues.SubscribeTask(ctx, utils.HostName(), func(data string) error {
-		t := newTask(data)
-		if t == nil {
-			return errors.New("task not found")
+		if data == "" {
+			return errors.New("invalid task name")
+		}
+		t, err := newTask(data)
+		if err != nil {
+			return err
 		}
 		return pool.Submit(t.run)
 	}); err != nil {

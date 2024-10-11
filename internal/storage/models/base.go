@@ -9,7 +9,7 @@ import (
 type State int
 
 const (
-	StateStop    State = iota // 成功
+	StateStopped State = iota // 成功
 	StateRunning              // 运行
 	StateFailed               // 失败
 	StateUnknown              // 未知
@@ -19,7 +19,7 @@ const (
 )
 
 var StateMap = map[State]string{
-	StateStop:    "stopped",
+	StateStopped: "stopped",
 	StateRunning: "running",
 	StateFailed:  "failed",
 	StateUnknown: "unknown",

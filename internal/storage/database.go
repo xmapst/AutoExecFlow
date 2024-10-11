@@ -90,7 +90,7 @@ func newDB(rawURL string) (*database, error) {
 	var tasks []string
 	d.Model(&models.Task{}).
 		Select("name").
-		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", utils.HostName(), models.StateStop, models.StateFailed).
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", utils.HostName(), models.StateStopped, models.StateFailed).
 		Find(&tasks)
 
 	// 修正非正常关机时步骤还在运行中或挂起的状态为错误

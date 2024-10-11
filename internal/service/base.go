@@ -11,7 +11,7 @@ import (
 
 func ConvertState(state models.State) types.Code {
 	switch state {
-	case models.StateStop:
+	case models.StateStopped:
 		return types.CodeSuccess
 	case models.StateRunning:
 		return types.CodeRunning

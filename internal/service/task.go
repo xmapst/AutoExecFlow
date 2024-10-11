@@ -82,16 +82,16 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 }
 
 func (ts *TaskService) Create(task *types.TaskReq) (err error) {
-	// 检查任务是否在运行
-	if _, err = dag.GraphManager(task.Name); err == nil {
-		return errors.New("task is running")
-	}
-
 	// 检查请求内容
 	timeout, err := ts.review(task)
 	if err != nil {
 		logx.Errorln(err)
 		return err
+	}
+
+	// 检查任务是否在运行
+	if _, err = dag.GraphManager(task.Name); err == nil {
+		return errors.New("task is running")
 	}
 
 	var db = storage.Task(task.Name)
@@ -100,7 +100,7 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 	if err != nil {
 		return err
 	}
-	if state != models.StateStop && state != models.StateUnknown && state != models.StateFailed {
+	if state != models.StateStopped && state != models.StateUnknown && state != models.StateFailed {
 		return errors.New("task is running")
 	}
 
@@ -151,6 +151,7 @@ func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
 	if task.Name == "" {
 		task.Name = ksuid.New().String()
 	}
+	ts.name = task.Name
 	if task.Node == "" {
 		task.Node = utils.HostName()
 	}

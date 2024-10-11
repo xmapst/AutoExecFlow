@@ -25,32 +25,43 @@ type task struct {
 	scriptDir string
 }
 
-func newTask(taskName string) *task {
+func newTask(taskName string) (*task, error) {
 	t := &task{
 		storage:   storage.Task(taskName),
 		workspace: filepath.Join(config.App.WorkSpace(), taskName),
 		scriptDir: filepath.Join(config.App.ScriptDir(), taskName),
 	}
+	var err error
+	defer func() {
+		if err == nil {
+			return
+		}
+		state := models.StateFailed
+		if t.storage.IsDisable() {
+			state = models.StateStopped
+		}
+		_ = t.storage.Update(&models.TaskUpdate{
+			Message:  err.Error(),
+			State:    models.Pointer(state),
+			OldState: models.Pointer(models.StatePending),
+			STime:    models.Pointer(time.Now()),
+			ETime:    models.Pointer(time.Now()),
+		})
+	}()
 	// 禁用时直接跳过
 	if t.storage.IsDisable() {
 		logx.Infoln("the task is disabled, no execution required", taskName)
 		for _, sName := range t.storage.StepNameList("") {
 			_ = t.storage.Step(sName).Update(&models.StepUpdate{
 				Message:  "the task is disabled, no execution required",
-				State:    models.Pointer(models.StateStop),
+				State:    models.Pointer(models.StateStopped),
 				OldState: models.Pointer(models.StatePending),
 				STime:    models.Pointer(time.Now()),
 				ETime:    models.Pointer(time.Now()),
 			})
 		}
-		_ = t.storage.Update(&models.TaskUpdate{
-			Message:  "the task is disabled, no execution required",
-			State:    models.Pointer(models.StateStop),
-			OldState: models.Pointer(models.StatePending),
-			STime:    models.Pointer(time.Now()),
-			ETime:    models.Pointer(time.Now()),
-		})
-		return nil
+		err = errors.New("the task is disabled, no execution required")
+		return nil, err
 	}
 
 	// 校验dag图形
@@ -63,7 +74,7 @@ func newTask(taskName string) *task {
 			logx.Infoln("the step is disabled, no execution required", sName)
 			_ = t.storage.Step(sName).Update(&models.StepUpdate{
 				Message:  "the step is disabled, no execution required",
-				State:    models.Pointer(models.StateStop),
+				State:    models.Pointer(models.StateStopped),
 				OldState: models.Pointer(models.StatePending),
 				STime:    models.Pointer(time.Now()),
 				ETime:    models.Pointer(time.Now()),
@@ -73,13 +84,12 @@ func newTask(taskName string) *task {
 		stepVertex[sName] = dag.NewVertex(sName, newStep(t.storage.Step(sName), t.workspace, t.scriptDir))
 	}
 	if len(stepVertex) == 0 {
-		logx.Infoln("the task has no enabled steps, no execution required", taskName)
-		return nil
+		err = errors.New("no enabled steps")
+		return nil, err
 	}
 
 	// 2. 创建dag图形
 	t.graph = dag.New(taskName)
-	var err error
 	defer func() {
 		if err != nil {
 			_ = t.graph.Kill()
@@ -90,7 +100,7 @@ func newTask(taskName string) *task {
 		vertex, err = t.graph.AddVertex(vertex)
 		if err != nil {
 			logx.Errorln(t.name(), err)
-			return nil
+			return nil, err
 		}
 		err = vertex.WithDeps(func() []*dag.Vertex {
 			var stepFns []*dag.Vertex
@@ -105,15 +115,15 @@ func newTask(taskName string) *task {
 		}()...)
 		if err != nil {
 			logx.Errorln(t.name(), err)
-			return nil
+			return nil, err
 		}
 	}
 	// 4. 校验dag图形
 	if err = t.graph.Validator(true); err != nil {
 		logx.Errorln(t.name(), err)
-		return nil
+		return nil, err
 	}
-	return t
+	return t, nil
 }
 
 func (t *task) name() string {
@@ -168,7 +178,7 @@ func (t *task) run() (err error) {
 		return
 	}
 
-	res.State = models.Pointer(models.StateStop)
+	res.State = models.Pointer(models.StateStopped)
 	res.Message = "task has stopped"
 	if err = t.graph.Run(ctx); err != nil {
 		logx.Errorln(t.name(), err)

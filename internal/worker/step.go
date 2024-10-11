@@ -89,7 +89,7 @@ func (s *step) vertexFunc() dag.VertexFunc {
 		res.Message = "execution succeed"
 		code, err := runnerItr.Run(ctx)
 		res.Code = models.Pointer(code)
-		res.State = models.Pointer(models.StateStop)
+		res.State = models.Pointer(models.StateStopped)
 		if err != nil {
 			res.State = models.Pointer(models.StateFailed)
 			res.Message = err.Error()
