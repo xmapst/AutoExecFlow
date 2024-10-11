@@ -162,3 +162,7 @@ func SetSize(n int) {
 func GetSize() int {
 	return pool.GetSize()
 }
+
+func Shutdown() {
+	pool.Close()
+}

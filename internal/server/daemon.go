@@ -190,6 +190,9 @@ func (p *Program) Stop(service.Service) error {
 	logx.Infoln("shutdown queue")
 	queues.Shutdown(ctx)
 
+	logx.Infoln("shutdown worker")
+	worker.Shutdown()
+
 	logx.Infoln("close storage")
 	if err := storage.Close(); err != nil {
 		logx.Errorln(err)
