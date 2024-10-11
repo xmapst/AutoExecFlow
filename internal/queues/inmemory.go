@@ -14,7 +14,7 @@ import (
 
 const defaultQueueSize = 1000
 
-type memQueue struct {
+type memDirect struct {
 	name    string
 	ch      chan string
 	subs    []*qsub
@@ -24,8 +24,8 @@ type memQueue struct {
 	wg      sync.WaitGroup
 }
 
-func newMemQueue(name string) *memQueue {
-	return &memQueue{
+func newMemDirect(name string) *memDirect {
+	return &memDirect{
 		name: name,
 		ch:   make(chan string, defaultQueueSize),
 		subs: make([]*qsub, 0),
@@ -35,73 +35,79 @@ func newMemQueue(name string) *memQueue {
 type qsub struct {
 	ctx    context.Context
 	cancel context.CancelFunc
+	cname  string
 
 	// topic only
-	cname string
-	ch    chan string
+	ch chan string
 }
 
-func (q *memQueue) publish(data string) {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	if q.closed.Load() {
+func (d *memDirect) publish(data string) {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	if d.closed.Load() {
 		return
 	}
 	select {
-	case q.ch <- data:
-		logx.Infof("published message to subscriber queue %s", q.name)
+	case d.ch <- data:
+		logx.Infof("published message to subscriber direct queue %s", d.name)
 	default:
-		logx.Warnln("subscriber queue full, dropping message")
+		logx.Warnln("subscriber direct queue full, dropping message")
 	}
 }
 
-func (q *memQueue) size() int {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	return len(q.ch)
+func (d *memDirect) size() int {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	return len(d.ch)
 }
 
-func (q *memQueue) close() {
-	if !q.closed.CompareAndSwap(false, true) {
+func (d *memDirect) close() {
+	if !d.closed.CompareAndSwap(false, true) {
 		return
 	}
-	close(q.ch)
+	close(d.ch)
 
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	for _, sub := range q.subs {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	for _, sub := range d.subs {
 		sub.cancel()
 	}
 
-	q.wg.Wait()
+	d.wg.Wait()
 }
 
-func (q *memQueue) subscribe(ctx context.Context, sub Handle) {
-	logx.Infof("subscribing to queue %s", q.name)
-	q.mu.Lock()
-	ctx, cancel := context.WithCancel(ctx)
-	q.subs = append(q.subs, &qsub{ctx: ctx, cancel: cancel})
-	q.mu.Unlock()
+func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
+	d.mu.Lock()
+	subCtx, cancel := context.WithCancel(ctx)
+	sub := &qsub{
+		cname:  ksuid.New().String(),
+		ctx:    subCtx,
+		cancel: cancel,
+		ch:     make(chan string, 100),
+	}
+	logx.Infof("subscribing to direct queue %s %s", d.name, sub.cname)
+	d.subs = append(d.subs, sub)
+	d.mu.Unlock()
 
-	q.wg.Add(1)
+	d.wg.Add(1)
 
 	go func() {
-		defer q.wg.Done()
+		defer d.wg.Done()
 		for {
 			select {
-			case <-ctx.Done():
-				logx.Infof("subscribe queue closed %s", q.name)
+			case <-sub.ctx.Done():
+				logx.Infof("subscribe direct queue closed %s %s", d.name, sub.cname)
 				return
-			case m, ok := <-q.ch:
+			case m, ok := <-d.ch:
 				if !ok {
-					logx.Infof("subscribe queue closed %s", q.name)
+					logx.Infof("subscribe direct queue closed %s %s", d.name, sub.cname)
 					return
 				}
-				atomic.AddInt32(&q.unacked, 1)
-				if err := sub(m); err != nil {
+				atomic.AddInt32(&d.unacked, 1)
+				if err := handle(m); err != nil {
 					logx.Errorln("unexpected error occurred while processing task", err)
 				}
-				atomic.AddInt32(&q.unacked, -1)
+				atomic.AddInt32(&d.unacked, -1)
 			}
 		}
 	}()
@@ -129,15 +135,14 @@ func (t *memTopic) publish(event string) {
 		case <-sub.ctx.Done():
 			continue
 		case sub.ch <- event:
-			logx.Infof("published message to subscriber topic %s cname %s", t.name, sub.cname)
+			logx.Infof("published message to subscriber topic queue %s cname %s", t.name, sub.cname)
 		default:
-			logx.Warnln("subscriber topic full, dropping message")
+			logx.Warnln("subscriber topic queue full, dropping message")
 		}
 	}
 }
 
 func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
-	logx.Infof("subscribing to topic %s", t.name)
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -148,6 +153,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		cancel: cancel,
 		ch:     make(chan string, 100),
 	}
+	logx.Infof("subscribing to topic queue %s %s", t.name, sub.cname)
 	t.subs = append(t.subs, sub)
 
 	go func() {
@@ -155,7 +161,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		for {
 			select {
 			case <-sub.ctx.Done():
-				logx.Infof("subscribe topic closed %s", t.name)
+				logx.Infof("subscribe topic queue closed %s %s", t.name, sub.cname)
 				return
 			case m := <-sub.ch:
 				if err := handler(m); err != nil {
@@ -178,7 +184,7 @@ func (t *memTopic) close() {
 }
 
 type memoryBroker struct {
-	queues    sync.Map
+	directs   sync.Map
 	topics    sync.Map
 	terminate atomic.Bool
 }
@@ -189,15 +195,15 @@ func newInMemoryBroker() *memoryBroker {
 
 func (m *memoryBroker) PublishTask(node string, data string) error {
 	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
-	q, _ := m.queues.LoadOrStore(routingKey, newMemQueue(routingKey))
-	q.(*memQueue).publish(data)
+	d, _ := m.directs.LoadOrStore(routingKey, newMemDirect(routingKey))
+	d.(*memDirect).publish(data)
 	return nil
 }
 
 func (m *memoryBroker) SubscribeTask(ctx context.Context, node string, handler Handle) error {
 	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
-	q, _ := m.queues.LoadOrStore(routingKey, newMemQueue(routingKey))
-	q.(*memQueue).subscribe(ctx, handler)
+	d, _ := m.directs.LoadOrStore(routingKey, newMemDirect(routingKey))
+	d.(*memDirect).subscribe(ctx, handler)
 	return nil
 }
 
@@ -242,12 +248,12 @@ func (m *memoryBroker) Shutdown(ctx context.Context) {
 	}
 
 	var wg sync.WaitGroup
-	m.queues.Range(func(_, value any) bool {
+	m.directs.Range(func(_, value any) bool {
 		wg.Add(1)
-		go func(q *memQueue) {
+		go func(d *memDirect) {
 			defer wg.Done()
-			q.close()
-		}(value.(*memQueue))
+			d.close()
+		}(value.(*memDirect))
 		return true
 	})
 	m.topics.Range(func(_, value any) bool {

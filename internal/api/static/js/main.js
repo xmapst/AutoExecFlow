@@ -246,16 +246,13 @@ class WebSocketManager {
         };
 
         this.socket.onclose = (event) => {
-            if (event.wasClean) {
-                console.log("WebSocket connection closed cleanly.");
-            } else {
-                console.warn("WebSocket connection closed unexpectedly.");
-                this.reconnect();
-            }
+            console.log(event)
+            console.log("WebSocket connection closed cleanly.");
         };
     }
 
     reconnect() {
+        console.log(this.isManuallyClosed)
         if (this.isManuallyClosed) return;
         setTimeout(() => {
             console.log("Attempting to reconnect...");
@@ -272,8 +269,8 @@ class WebSocketManager {
     }
 
     close() {
+        this.isManuallyClosed = true;
         if (this.socket) {
-            this.isManuallyClosed = true;
             this.socket.close(1000, "Normal closure");
         }
     }
