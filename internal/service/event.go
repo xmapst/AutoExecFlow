@@ -13,8 +13,8 @@ func Event() *EventService {
 	return &EventService{}
 }
 
-func (e *EventService) Subscribe(ctx context.Context, event chan string) {
-	queues.Subscribe(ctx, queues.TYPE_TOPIC, queues.EventQueueName, func(data string) error {
+func (e *EventService) Subscribe(ctx context.Context, event chan string) error {
+	return queues.SubscribeEvent(ctx, func(data string) error {
 		event <- data
 		return nil
 	})

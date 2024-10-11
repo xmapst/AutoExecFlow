@@ -2,9 +2,10 @@ package queues
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/rabbitmq/amqp091-go"
+	"github.com/segmentio/ksuid"
 	"github.com/xmapst/go-rabbitmq"
 	"go.uber.org/zap"
 
@@ -26,16 +27,13 @@ type amqpBroker struct {
 func newAmqpBroker(rawURL string) (*amqpBroker, error) {
 	r := new(amqpBroker)
 	var err error
+	table := amqp091.NewConnectionProperties()
+	table["connection_name"] = utils.HostName()
 	r.conn, err = rabbitmq.NewConn(
 		rawURL,
 		rabbitmq.WithConnectionOptionsLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))),
 		rabbitmq.WithConnectionOptionsConfig(rabbitmq.Config{
-			Properties: amqp091.Table{
-				"connection_name": utils.HostName(),
-				"platform":        "Golang",
-				"version":         "0.9.1",
-				"product":         "RabbitMQ",
-			},
+			Properties: table,
 		}),
 	)
 	if err != nil {
@@ -79,34 +77,105 @@ func (r *amqpBroker) Shutdown(ctx context.Context) {
 	_ = r.conn.Close()
 }
 
-func (r *amqpBroker) Subscribe(ctx context.Context, class string, qname string, handler Handle) error {
-	switch class {
-	case TYPE_DIRECT:
-		return r.subscribe(ctx, class, queueExchangeName, qname, handler)
-	case TYPE_TOPIC:
-		return r.subscribe(ctx, class, topicExchangeName, qname, handler)
-	default:
-		return errors.New("unknown class")
-	}
+func (r *amqpBroker) PublishTask(node string, data string) error {
+	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
+	logx.Debugln("Publish", queueExchangeName, "queue", node)
+	return r.qPublish.Publish(
+		[]byte(data), []string{routingKey},
+		rabbitmq.WithPublishOptionsExchange(queueExchangeName), // 交换机名称
+		rabbitmq.WithPublishOptionsMandatory,                   // 强制发布
+		rabbitmq.WithPublishOptionsPersistentDelivery,          // 立即发布
+	)
 }
 
-func (r *amqpBroker) subscribe(ctx context.Context, class string, name, routingKey string, handler Handle) error {
-	logx.Debugln("Subscribe", name, "queue", routingKey)
+func (r *amqpBroker) SubscribeTask(ctx context.Context, node string, handler Handle) error {
+	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
+	logx.Debugln("Subscribe", queueExchangeName, "queue", routingKey)
 	consumer, err := rabbitmq.NewConsumer(
 		r.conn, routingKey,
 		rabbitmq.WithConsumerOptionsLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))), // 日志
-		rabbitmq.WithConsumerOptionsExchangeName(name),                                         // 交换机名称
+		rabbitmq.WithConsumerOptionsExchangeName(queueExchangeName),                            // 交换机名称
 		rabbitmq.WithConsumerOptionsRoutingKey(routingKey),                                     // routing key
-		rabbitmq.WithConsumerOptionsExchangeKind(class),                                        // 交换机类型
+		rabbitmq.WithConsumerOptionsExchangeKind(amqp091.ExchangeDirect),                       // 交换机类型
 		rabbitmq.WithConsumerOptionsExchangeDeclare,                                            // 声明交换机
 		rabbitmq.WithConsumerOptionsExchangeDurable,                                            // 交换机持久化
+		rabbitmq.WithConsumerOptionsQueueDurable,                                               // 队列持久化
 	)
 	if err != nil {
 		return err
 	}
+	r.subscribe(ctx, consumer, handler)
+	return nil
+}
+
+func (r *amqpBroker) PublishEvent(data string) error {
+	routingKey := fmt.Sprintf("%s.*", eventRoutingKey)
+	logx.Debugln("Publish", topicExchangeName, "queue", routingKey)
+	return r.qPublish.Publish(
+		[]byte(data), []string{routingKey},
+		rabbitmq.WithPublishOptionsExchange(topicExchangeName), // 交换机名称
+		rabbitmq.WithPublishOptionsMandatory,                   // 强制发布
+		rabbitmq.WithPublishOptionsPersistentDelivery,          // 立即发布
+	)
+}
+
+func (r *amqpBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
+	routingKey := fmt.Sprintf("%s.*", eventRoutingKey)
+	queueName := fmt.Sprintf("%s_%s", eventRoutingKey, ksuid.New().String())
+	logx.Debugln("Subscribe", topicExchangeName, "queue", queueName)
+	consumer, err := rabbitmq.NewConsumer(
+		r.conn, queueName,
+		rabbitmq.WithConsumerOptionsLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))), // 日志
+		rabbitmq.WithConsumerOptionsExchangeName(topicExchangeName),                            // 交换机名称
+		rabbitmq.WithConsumerOptionsRoutingKey(routingKey),                                     // routing key
+		rabbitmq.WithConsumerOptionsExchangeKind(amqp091.ExchangeTopic),                        // 交换机类型
+		rabbitmq.WithConsumerOptionsExchangeDeclare,                                            // 声明交换机
+		rabbitmq.WithConsumerOptionsExchangeDurable,                                            // 交换机持久化
+		rabbitmq.WithConsumerOptionsQueueAutoDelete,                                            // 队列自动删除
+	)
+	if err != nil {
+		return err
+	}
+	r.subscribe(ctx, consumer, handler)
+	return nil
+}
+
+func (r *amqpBroker) PublishManager(node string, data string) error {
+	routingKey := fmt.Sprintf("%s.%s", managerRoutingKey, node)
+	logx.Debugln("Publish", topicExchangeName, "queue", routingKey)
+	return r.tPublish.Publish(
+		[]byte(data), []string{routingKey},
+		rabbitmq.WithPublishOptionsExchange(topicExchangeName), // 交换机名称
+		rabbitmq.WithPublishOptionsMandatory,                   // 强制发布
+		rabbitmq.WithPublishOptionsPersistentDelivery,          // 立即发布
+	)
+}
+
+func (r *amqpBroker) SubscribeManager(ctx context.Context, node string, handler Handle) error {
+	routingKey := fmt.Sprintf("%s.%s", managerRoutingKey, node)
+	queueName := fmt.Sprintf("%s_%s", managerRoutingKey, node)
+	logx.Debugln("Subscribe", topicExchangeName, "queue", queueName)
+	consumer, err := rabbitmq.NewConsumer(
+		r.conn, queueName,
+		rabbitmq.WithConsumerOptionsLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))), // 日志
+		rabbitmq.WithConsumerOptionsExchangeName(topicExchangeName),                            // 交换机名称
+		rabbitmq.WithConsumerOptionsRoutingKey(routingKey),                                     // routing key
+		rabbitmq.WithConsumerOptionsExchangeKind(amqp091.ExchangeTopic),                        // 交换机类型
+		rabbitmq.WithConsumerOptionsExchangeDeclare,                                            // 声明交换机
+		rabbitmq.WithConsumerOptionsExchangeDurable,                                            // 交换机持久化
+		rabbitmq.WithConsumerOptionsQueueAutoDelete,                                            // 队列自动删除
+	)
+	if err != nil {
+		return err
+	}
+	r.subscribe(ctx, consumer, handler)
+	return nil
+}
+
+func (r *amqpBroker) subscribe(ctx context.Context, consumer *rabbitmq.Consumer, handler Handle) {
 	go func() {
-		err = consumer.Run(func(d rabbitmq.Delivery) (action rabbitmq.Action) {
-			err = handler(string(d.Body))
+		err := consumer.Run(func(d rabbitmq.Delivery) (action rabbitmq.Action) {
+			err := handler(string(d.Body))
 			if err != nil {
 				logx.Errorln("unexpected error occurred while processing task", err)
 				return rabbitmq.NackDiscard
@@ -119,29 +188,7 @@ func (r *amqpBroker) subscribe(ctx context.Context, class string, name, routingK
 	}()
 	go func() {
 		<-ctx.Done()
-		logx.Infof("subscribe %s closed", routingKey)
+		logx.Infof("subscribe closed")
 		consumer.Close()
 	}()
-	return nil
-}
-
-func (r *amqpBroker) Publish(class string, qname string, data string) error {
-	switch class {
-	case TYPE_DIRECT:
-		return r.publish(r.qPublish, queueExchangeName, qname, data)
-	case TYPE_TOPIC:
-		return r.publish(r.tPublish, topicExchangeName, qname, data)
-	default:
-		return errors.New("unknown class")
-	}
-}
-
-func (r *amqpBroker) publish(pub *rabbitmq.Publisher, name, routingKey string, data string) error {
-	logx.Debugln("Publish", name, "queue", routingKey)
-	return pub.Publish(
-		[]byte(data), []string{routingKey},
-		rabbitmq.WithPublishOptionsExchange(name),     // 交换机名称
-		rabbitmq.WithPublishOptionsMandatory,          // 强制发布
-		rabbitmq.WithPublishOptionsPersistentDelivery, // 立即发布
-	)
 }

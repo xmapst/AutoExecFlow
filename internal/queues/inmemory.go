@@ -2,10 +2,10 @@ package queues
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/AutoExecFlow/internal/utils/wildcard"
@@ -187,45 +187,62 @@ func newInMemoryBroker() *memoryBroker {
 	return &memoryBroker{}
 }
 
-func (b *memoryBroker) Subscribe(ctx context.Context, class string, qname string, handler Handle) error {
-	switch class {
-	case TYPE_DIRECT:
-		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
-		q.(*memQueue).subscribe(ctx, handler)
-	case TYPE_TOPIC:
-		t, _ := b.topics.LoadOrStore(qname, newMemTopic(qname))
-		t.(*memTopic).subscribe(ctx, handler)
-	default:
-		return errors.New("unknown queue type")
-	}
+func (m *memoryBroker) PublishTask(node string, data string) error {
+	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
+	q, _ := m.queues.LoadOrStore(routingKey, newMemQueue(routingKey))
+	q.(*memQueue).publish(data)
 	return nil
 }
 
-func (b *memoryBroker) Publish(class string, qname string, data string) error {
-	switch class {
-	case TYPE_DIRECT:
-		q, _ := b.queues.LoadOrStore(qname, newMemQueue(qname))
-		q.(*memQueue).publish(data)
-	case TYPE_TOPIC:
-		b.topics.Range(func(key any, value any) bool {
-			if wildcard.Match(key.(string), qname) {
-				value.(*memTopic).publish(data)
-			}
-			return true
-		})
-	default:
-		return errors.New("unknown queue type")
-	}
+func (m *memoryBroker) SubscribeTask(ctx context.Context, node string, handler Handle) error {
+	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
+	q, _ := m.queues.LoadOrStore(routingKey, newMemQueue(routingKey))
+	q.(*memQueue).subscribe(ctx, handler)
 	return nil
 }
 
-func (b *memoryBroker) Shutdown(ctx context.Context) {
-	if !b.terminate.CompareAndSwap(false, true) {
+func (m *memoryBroker) PublishEvent(data string) error {
+	routingKey := fmt.Sprintf("%s.*", eventRoutingKey)
+	m.topics.Range(func(key any, value any) bool {
+		if wildcard.Match(routingKey, key.(string)) {
+			value.(*memTopic).publish(data)
+		}
+		return true
+	})
+	return nil
+}
+
+func (m *memoryBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
+	routingKey := fmt.Sprintf("%s.%s", eventRoutingKey, ksuid.New().String())
+	t, _ := m.topics.LoadOrStore(routingKey, newMemTopic(routingKey))
+	t.(*memTopic).subscribe(ctx, handler)
+	return nil
+}
+
+func (m *memoryBroker) PublishManager(node string, data string) error {
+	m.topics.Range(func(key any, value any) bool {
+		if wildcard.Match(fmt.Sprintf("%s.%s", managerRoutingKey, node), key.(string)) {
+			value.(*memTopic).publish(data)
+		}
+		return true
+	})
+	return nil
+}
+
+func (m *memoryBroker) SubscribeManager(ctx context.Context, node string, handler Handle) error {
+	qname := fmt.Sprintf("%s.%s", managerRoutingKey, node)
+	t, _ := m.topics.LoadOrStore(qname, newMemTopic(qname))
+	t.(*memTopic).subscribe(ctx, handler)
+	return nil
+}
+
+func (m *memoryBroker) Shutdown(ctx context.Context) {
+	if !m.terminate.CompareAndSwap(false, true) {
 		return
 	}
 
 	var wg sync.WaitGroup
-	b.queues.Range(func(_, value any) bool {
+	m.queues.Range(func(_, value any) bool {
 		wg.Add(1)
 		go func(q *memQueue) {
 			defer wg.Done()
@@ -233,7 +250,7 @@ func (b *memoryBroker) Shutdown(ctx context.Context) {
 		}(value.(*memQueue))
 		return true
 	})
-	b.topics.Range(func(_, value any) bool {
+	m.topics.Range(func(_, value any) bool {
 		wg.Add(1)
 		go func(t *memTopic) {
 			defer wg.Done()

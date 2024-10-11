@@ -15,7 +15,10 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-var App = new(Config)
+var App = &Config{
+	Database: "sqlite:///tmp/sqlite.db3",
+	Queue:    "inmemory://localhost",
+}
 
 type Config struct {
 	ListenAddress string

@@ -152,6 +152,14 @@ func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
 }
 
 func (ss *StepService) Manager(action string, duration string) error {
+	task, err := storage.Task(ss.taskName).Get()
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	if *task.State != models.StateRunning && *task.State != models.StatePending && *task.State != models.StatePaused {
+		return errors.New("task is no running")
+	}
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
 		logx.Errorln(err)
@@ -160,7 +168,7 @@ func (ss *StepService) Manager(action string, duration string) error {
 	if *step.State != models.StateRunning && *step.State != models.StatePending && *step.State != models.StatePaused {
 		return errors.New("step is no running")
 	}
-	return queues.Publish(queues.TYPE_TOPIC, queues.ManagerQueueName, utils.JoinWithInvisibleChar(ss.taskName, ss.stepName, action, duration))
+	return queues.PublishManager(task.Node, utils.JoinWithInvisibleChar(ss.taskName, ss.stepName, action, duration))
 }
 
 func (ss *StepService) Delete() error {

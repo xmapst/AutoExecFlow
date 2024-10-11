@@ -16,7 +16,7 @@ import (
 var pool = tunny.NewCallback(1)
 
 func Start(ctx context.Context) error {
-	if err := queues.Subscribe(ctx, queues.TYPE_DIRECT, queues.TaskQueueName+utils.HostName(), func(data string) error {
+	if err := queues.SubscribeTask(ctx, utils.HostName(), func(data string) error {
 		t := newTask(data)
 		if t == nil {
 			return errors.New("task not found")
@@ -26,7 +26,7 @@ func Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := queues.Subscribe(ctx, queues.TYPE_TOPIC, queues.ManagerQueueName, func(data string) error {
+	if err := queues.SubscribeManager(ctx, utils.HostName(), func(data string) error {
 		if !utils.ContainsInvisibleChar(data) {
 			return errors.New("invalid manager operate")
 		}
@@ -59,7 +59,7 @@ func Start(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case e := <-event:
-				_ = queues.Publish(queues.TYPE_TOPIC, queues.EventQueueName, e)
+				_ = queues.PublishEvent(e)
 			}
 		}
 	}()

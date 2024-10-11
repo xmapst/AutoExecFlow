@@ -131,7 +131,7 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 		}
 	}
 	// 提交任务
-	return queues.Publish(queues.TYPE_DIRECT, queues.TaskQueueName+task.Node, ts.name)
+	return queues.PublishTask(task.Node, ts.name)
 }
 
 func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
@@ -275,7 +275,7 @@ func (ts *TaskService) Manager(action string, duration string) error {
 	if *task.State != models.StateRunning && *task.State != models.StatePending && *task.State != models.StatePaused {
 		return errors.New("task is no running")
 	}
-	return queues.Publish(queues.TYPE_TOPIC, queues.ManagerQueueName, utils.JoinWithInvisibleChar(ts.name, action, duration))
+	return queues.PublishManager(task.Node, utils.JoinWithInvisibleChar(ts.name, action, duration))
 }
 
 func (ts *TaskService) Dump() (*types.TaskReq, error) {

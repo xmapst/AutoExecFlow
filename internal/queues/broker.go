@@ -2,8 +2,7 @@ package queues
 
 import (
 	"context"
-	"fmt"
-	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -11,10 +10,10 @@ import (
 )
 
 var (
-	broker           Broker
-	TaskQueueName    = fmt.Sprintf("%s_Worker_", utils.ServiceName)
-	ManagerQueueName = fmt.Sprintf("%s_Manager", utils.ServiceName)
-	EventQueueName   = fmt.Sprintf("%s_Event", utils.ServiceName)
+	broker            Broker
+	taskRoutingKey    = utils.ServiceName + "Task"
+	eventRoutingKey   = utils.ServiceName + "Event"
+	managerRoutingKey = utils.ServiceName + "Manager"
 )
 
 type Handle func(data string) error
@@ -22,24 +21,27 @@ type Handle func(data string) error
 const (
 	BROKER_INMEMORY = "inmemory"
 	BROKER_AMQP     = "amqp"
-
-	TYPE_DIRECT = "direct"
-	TYPE_TOPIC  = "topic"
 )
 
 type Broker interface {
-	// queue management
-	Publish(class string, qname string, data string) error
-	Subscribe(ctx context.Context, class string, qname string, handler Handle) error
+	PublishEvent(data string) error
+	PublishTask(node string, data string) error
+	PublishManager(node string, data string) error
+
+	SubscribeEvent(ctx context.Context, handler Handle) error
+	SubscribeTask(ctx context.Context, node string, handler Handle) error
+	SubscribeManager(ctx context.Context, node string, handler Handle) error
+
 	Shutdown(ctx context.Context)
 }
 
 func New(rawURL string) error {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return err
+	before, _, found := strings.Cut(rawURL, "://")
+	if !found {
+		return errors.New("invalid message queue url")
 	}
-	switch u.Scheme {
+	var err error
+	switch before {
 	case BROKER_AMQP:
 		broker, err = newAmqpBroker(rawURL)
 		return err
@@ -51,12 +53,25 @@ func New(rawURL string) error {
 	}
 }
 
-func Publish(class string, name string, data string) error {
-	return broker.Publish(class, name, data)
+func PublishTask(name string, data string) error {
+	return broker.PublishTask(name, data)
 }
 
-func Subscribe(ctx context.Context, class string, name string, handler Handle) error {
-	return broker.Subscribe(ctx, class, name, handler)
+func SubscribeTask(ctx context.Context, name string, handler Handle) error {
+	return broker.SubscribeTask(ctx, name, handler)
+}
+
+func PublishEvent(data string) error {
+	return broker.PublishEvent(data)
+}
+func SubscribeEvent(ctx context.Context, handler Handle) error {
+	return broker.SubscribeEvent(ctx, handler)
+}
+func PublishManager(node string, data string) error {
+	return broker.PublishManager(node, data)
+}
+func SubscribeManager(ctx context.Context, node string, handler Handle) error {
+	return broker.SubscribeManager(ctx, node, handler)
 }
 
 func Shutdown(ctx context.Context) {

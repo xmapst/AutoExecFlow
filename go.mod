@@ -23,7 +23,7 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
 	github.com/traefik/yaegi v0.16.1
-	github.com/xmapst/go-rabbitmq v0.14.2-4
+	github.com/xmapst/go-rabbitmq v0.14.2-5
 	github.com/yuin/gopher-lua v1.1.1
 	go.starlark.net v0.0.0-20240925182052-1207426daebd
 	go.uber.org/zap v1.27.0
@@ -50,7 +50,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/bytedance/sonic v1.12.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
-	github.com/cloudflare/circl v1.4.0 // indirect
+	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.4 // indirect
@@ -118,9 +118,9 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240903163716-9e1beecbcb38 // indirect
+	k8s.io/kube-openapi v0.0.0-20241009091222-67ed5848f094 // indirect
 	k8s.io/utils v0.0.0-20240921022957-49e7df575cb6 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
