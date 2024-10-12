@@ -20,7 +20,7 @@ type memDirect struct {
 	subs    []*qsub
 	unacked int32
 	closed  atomic.Bool
-	mu      sync.RWMutex // 使用读写锁来提高并发效率
+	mu      sync.RWMutex
 	wg      sync.WaitGroup
 }
 
@@ -41,9 +41,8 @@ type qsub struct {
 	ch chan string
 }
 
+// Publish messages to all subscribers in a non-blocking manner.
 func (d *memDirect) publish(data string) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
 	if d.closed.Load() {
 		return
 	}
@@ -68,16 +67,15 @@ func (d *memDirect) close() {
 	close(d.ch)
 
 	d.mu.Lock()
-	defer d.mu.Unlock()
 	for _, sub := range d.subs {
 		sub.cancel()
 	}
+	d.mu.Unlock()
 
 	d.wg.Wait()
 }
 
 func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
-	d.mu.Lock()
 	subCtx, cancel := context.WithCancel(ctx)
 	sub := &qsub{
 		cname:  ksuid.New().String(),
@@ -85,32 +83,47 @@ func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
 		cancel: cancel,
 		ch:     make(chan string, 100),
 	}
-	logx.Infof("subscribing to direct queue %s %s", d.name, sub.cname)
+
+	// Add subscription safely
+	d.mu.Lock()
 	d.subs = append(d.subs, sub)
 	d.mu.Unlock()
 
 	d.wg.Add(1)
 
+	// Handle subscription in a separate goroutine
 	go func() {
 		defer d.wg.Done()
+		defer cancel()
+
 		for {
 			select {
 			case <-sub.ctx.Done():
-				logx.Infof("subscribe direct queue closed %s %s", d.name, sub.cname)
+				d.removeSubscriber(sub.cname)
 				return
-			case m, ok := <-d.ch:
+			case msg, ok := <-d.ch:
 				if !ok {
-					logx.Infof("subscribe direct queue closed %s %s", d.name, sub.cname)
 					return
 				}
 				atomic.AddInt32(&d.unacked, 1)
-				if err := handle(m); err != nil {
-					logx.Errorln("unexpected error occurred while processing task", err)
+				if err := handle(msg); err != nil {
+					logx.Errorln("error processing direct queue:", err)
 				}
 				atomic.AddInt32(&d.unacked, -1)
 			}
 		}
 	}()
+}
+
+func (d *memDirect) removeSubscriber(cname string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	for i, sub := range d.subs {
+		if sub.cname == cname {
+			d.subs = append(d.subs[:i], d.subs[i+1:]...)
+			break
+		}
+	}
 }
 
 type memTopic struct {
@@ -143,9 +156,6 @@ func (t *memTopic) publish(event string) {
 }
 
 func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
 	subCtx, cancel := context.WithCancel(ctx)
 	sub := &qsub{
 		cname:  ksuid.New().String(),
@@ -153,23 +163,38 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		cancel: cancel,
 		ch:     make(chan string, 100),
 	}
-	logx.Infof("subscribing to topic queue %s %s", t.name, sub.cname)
-	t.subs = append(t.subs, sub)
 
+	t.mu.Lock()
+	t.subs = append(t.subs, sub)
+	t.mu.Unlock()
+
+	// Launch subscriber handling in a separate goroutine
 	go func() {
 		defer cancel()
+
 		for {
 			select {
 			case <-sub.ctx.Done():
-				logx.Infof("subscribe topic queue closed %s %s", t.name, sub.cname)
+				t.removeSubscriber(sub.cname)
 				return
 			case m := <-sub.ch:
 				if err := handler(m); err != nil {
-					logx.Errorln("unexpected error occurred while processing task", err)
+					logx.Errorln("error processing topic queue:", err)
 				}
 			}
 		}
 	}()
+}
+
+func (t *memTopic) removeSubscriber(cname string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	for i, sub := range t.subs {
+		if sub.cname == cname {
+			t.subs = append(t.subs[:i], t.subs[i+1:]...)
+			break
+		}
+	}
 }
 
 func (t *memTopic) close() {
@@ -209,7 +234,7 @@ func (m *memoryBroker) SubscribeTask(ctx context.Context, node string, handler H
 
 func (m *memoryBroker) PublishEvent(data string) error {
 	routingKey := fmt.Sprintf("%s.*", eventRoutingKey)
-	m.topics.Range(func(key any, value any) bool {
+	m.topics.Range(func(key, value any) bool {
 		if wildcard.Match(routingKey, key.(string)) {
 			value.(*memTopic).publish(data)
 		}
@@ -226,7 +251,7 @@ func (m *memoryBroker) SubscribeEvent(ctx context.Context, handler Handle) error
 }
 
 func (m *memoryBroker) PublishManager(node string, data string) error {
-	m.topics.Range(func(key any, value any) bool {
+	m.topics.Range(func(key, value any) bool {
 		if wildcard.Match(fmt.Sprintf("%s.%s", managerRoutingKey, node), key.(string)) {
 			value.(*memTopic).publish(data)
 		}
