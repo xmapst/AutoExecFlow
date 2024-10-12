@@ -35,8 +35,10 @@ type PageRes struct {
 type TaskRes struct {
 	// 任务名称
 	Name string `json:"name" yaml:"Name"`
+	// 任务描述
+	Description string `json:"description,omitempty" yaml:"Description,omitempty"`
 	// 节点名称
-	Node string `json:"node" yaml:"Node"`
+	Node string `json:"node,omitempty" yaml:"Node,omitempty"`
 	// 任务状态
 	State string `json:"state" yaml:"State"`
 	// 任务信息
@@ -123,6 +125,8 @@ type TaskStepReq struct {
 type TaskReq struct {
 	// 任务名称
 	Name string `json:"name,omitempty" query:"name"  form:"name" yaml:"Name,omitempty" example:"task_name"`
+	// 任务描述
+	Description string `json:"description,omitempty" query:"description" yaml:"Description,omitempty"`
 	// Node 执行节点
 	Node string `json:"node,omitempty" query:"node" form:"node" yaml:"Node,omitempty" example:""`
 	// 是否异步执行

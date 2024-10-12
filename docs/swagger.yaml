@@ -208,6 +208,12 @@ paths:
           schema:
             type: string
             default: task_name
+        - name: description
+          in: query
+          description: task description
+          schema:
+            type: string
+            default: task_description
         - name: async
           in: query
           description: task asynchronously
@@ -1014,6 +1020,9 @@ components:
         Name:
           type: string
           example: task-name
+        Description:
+          type: string
+          example: task description
         State:
           type: string
           example: running
@@ -1039,6 +1048,9 @@ components:
         name:
           type: string
           example: task-name
+        description:
+          type: string
+          example: task description
         state:
           type: string
           example: running
@@ -1310,6 +1322,9 @@ components:
         name:
           type: string
           example: "task_name"
+        description:
+          type: string
+          example: "task description"
         async:
           type: boolean
           example: false
@@ -1331,6 +1346,9 @@ components:
         Name:
           type: string
           example: "task_name"
+        Description:
+          type: string
+          example: "task description"
         Async:
           type: boolean
           example: false

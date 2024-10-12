@@ -2,6 +2,8 @@ let highestZIndex = 1000;
 require.config({ paths: { 'vs': baseUrl+basePath+'/vs' } });
 const taskTpl = `# 任务名称, 可选, 默认自动生成
 Name: 测试
+# 描述
+Description: 这是一段任务描述
 # 允许节点, 可选, 默认为当前节点
 #Node: node-01
 # 异步执行, 可选, 默认并行,自定义编排时需要设置为true

@@ -49,14 +49,14 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 	}
 	for _, task := range tasks {
 		res := &types.TaskRes{
-			Name:    task.Name,
-			Node:    task.Node,
-			State:   models.StateMap[*task.State],
-			Message: task.Message,
-			Env:     make(map[string]string),
-			Timeout: task.Timeout.String(),
-			Disable: *task.Disable,
-			Count:   *task.Count,
+			Name:        task.Name,
+			Description: task.Description,
+			Node:        task.Node,
+			State:       models.StateMap[*task.State],
+			Message:     task.Message,
+			Env:         make(map[string]string),
+			Timeout:     task.Timeout.String(),
+			Disable:     *task.Disable,
 			Time: &types.TimeRes{
 				Start: task.STimeStr(),
 				End:   task.ETimeStr(),
@@ -71,6 +71,7 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 
 		// 获取当前进行到那些步骤
 		steps := st.StepList(storage.All)
+		res.Count = len(steps)
 		var groups = make(map[models.State][]string)
 		for _, v := range steps {
 			groups[*v.State] = append(groups[*v.State], v.Name)
@@ -199,12 +200,12 @@ func (ts *TaskService) uniqStepsName(steps types.TaskStepsReq) error {
 func (ts *TaskService) saveTask(timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
 	// save task
 	err := storage.TaskCreate(&models.Task{
-		Name:    task.Name,
-		Node:    task.Node,
-		Async:   models.Pointer(task.Async),
-		Count:   models.Pointer(len(task.Step)),
-		Timeout: timeout,
-		Disable: models.Pointer(task.Disable),
+		Name:        task.Name,
+		Description: task.Description,
+		Node:        task.Node,
+		Async:       models.Pointer(task.Async),
+		Timeout:     timeout,
+		Disable:     models.Pointer(task.Disable),
 		TaskUpdate: models.TaskUpdate{
 			Message:  "the task is waiting to be scheduled for execution",
 			State:    models.Pointer(models.StatePending),
@@ -240,14 +241,14 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 	}
 
 	data := &types.TaskRes{
-		Name:    task.Name,
-		Node:    task.Node,
-		State:   models.StateMap[*task.State],
-		Message: task.Message,
-		Env:     make(map[string]string),
-		Timeout: task.Timeout.String(),
-		Disable: *task.Disable,
-		Count:   *task.Count,
+		Name:        task.Name,
+		Description: task.Description,
+		Node:        task.Node,
+		State:       models.StateMap[*task.State],
+		Message:     task.Message,
+		Env:         make(map[string]string),
+		Timeout:     task.Timeout.String(),
+		Disable:     *task.Disable,
 		Time: &types.TimeRes{
 			Start: task.STimeStr(),
 			End:   task.ETimeStr(),
@@ -259,6 +260,7 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 
 	// 获取当前进行到那些步骤
 	steps := db.StepList(storage.All)
+	data.Count = len(steps)
 	var groups = make(map[models.State][]string)
 	for _, v := range steps {
 		groups[*v.State] = append(groups[*v.State], v.Name)
@@ -285,12 +287,13 @@ func (ts *TaskService) Dump() (*types.TaskReq, error) {
 		return nil, err
 	}
 	res := &types.TaskReq{
-		Name:    task.Name,
-		Node:    task.Node,
-		Timeout: task.Timeout.String(),
-		Env:     make(map[string]string),
-		Async:   *task.Async,
-		Disable: *task.Disable,
+		Name:        task.Name,
+		Description: task.Description,
+		Node:        task.Node,
+		Timeout:     task.Timeout.String(),
+		Env:         make(map[string]string),
+		Async:       *task.Async,
+		Disable:     *task.Disable,
 	}
 	for _, v := range storage.Task(ts.name).Env().List() {
 		res.Env[v.Name] = v.Value
