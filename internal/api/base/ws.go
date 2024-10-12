@@ -19,3 +19,13 @@ var upGrader = websocket.Upgrader{
 func Upgrade(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	return upGrader.Upgrade(w, r, nil)
 }
+
+func CloseWs(ws *websocket.Conn, message string) {
+	if ws == nil {
+		return
+	}
+	closeMessage := websocket.FormatCloseMessage(websocket.CloseNormalClosure, message)
+	_ = ws.WriteControl(websocket.CloseMessage, closeMessage, time.Now().Add(3*time.Second))
+	time.Sleep(1 * time.Second)
+	_ = ws.Close()
+}

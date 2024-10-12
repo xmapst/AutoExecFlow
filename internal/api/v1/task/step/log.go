@@ -2,7 +2,6 @@ package step
 
 import (
 	"context"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -55,13 +54,7 @@ func Log(c *gin.Context) {
 				}
 			}
 		}()
-		defer func() {
-			message := "Server is shutting down"
-			closeMessage := websocket.FormatCloseMessage(websocket.CloseNormalClosure, message)
-			_ = ws.WriteControl(websocket.CloseMessage, closeMessage, time.Now().Add(3*time.Second))
-			time.Sleep(1 * time.Second)
-			_ = ws.Close()
-		}()
+		defer base.CloseWs(ws, "Server is shutting down")
 		err := service.Step(taskName, stepName).LogStream(ctx, ws)
 		if err != nil {
 			_ = ws.WriteJSON(base.WithCode[any](types.CodeFailed).WithError(err))

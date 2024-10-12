@@ -1,10 +1,7 @@
 package sys
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 
 	"github.com/xmapst/AutoExecFlow/internal/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
@@ -30,16 +27,12 @@ func PtyWs(c *gin.Context) {
 		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 		return
 	}
-	defer func() {
-		time.Sleep(1 * time.Second)
-		_ = ws.Close()
-	}()
 
 	pty, err := service.Pty(ws)
 	if err != nil {
-		closeMessage := websocket.FormatCloseMessage(websocket.CloseNormalClosure, err.Error())
-		_ = ws.WriteControl(websocket.CloseMessage, closeMessage, time.Now().Add(3*time.Second))
+		base.CloseWs(ws, err.Error())
 		return
 	}
 	pty.Run()
+	base.CloseWs(ws, "Server is shutting down")
 }

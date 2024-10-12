@@ -51,13 +51,7 @@ func List(c *gin.Context) {
 		return
 	}
 
-	defer func() {
-		message := "Server is shutting down"
-		closeMessage := websocket.FormatCloseMessage(websocket.CloseNormalClosure, message)
-		_ = ws.WriteControl(websocket.CloseMessage, closeMessage, time.Now().Add(3*time.Second))
-		time.Sleep(1 * time.Second)
-		_ = ws.Close()
-	}()
+	defer base.CloseWs(ws, "Server is shutting down")
 
 	var ctx, cancel = context.WithCancel(c)
 	defer cancel()

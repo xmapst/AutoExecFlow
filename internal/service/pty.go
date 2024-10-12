@@ -34,12 +34,8 @@ func (p *PtyService) Run() {
 	go func() {
 		_, _ = io.Copy(p.pty, p)
 	}()
-	go func() {
-		_, _ = p.pty.Wait(context.Background())
-		_ = p.ws.Close()
-	}()
 	_, _ = io.Copy(p, p.pty)
-	_ = p.ws.Close()
+	_, _ = p.pty.Wait(context.Background())
 }
 
 func (p *PtyService) Read(b []byte) (n int, err error) {
