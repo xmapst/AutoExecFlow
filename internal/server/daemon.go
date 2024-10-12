@@ -68,7 +68,7 @@ func (p *Program) init() error {
 
 	// 创建临时内存数据库
 	if err := storage.New(config.App.Database); err != nil {
-		logx.Fatalln(err)
+		logx.Errorln(err)
 		return err
 	}
 
@@ -80,7 +80,6 @@ func (p *Program) Start(service.Service) error {
 	p.cron.Start()
 	err := p.init()
 	if err != nil {
-		logx.Errorln(err)
 		return err
 	}
 	err = p.startWorker()
