@@ -72,6 +72,25 @@ func (p *Program) init() error {
 		return err
 	}
 
+	return nil
+}
+
+func (p *Program) Start(service.Service) error {
+	reaper.Run()
+	p.cron.Start()
+	err := p.init()
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	err = p.startWorker()
+	if err != nil {
+		return err
+	}
+	return p.startAPI()
+}
+
+func (p *Program) startWorker() error {
 	// 调整工作池的大小
 	worker.SetSize(config.App.PoolSize)
 	logx.Infoln("number of workers", worker.GetSize())
@@ -86,10 +105,14 @@ func (p *Program) init() error {
 	return worker.Start(p.ctx)
 }
 
-func (p *Program) Start(service.Service) error {
-	reaper.Run()
-	p.cron.Start()
-	err := p.init()
+func (p *Program) startAPI() error {
+	// 首次激活事件监听
+	ctx, cancel := context.WithCancel(p.ctx)
+	defer cancel()
+	err := queues.SubscribeEvent(ctx, func(data string) error {
+		logx.Debugln(data)
+		return nil
+	})
 	if err != nil {
 		logx.Errorln(err)
 		return err
