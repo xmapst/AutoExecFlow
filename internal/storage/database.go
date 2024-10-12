@@ -13,9 +13,9 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 
-	"github.com/xmapst/AutoExecFlow/internal/runner/common"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
+	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 

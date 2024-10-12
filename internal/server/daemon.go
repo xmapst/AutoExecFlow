@@ -16,9 +16,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 
-	"github.com/xmapst/AutoExecFlow/internal/api"
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
+	"github.com/xmapst/AutoExecFlow/internal/server/api"
 	"github.com/xmapst/AutoExecFlow/internal/server/listeners"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
@@ -123,7 +123,7 @@ func (p *Program) startServer() error {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
 	p.http = &http.Server{
-		Handler: router.New(config.App.RelativePath),
+		Handler: api.New(config.App.RelativePath),
 	}
 
 	_ = retry.Do(
