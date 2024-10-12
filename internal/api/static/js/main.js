@@ -246,13 +246,16 @@ class WebSocketManager {
         };
 
         this.socket.onclose = (event) => {
-            console.log(event)
-            console.log("WebSocket connection closed cleanly.");
+            if (event.wasClean) {
+                console.log("WebSocket closed cleanly, no reconnection.");
+            } else {
+                console.log(`WebSocket closed with code: ${event.code}, reason: ${event.reason}`);
+                this.reconnect();
+            }
         };
     }
 
     reconnect() {
-        console.log(this.isManuallyClosed)
         if (this.isManuallyClosed) return;
         setTimeout(() => {
             console.log("Attempting to reconnect...");
@@ -275,6 +278,7 @@ class WebSocketManager {
         }
     }
 }
+
 
 
 class TaskModal {

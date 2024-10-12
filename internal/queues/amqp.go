@@ -19,7 +19,7 @@ var (
 )
 
 type amqpBroker struct {
-	conn         *rabbitmq.Conn
+	conn *rabbitmq.Conn
 	// 防止相同生产者重复创建
 	publisherMap map[string]*rabbitmq.Publisher
 	// 防止相同消费者重复创建
@@ -147,10 +147,10 @@ func (r *amqpBroker) Shutdown(ctx context.Context) {
 	var wg sync.WaitGroup
 	r.directs.Range(func(_, value any) bool {
 		wg.Add(1)
-		go func(t *memTopic) {
+		go func(t *memDirect) {
 			defer wg.Done()
 			t.close()
-		}(value.(*memTopic))
+		}(value.(*memDirect))
 		return true
 	})
 	r.topics.Range(func(_, value any) bool {

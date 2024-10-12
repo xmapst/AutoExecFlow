@@ -56,7 +56,10 @@ func List(c *gin.Context) {
 	}
 
 	defer func() {
-		_ = ws.WriteControl(websocket.CloseMessage, nil, time.Now().Add(3*time.Second))
+		message := "Server is shutting down"
+		closeMessage := websocket.FormatCloseMessage(websocket.CloseNormalClosure, message)
+		_ = ws.WriteControl(websocket.CloseMessage, closeMessage, time.Now().Add(3*time.Second))
+		time.Sleep(1 * time.Second)
 		_ = ws.Close()
 	}()
 
@@ -66,9 +69,7 @@ func List(c *gin.Context) {
 		for {
 			t, p, err := ws.ReadMessage()
 			if err != nil {
-				if _, ok := err.(*websocket.CloseError); ok {
-					cancel()
-				}
+				cancel()
 				return
 			}
 			switch t {

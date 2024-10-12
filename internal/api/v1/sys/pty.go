@@ -10,7 +10,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/service"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"
-	_ "github.com/xmapst/AutoExecFlow/types"
 )
 
 // PtyWs
@@ -31,12 +30,15 @@ func PtyWs(c *gin.Context) {
 		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(err))
 		return
 	}
-	defer ws.Close()
+	defer func() {
+		time.Sleep(1 * time.Second)
+		_ = ws.Close()
+	}()
 
 	pty, err := service.Pty(ws)
 	if err != nil {
-		logx.Errorln(err)
-		_ = ws.WriteControl(websocket.CloseMessage, []byte(err.Error()), time.Now().Add(time.Second))
+		closeMessage := websocket.FormatCloseMessage(websocket.CloseNormalClosure, err.Error())
+		_ = ws.WriteControl(websocket.CloseMessage, closeMessage, time.Now().Add(3*time.Second))
 		return
 	}
 	pty.Run()
