@@ -83,7 +83,7 @@ func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
 		cancel: cancel,
 		ch:     make(chan string, 100),
 	}
-
+	logx.Infof("subscribed to direct queue %s cname %s", d.name, sub.cname)
 	// Add subscription safely
 	d.mu.Lock()
 	d.subs = append(d.subs, sub)
@@ -99,6 +99,7 @@ func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
 		for {
 			select {
 			case <-sub.ctx.Done():
+				logx.Infof("subscriber %s cname %s closed", d.name, sub.cname)
 				d.removeSubscriber(sub.cname)
 				return
 			case msg, ok := <-d.ch:
@@ -163,7 +164,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		cancel: cancel,
 		ch:     make(chan string, 100),
 	}
-
+	logx.Infof("subscribed to topic queue %s cname %s", t.name, sub.cname)
 	t.mu.Lock()
 	t.subs = append(t.subs, sub)
 	t.mu.Unlock()
@@ -175,6 +176,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 		for {
 			select {
 			case <-sub.ctx.Done():
+				logx.Infof("subscriber %s cname %s closed", t.name, sub.cname)
 				t.removeSubscriber(sub.cname)
 				return
 			case m := <-sub.ch:
