@@ -89,12 +89,13 @@ func (ss *StepService) saveStep(timeout time.Duration, step *types.TaskStepReq) 
 		}
 	}()
 	err = storage.Task(ss.taskName).StepCreate(&models.Step{
-		TaskName: ss.taskName,
-		Name:     step.Name,
-		Type:     step.Type,
-		Content:  step.Content,
-		Timeout:  timeout,
-		Disable:  models.Pointer(step.Disable),
+		TaskName:    ss.taskName,
+		Name:        step.Name,
+		Description: step.Description,
+		Type:        step.Type,
+		Content:     step.Content,
+		Timeout:     timeout,
+		Disable:     models.Pointer(step.Disable),
 		StepUpdate: models.StepUpdate{
 			Message:  "the step is waiting to be scheduled for execution",
 			Code:     models.Pointer(int64(0)),
@@ -130,15 +131,16 @@ func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
 		return types.CodeFailed, nil, err
 	}
 	data := &types.TaskStepRes{
-		Name:    step.Name,
-		State:   models.StateMap[*step.State],
-		Code:    *step.Code,
-		Message: step.Message,
-		Timeout: step.Timeout.String(),
-		Disable: *step.Disable,
-		Env:     make(map[string]string),
-		Type:    step.Type,
-		Content: step.Content,
+		Name:        step.Name,
+		Description: step.Description,
+		State:       models.StateMap[*step.State],
+		Code:        *step.Code,
+		Message:     step.Message,
+		Timeout:     step.Timeout.String(),
+		Disable:     *step.Disable,
+		Env:         make(map[string]string),
+		Type:        step.Type,
+		Content:     step.Content,
 		Time: &types.TimeRes{
 			Start: step.STimeStr(),
 			End:   step.ETimeStr(),

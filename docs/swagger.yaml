@@ -1112,6 +1112,9 @@ components:
         Name:
           type: string
           example: step-name
+        Description:
+          type: string
+          example: step description
         Code:
           type: integer
           example: 0
@@ -1150,6 +1153,9 @@ components:
         name:
           type: string
           example: step-name
+        description:
+          type: string
+          example: step description
         code:
           type: integer
           example: 0
@@ -1270,6 +1276,9 @@ components:
         name:
           type: string
           example: script.ps1
+        description:
+          type: string
+          example: script description
         timeout:
           type: string
           example: 3m
@@ -1296,6 +1305,9 @@ components:
         Name:
           type: string
           example: script.ps1
+        Description:
+          type: string
+          example: script description
         Timeout:
           type: string
           example: 3m

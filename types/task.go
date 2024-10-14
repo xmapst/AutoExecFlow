@@ -58,6 +58,8 @@ type TaskRes struct {
 type TaskStepRes struct {
 	// 步骤名称
 	Name string `json:"name" yaml:"Name"`
+	// 步骤描述
+	Description string `json:"description,omitempty" yaml:"Description,omitempty"`
 	// 步骤退出码
 	Code int64 `json:"code" yaml:"Code"`
 	// 步骤状态
@@ -101,6 +103,8 @@ type TaskStepLogRes struct {
 type TaskStepReq struct {
 	// 步骤名称
 	Name string `json:"name,omitempty" form:"name" yaml:"Name,omitempty" example:"script.ps1"`
+	// 步骤描述
+	Description string `json:"description,omitempty" form:"description" yaml:"Description,omitempty" example:"script.ps1"`
 	// 步骤超时时间
 	Timeout string `json:"timeout,omitempty" form:"timeout" yaml:"Timeout,omitempty" example:"3m"`
 	// 是否禁用

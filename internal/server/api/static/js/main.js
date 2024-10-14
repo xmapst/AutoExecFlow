@@ -19,6 +19,8 @@ Env:
 Step:
     # 步骤名称, 唯一, 可选[当自定义编排是必须设置], 默认自动生成
   - Name: 步骤2
+    # 描述
+    Description: 这是一段步骤描述
     # 超时时间, 可选, 默认任务级超时时间
     Timeout: 2m
     # 禁用, 可选, 默认false
@@ -35,6 +37,8 @@ Step:
     Content: |-
       ping 1.1.1.1
   - Name: 步骤1
+    # 描述
+    Description: 这是一段步骤描述
     Timeout: 2m
     Env:
       Test: "test_env"
