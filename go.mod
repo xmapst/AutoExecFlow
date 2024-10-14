@@ -23,7 +23,7 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
 	github.com/traefik/yaegi v0.16.1
-	github.com/xmapst/go-rabbitmq v0.14.2-5
+	github.com/xmapst/go-rabbitmq v1.1.7-alpha1
 	github.com/yuin/gopher-lua v1.1.1
 	go.starlark.net v0.0.0-20240925182052-1207426daebd
 	go.uber.org/zap v1.27.0
