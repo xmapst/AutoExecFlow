@@ -54,6 +54,8 @@ type ITask interface {
 	StepCount() (res int64)
 	// StepNameList 所有步骤名称
 	StepNameList(str string) (res []string)
+	// StepStateList 获取任务下所有步骤状态
+	StepStateList(str string) (res map[string]models.State)
 	// StepList 获取任务下所有步骤
 	StepList(str string) (res models.Steps)
 }

@@ -136,9 +136,28 @@ func (t *task) StepNameList(str string) (res []string) {
 			"task_name": t.tName,
 		})
 	if str != "" {
-		query.Where("name LIKE ?", str+"%s")
+		query.Where("name LIKE ?", str)
 	}
 	query.Find(&res)
+	return
+}
+
+func (t *task) StepStateList(str string) (res map[string]models.State) {
+	var steps models.Steps
+	query := t.Model(&models.Step{}).
+		Select("name, state").
+		Order("id ASC").
+		Where(map[string]interface{}{
+			"task_name": t.tName,
+		})
+	if str != "" {
+		query.Where("name LIKE ?", str)
+	}
+	query.Find(&steps)
+	res = make(map[string]models.State, len(steps))
+	for _, v := range steps {
+		res[v.Name] = *v.State
+	}
 	return
 }
 
@@ -149,7 +168,7 @@ func (t *task) StepList(str string) (res models.Steps) {
 			"task_name": t.tName,
 		})
 	if str != "" {
-		query.Where("name LIKE ?", str+"%s")
+		query.Where("name LIKE ?", str)
 	}
 	query.Find(&res)
 	return

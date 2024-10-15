@@ -70,11 +70,11 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 		}
 
 		// 获取当前进行到那些步骤
-		steps := st.StepList(storage.All)
+		steps := st.StepStateList(storage.All)
 		res.Count = len(steps)
 		var groups = make(map[models.State][]string)
-		for _, v := range steps {
-			groups[*v.State] = append(groups[*v.State], v.Name)
+		for name, state := range steps {
+			groups[state] = append(groups[state], name)
 		}
 		res.Message = GenerateStateMessage(res.Message, groups)
 		list.Tasks = append(list.Tasks, res)
@@ -259,11 +259,11 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 	}
 
 	// 获取当前进行到那些步骤
-	steps := db.StepList(storage.All)
+	steps := db.StepStateList(storage.All)
 	data.Count = len(steps)
 	var groups = make(map[models.State][]string)
-	for _, v := range steps {
-		groups[*v.State] = append(groups[*v.State], v.Name)
+	for name, state := range steps {
+		groups[state] = append(groups[state], name)
 	}
 	data.Message = GenerateStateMessage(data.Message, groups)
 	return ConvertState(*task.State), data, nil
