@@ -38,7 +38,10 @@ func GenerateStateMessage(baseMessage string, groups map[models.State][]string) 
 		messages = append(messages, baseMessage)
 	}
 	for _, key := range keys {
-		messages = append(messages, fmt.Sprintf("%s: [%s]", models.StateMap[key], strings.Join(groups[key], ",")))
+		// 排序 groups[key]
+		slices.Sort(groups[key])
+		steps := strings.Join(groups[key], ",")
+		messages = append(messages, fmt.Sprintf("%s: [%s]", models.StateMap[key], steps))
 	}
 	return strings.Join(messages, "; ")
 }
