@@ -74,12 +74,21 @@ func RemoveDuplicate[T comparable](slice []T) []T {
 	return list
 }
 
-func HostName() string {
-	name, err := os.Hostname()
+var hostname string
+
+func init() {
+	var err error
+	hostname, err = os.Hostname()
 	if err != nil {
-		return os.Getenv("HOSTNAME")
+		hostname = os.Getenv("HOSTNAME")
 	}
-	return name
+	if hostname == "" {
+		hostname = "localhost"
+	}
+}
+
+func HostName() string {
+	return hostname
 }
 
 func JoinWithInvisibleChar(strs ...string) string {
