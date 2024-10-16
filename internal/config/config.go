@@ -16,21 +16,21 @@ import (
 )
 
 var App = &Config{
-	Database: "sqlite:///tmp/sqlite.db3",
-	Queue:    "inmemory://localhost",
+	DBUrl: "sqlite:///tmp/sqlite.db3",
+	MQUrl: "inmemory://localhost",
 }
 
 type Config struct {
-	ListenAddress string
-	PoolSize      int
-	ExecTimeOut   time.Duration
-	RelativePath  string
-	RootDir       string
-	Database      string
-	Queue         string
-	SelfUpdateURL string
-	LogOutput     string
-	LogLevel      string
+	Address       string        `mapstructure:"ADDR"`
+	PoolSize      int           `mapstructure:"POOL_SIZE"`
+	ExecTimeOut   time.Duration `mapstructure:"EXEC_TIMEOUT"`
+	RelativePath  string        `mapstructure:"RELATIVE_PATH"`
+	RootDir       string        `mapstructure:"ROOT_DIR"`
+	DBUrl         string        `mapstructure:"DB_URL"`
+	MQUrl         string        `mapstructure:"MQ_URL"`
+	SelfUpdateURL string        `mapstructure:"SELF_URL"`
+	LogOutput     string        `mapstructure:"LOG_OUTPUT"`
+	LogLevel      string        `mapstructure:"LOG_LEVEL"`
 }
 
 func (c *Config) Init() error {
@@ -45,7 +45,7 @@ func (c *Config) Init() error {
 	}
 	logx.SetLevel(level)
 
-	before, _, found := strings.Cut(c.Database, "://")
+	before, _, found := strings.Cut(c.DBUrl, "://")
 	if !found {
 		return fmt.Errorf("invalid database url")
 	}
@@ -56,7 +56,7 @@ func (c *Config) Init() error {
 		}
 		file := filepath.Join(dir, fmt.Sprintf("%s.db3", utils.ServiceName))
 		logx.Infof("%s file: %s", "data", file)
-		c.Database = fmt.Sprintf("%s://%s", storage.TYPE_SQLITE, file)
+		c.DBUrl = fmt.Sprintf("%s://%s", storage.TYPE_SQLITE, file)
 	}
 
 	var dirs = map[string]string{
@@ -76,7 +76,7 @@ func (c *Config) Init() error {
 	}
 
 	// setup queue
-	err = queues.New(c.Queue)
+	err = queues.New(c.MQUrl)
 	if err != nil {
 		return fmt.Errorf("failed to setup queue: %v", err)
 	}

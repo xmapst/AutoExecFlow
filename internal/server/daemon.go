@@ -67,7 +67,7 @@ func (p *Program) init() error {
 	p.selfUpdate()
 
 	// 创建临时内存数据库
-	if err := storage.New(config.App.Database); err != nil {
+	if err := storage.New(config.App.DBUrl); err != nil {
 		logx.Errorln(err)
 		return err
 	}
@@ -129,7 +129,7 @@ func (p *Program) startServer() error {
 	_ = retry.Do(
 		func() error {
 			if err := p.loadListeners([]string{
-				config.App.ListenAddress,
+				config.App.Address,
 				utils.PipeName,
 			}); err != nil {
 				logx.Errorln(err)
