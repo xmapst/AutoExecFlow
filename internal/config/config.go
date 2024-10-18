@@ -2,10 +2,13 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -33,7 +36,25 @@ type Config struct {
 	LogLevel      string        `mapstructure:"LOG_LEVEL"`
 }
 
-func (c *Config) Init() error {
+func Init() error {
+	if err := viper.Unmarshal(App); err != nil {
+		return err
+	}
+	defer func() {
+		val := reflect.TypeOf(App).Elem()
+		for i := 0; i < val.NumField(); i++ {
+			field := val.Field(i)
+			tag := field.Tag.Get("mapstructure")
+			err := os.Unsetenv(tag)
+			if err != nil {
+				logx.Warnln(err)
+			}
+		}
+	}()
+	return App.init()
+}
+
+func (c *Config) init() error {
 	var logfile string
 	if c.LogOutput == "file" {
 		logfile = filepath.Join(c.LogDir(), utils.ServiceName+".log")

@@ -8,6 +8,7 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/server"
@@ -26,6 +27,9 @@ func New() *cobra.Command {
 			UnknownFlags: true,
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := config.Init(); err != nil {
+				return err
+			}
 			name, err := filepath.Abs(os.Args[0])
 			if err != nil {
 				logx.Errorln(err)
@@ -49,16 +53,18 @@ func New() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&config.App.RootDir, "root_dir", utils.DefaultDir, "root directory")
-	cmd.Flags().StringVar(&config.App.RelativePath, "relative_path", "/", "web relative path")
-	cmd.Flags().StringVar(&config.App.LogOutput, "log_output", "file", "log output [file,stdout]")
-	cmd.Flags().StringVar(&config.App.Address, "addr", "tcp://0.0.0.0:2376", "listening address.")
-	cmd.Flags().StringVar(&config.App.LogLevel, "log_level", "debug", "log level [debug,info,warn,error]")
-	cmd.Flags().StringVar(&config.App.DBUrl, "db_url", "sqlite://localhost", "database type. [sqlite,mysql]")
-	cmd.Flags().IntVar(&config.App.PoolSize, "pool_size", runtime.NumCPU()*2, "set the size of the execution work pool.")
-	cmd.Flags().StringVar(&config.App.MQUrl, "mq_url", "inmemory://localhost", "message queue url. [inmemory,amqp]")
-	cmd.Flags().DurationVar(&config.App.ExecTimeOut, "exec_timeout", 24*time.Hour, "set the task exec command expire time")
-	cmd.Flags().StringVar(&config.App.SelfUpdateURL, "self_url", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
+	viper.AutomaticEnv()
+	cmd.Flags().String("root_dir", utils.DefaultDir, "root directory")
+	cmd.Flags().String("relative_path", "/", "web relative path")
+	cmd.Flags().String("log_output", "file", "log output [file,stdout]")
+	cmd.Flags().String("addr", "tcp://0.0.0.0:2376", "listening address.")
+	cmd.Flags().String("log_level", "debug", "log level [debug,info,warn,error]")
+	cmd.Flags().String("db_url", "sqlite://localhost", "database type. [sqlite,mysql]")
+	cmd.Flags().Duration("exec_timeout", 24*time.Hour, "set the task exec command expire time")
+	cmd.Flags().Int("pool_size", runtime.NumCPU()*2, "set the size of the execution work pool.")
+	cmd.Flags().String("mq_url", "inmemory://localhost", "message queue url. [inmemory,amqp]")
+	cmd.Flags().String("self_url", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
+	_ = viper.BindPFlags(cmd.Flags())
 
 	return cmd
 }
