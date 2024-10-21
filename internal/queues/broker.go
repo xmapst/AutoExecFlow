@@ -21,6 +21,7 @@ type Handle func(data string) error
 const (
 	BROKER_INMEMORY = "inmemory"
 	BROKER_AMQP     = "amqp"
+	BROKER_REDIS    = "redis"
 )
 
 type Broker interface {
@@ -44,6 +45,9 @@ func New(rawURL string) error {
 	switch before {
 	case BROKER_AMQP:
 		broker, err = newAmqpBroker(rawURL)
+		return err
+	case BROKER_REDIS:
+		broker, err = newRedisBroker(rawURL)
 		return err
 	case BROKER_INMEMORY:
 		broker = newInMemoryBroker()
