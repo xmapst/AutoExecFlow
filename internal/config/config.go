@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
@@ -34,6 +33,7 @@ type Config struct {
 	SelfUpdateURL string        `mapstructure:"SELF_URL"`
 	LogOutput     string        `mapstructure:"LOG_OUTPUT"`
 	LogLevel      string        `mapstructure:"LOG_LEVEL"`
+	NodeName      string        `mapstructure:"NODE_NAME"`
 }
 
 func Init() error {
@@ -94,12 +94,6 @@ func (c *Config) init() error {
 			return fmt.Errorf("failed to ensure directory %s: %v", dir, err)
 		}
 		logx.Infof("%s dir: %s", name, dir)
-	}
-
-	// setup queue
-	err = queues.New(c.MQUrl)
-	if err != nil {
-		return fmt.Errorf("failed to setup queue: %v", err)
 	}
 	return nil
 }

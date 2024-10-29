@@ -19,7 +19,8 @@ var (
 )
 
 type amqpBroker struct {
-	conn *rabbitmq.Conn
+	nodeName string
+	conn     *rabbitmq.Conn
 	// 防止相同生产者重复创建
 	publisherMap map[string]*rabbitmq.Publisher
 	// 防止相同消费者重复创建
@@ -29,14 +30,15 @@ type amqpBroker struct {
 	mu          sync.Mutex
 }
 
-func newAmqpBroker(rawURL string) (*amqpBroker, error) {
+func newAmqpBroker(nodeName, rawURL string) (*amqpBroker, error) {
 	a := &amqpBroker{
+		nodeName:     nodeName,
 		publisherMap: make(map[string]*rabbitmq.Publisher),
 		consumerMap:  make(map[string]*rabbitmq.Consumer),
 	}
 	var err error
 	table := amqp091.NewConnectionProperties()
-	table["connection_name"] = utils.HostName()
+	table["connection_name"] = nodeName
 	a.conn, err = rabbitmq.NewConn(
 		rawURL,
 		rabbitmq.WithConnectionOptionsLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))),
@@ -93,7 +95,7 @@ func (a *amqpBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if _, ok := a.consumerMap[rkey]; !ok {
-		qname := fmt.Sprintf("%s_%s", eventRoutingKey, utils.HostName())
+		qname := fmt.Sprintf("%s_%s", eventRoutingKey, a.nodeName)
 		var err error
 		a.consumerMap[rkey], err = a.newTopicConsumer(rkey, qname, func(data string) error {
 			t.(*memTopic).publish(data)

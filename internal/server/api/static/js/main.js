@@ -880,7 +880,7 @@ class TaskTable {
                                 <a href="#" id="detail-task">详情</a>
                                 <a href="#" id="dump-task">导出</a>
                                 ${task.state === 'running' ? '<a href="#" id="kill-task">强杀</a>' : ''}
-                                ${task.state === 'stopped' || task.state === 'failed' ? '<a href="#" id="delete-task">删除</a>' : ''}
+                                <a href="#" id="delete-task">删除</a>
                             </div>
                         </div>
                     </td>

@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm/schema"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
@@ -23,7 +22,7 @@ type database struct {
 	*gorm.DB
 }
 
-func newDB(rawURL string) (*database, error) {
+func newDB(nodeName, rawURL string) (*database, error) {
 	before, after, found := strings.Cut(rawURL, "://")
 	if !found {
 		return nil, errors.New("invalid storage url")
@@ -90,7 +89,7 @@ func newDB(rawURL string) (*database, error) {
 	var tasks []string
 	d.Model(&models.Task{}).
 		Select("name").
-		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", utils.HostName(), models.StateStopped, models.StateFailed).
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
 		Find(&tasks)
 
 	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
@@ -98,7 +97,7 @@ func newDB(rawURL string) (*database, error) {
 		d.Model(&models.Task{}).
 			Where("name = ?", taskName).
 			Updates(map[string]interface{}{
-				"node":    utils.HostName(),
+				"node":    nodeName,
 				"state":   models.StateFailed,
 				"message": "execution failed due to system error",
 			})

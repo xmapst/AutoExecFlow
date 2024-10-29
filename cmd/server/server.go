@@ -56,6 +56,7 @@ func New() *cobra.Command {
 	viper.AutomaticEnv()
 	cmd.Flags().String("root_dir", utils.DefaultDir, "root directory")
 	cmd.Flags().String("relative_path", "/", "web relative path")
+	cmd.Flags().String("node_name", "AutoExecFlow01", "node name")
 	cmd.Flags().String("log_output", "file", "log output [file,stdout]")
 	cmd.Flags().String("addr", "tcp://0.0.0.0:2376", "listening address.")
 	cmd.Flags().String("log_level", "debug", "log level [debug,info,warn,error]")

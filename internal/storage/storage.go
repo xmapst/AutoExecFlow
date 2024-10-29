@@ -11,8 +11,8 @@ const (
 	TYPE_MYSQL  = "mysql"
 )
 
-func New(rawURL string) error {
-	db, err := newDB(rawURL)
+func New(nodeName, rawURL string) error {
+	db, err := newDB(nodeName, rawURL)
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
@@ -16,7 +17,7 @@ import (
 var pool = tunny.NewCallback(1)
 
 func Start(ctx context.Context) error {
-	if err := queues.SubscribeTask(ctx, utils.HostName(), func(data string) error {
+	if err := queues.SubscribeTask(ctx, config.App.NodeName, func(data string) error {
 		if data == "" {
 			return errors.New("invalid task name")
 		}
@@ -29,7 +30,7 @@ func Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := queues.SubscribeManager(ctx, utils.HostName(), func(data string) error {
+	if err := queues.SubscribeManager(ctx, config.App.NodeName, func(data string) error {
 		if !utils.ContainsInvisibleChar(data) {
 			return errors.New("invalid manager operate")
 		}

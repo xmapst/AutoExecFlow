@@ -36,7 +36,7 @@ type Broker interface {
 	Shutdown(ctx context.Context)
 }
 
-func New(rawURL string) error {
+func New(nodeName, rawURL string) error {
 	before, _, found := strings.Cut(rawURL, "://")
 	if !found {
 		return errors.New("invalid message queue url")
@@ -44,7 +44,7 @@ func New(rawURL string) error {
 	var err error
 	switch before {
 	case BROKER_AMQP:
-		broker, err = newAmqpBroker(rawURL)
+		broker, err = newAmqpBroker(nodeName, rawURL)
 		return err
 	case BROKER_REDIS:
 		broker, err = newRedisBroker(rawURL)

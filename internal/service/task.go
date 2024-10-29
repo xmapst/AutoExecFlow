@@ -154,7 +154,7 @@ func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
 	}
 	ts.name = task.Name
 	if task.Node == "" {
-		task.Node = utils.HostName()
+		task.Node = config.App.NodeName
 	}
 	timeout, err := time.ParseDuration(task.Timeout)
 	if err != nil {
@@ -229,6 +229,17 @@ func (ts *TaskService) saveTask(timeout time.Duration, task *types.TaskReq) (tim
 }
 
 func (ts *TaskService) Delete() error {
+	task, err := storage.Task(ts.name).Get()
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	// 尝试强杀任务
+	err = queues.PublishManager(task.Node, utils.JoinWithInvisibleChar(ts.name, "kill", "0"))
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
 	return storage.Task(ts.name).ClearAll()
 }
 

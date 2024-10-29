@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"runtime/debug"
@@ -61,8 +62,13 @@ func (p *Program) init() error {
 	// 启动自更新监控
 	p.selfUpdate()
 
+	// setup queue
+	if err := queues.New(config.App.NodeName, config.App.MQUrl); err != nil {
+		return fmt.Errorf("failed to setup queue: %v", err)
+	}
+
 	// 创建临时内存数据库
-	if err := storage.New(config.App.DBUrl); err != nil {
+	if err := storage.New(config.App.NodeName, config.App.DBUrl); err != nil {
 		logx.Errorln(err)
 		return err
 	}
