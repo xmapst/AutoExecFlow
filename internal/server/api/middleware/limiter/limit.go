@@ -29,9 +29,9 @@ func New(rate int64, modes ...string) gin.HandlerFunc {
 		if exist {
 			ip, _, _ := net.SplitHostPort(c.Request.RemoteAddr)
 			key := c.Request.Method + ip + c.Request.RequestURI
-			var limiter *Bucket
+			var limiter *SBucket
 			if v, ok := cache.Load(key); ok {
-				limiter = v.(*Bucket)
+				limiter = v.(*SBucket)
 			} else {
 				limiter = newBucket(rate)
 				cache.Store(key, limiter)
