@@ -13,16 +13,14 @@ import (
 )
 
 // Log
-// @Summary		Log
-// @Description	Step Execution Output
-// @Tags		Step
+// @Summary		日志
+// @Description	指定任务指定步骤的执行输出, 支持WS长连接
+// @Tags		步骤
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Param		step path string true "step name"
-// @Success		200 {object} types.SBase[[]types.STaskStepLogRes]
+// @Param		task path string true "任务名称"
+// @Param		step path string true "步骤名称"
+// @Success		200 {object} types.SBase[types.STaskStepLogListRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/step/{step} [get]
 func Log(c *gin.Context) {

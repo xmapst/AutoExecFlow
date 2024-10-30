@@ -11,14 +11,12 @@ import (
 )
 
 // Delete
-// @Summary		Delete
-// @Description	Delete task
-// @Tags		Task
+// @Summary		删除
+// @Description	删除指定任务
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
+// @Param		task path string true "任务名称"
 // @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task} [delete]

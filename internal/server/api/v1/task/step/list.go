@@ -16,14 +16,12 @@ import (
 )
 
 // List
-// @Summary		List
-// @Description	Get the list of steps for a specified task
-// @Tags		Step
+// @Summary		列表
+// @Description	获取指定任务的步骤列表, 支持WS长连接
+// @Tags		步骤
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
+// @Param		task path string true "任务名称"
 // @Success		200 {object} types.SBase[[]types.STaskStepRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task} [get]

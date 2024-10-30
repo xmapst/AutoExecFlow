@@ -12,15 +12,13 @@ import (
 )
 
 // Detail
-// @Summary		Detail
-// @Description	Get step detail
-// @Tags		Step
+// @Summary		详情
+// @Description	获取步骤详情
+// @Tags		步骤
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Param		step path string true "step name"
+// @Param		task path string true "任务名称"
+// @Param		step path string true "步骤名称"
 // @Success		200 {object} types.SBase[types.STaskStepRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v2/task/{task}/step/{step} [get]

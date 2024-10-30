@@ -14,15 +14,14 @@ import (
 )
 
 // Post
-// @Summary		Upload
-// @Description	Upload a file or directory
-// @Tags		Workspace
+// @Summary		上传
+// @Description	上传文件或目录
+// @Tags		工作目录
 // @Accept		multipart/form-data
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Param		path query string false "dir path"
-// @Param		files formData file true "files"
+// @Param		task path string true "任务名称"
+// @Param		path query string false "路径"
+// @Param		files formData file true "文件"
 // @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/workspace [post]

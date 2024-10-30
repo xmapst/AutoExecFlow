@@ -12,15 +12,13 @@ import (
 )
 
 // Detail
-// @Summary		Detail
-// @Description	Get task detail
-// @Tags		Task
+// @Summary		详情
+// @Description	获取任务详情
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Success		200 {object} types.SBase[types.STaskRes]
+// @Param		task path string true "任务名称"
+// @Success		200 {object} types.SBase[types.STaskDetailRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v2/task/{task} [get]
 func Detail(c *gin.Context) {

@@ -10,15 +10,12 @@ import (
 )
 
 // Post
-// @Summary		CreateV2
-// @Description	Create a task
-// @Tags		Task
+// @Summary		创建
+// @Description	创建任务
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
-// @Accept		multipart/form-data
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task body types.STaskReq true "scripts"
+// @Param		task body types.STaskReq true "任务内容"
 // @Success		200 {object} types.SBase[types.STaskCreateRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v2/task [post]

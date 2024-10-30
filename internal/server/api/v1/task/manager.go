@@ -11,16 +11,14 @@ import (
 )
 
 // Manager
-// @Summary		Manager
-// @Description	Task management, can terminate, suspend, and resolve
-// @Tags		Task
+// @Summary		管理
+// @Description	管理任务, 支持暂停、恢复、终止、超时暂停自动恢复
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Param		action query string false "management action" Enums(paused,kill,pause,resume) default(paused)
-// @Param		duration query string false "how long to pause; if empty, manual continuation is required" default(1m)
+// @Param		task path string true "任务名称"
+// @Param		action query string false "操作项" Enums(paused,kill,pause,resume) default(paused)
+// @Param		duration query string false "暂停多久, 如果没设置则需要手工恢复" default(1m)
 // @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task} [put]

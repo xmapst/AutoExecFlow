@@ -19,15 +19,13 @@ import (
 )
 
 // Get
-// @Summary		Get
-// @Description	Get file/folder contents
-// @Tags		Workspace
+// @Summary		列表或下载
+// @Description	获取目录列表或下载指定文件
+// @Tags		工作目录
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Param		path query string false "dir path"
+// @Param		task path string true "任务名称"
+// @Param		path query string false "路径"
 // @Success		200 {object} types.SBase[types.SFileListRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/workspace [get]

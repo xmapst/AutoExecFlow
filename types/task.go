@@ -16,11 +16,11 @@ type STaskCreateRes struct {
 	ID string `json:"id" yaml:"ID" swaggerignore:"true"`
 }
 
-type STaskListRes struct {
+type STaskListDetailRes struct {
 	// 分页
 	Page SPageRes `json:"page" yaml:"Page"`
 	// 任务列表
-	Tasks []*STaskRes `json:"tasks" yaml:"Tasks"`
+	Tasks STaskListRes `json:"tasks" yaml:"Tasks"`
 }
 
 type SPageRes struct {
@@ -32,7 +32,9 @@ type SPageRes struct {
 	Total int64 `json:"total" yaml:"Total"`
 }
 
-type STaskRes struct {
+type STaskListRes []*STaskDetailRes
+
+type STaskDetailRes struct {
 	// 任务名称
 	Name string `json:"name" yaml:"Name"`
 	// 任务描述
@@ -97,6 +99,8 @@ type STaskStepLogRes struct {
 	// 内容
 	Content string `json:"content" yaml:"Content"`
 }
+
+type STaskStepLogListRes []*STaskStepLogRes
 
 // Request struct
 

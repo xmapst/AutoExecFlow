@@ -178,14 +178,14 @@ func (ss *SStepService) Delete() error {
 	return storage.Task(ss.taskName).Step(ss.stepName).ClearAll()
 }
 
-func (ss *SStepService) Log() (types.Code, []*types.STaskStepLogRes, error) {
+func (ss *SStepService) Log() (types.Code, types.STaskStepLogListRes, error) {
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
 		return types.CodeFailed, nil, err
 	}
 	switch *step.State {
 	case models.StatePending:
-		return types.CodePending, []*types.STaskStepLogRes{
+		return types.CodePending, types.STaskStepLogListRes{
 			{
 				Timestamp: time.Now().UnixNano(),
 				Line:      1,
@@ -193,7 +193,7 @@ func (ss *SStepService) Log() (types.Code, []*types.STaskStepLogRes, error) {
 			},
 		}, errors.New(step.Message)
 	case models.StatePaused:
-		return types.CodePaused, []*types.STaskStepLogRes{
+		return types.CodePaused, types.STaskStepLogListRes{
 			{
 				Timestamp: time.Now().UnixNano(),
 				Line:      1,
@@ -206,7 +206,7 @@ func (ss *SStepService) Log() (types.Code, []*types.STaskStepLogRes, error) {
 	}
 }
 
-func (ss *SStepService) log(latestLine *int64) (res []*types.STaskStepLogRes, done bool) {
+func (ss *SStepService) log(latestLine *int64) (res types.STaskStepLogListRes, done bool) {
 	logs := storage.Task(ss.taskName).Step(ss.stepName).Log().List(latestLine)
 	for _, v := range logs {
 		if v.Content == common.ConsoleStart {

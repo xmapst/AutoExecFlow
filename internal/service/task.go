@@ -31,7 +31,7 @@ func Task(name string) *STaskService {
 	}
 }
 
-func TaskList(req *types.SPageReq) *types.STaskListRes {
+func TaskList(req *types.SPageReq) *types.STaskListDetailRes {
 	tasks, total := storage.TaskList(req.Page, req.Size, req.Prefix)
 	if tasks == nil {
 		return nil
@@ -40,7 +40,7 @@ func TaskList(req *types.SPageReq) *types.STaskListRes {
 	if total%req.Size != 0 {
 		pageTotal += 1
 	}
-	var list = &types.STaskListRes{
+	var list = &types.STaskListDetailRes{
 		Page: types.SPageRes{
 			Current: req.Page,
 			Size:    req.Size,
@@ -48,7 +48,7 @@ func TaskList(req *types.SPageReq) *types.STaskListRes {
 		},
 	}
 	for _, task := range tasks {
-		res := &types.STaskRes{
+		res := &types.STaskDetailRes{
 			Name:        task.Name,
 			Description: task.Description,
 			Node:        task.Node,
@@ -243,7 +243,7 @@ func (ts *STaskService) Delete() error {
 	return storage.Task(ts.name).ClearAll()
 }
 
-func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
+func (ts *STaskService) Detail() (types.Code, *types.STaskDetailRes, error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
@@ -251,7 +251,7 @@ func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 		return types.CodeFailed, nil, err
 	}
 
-	data := &types.STaskRes{
+	data := &types.STaskDetailRes{
 		Name:        task.Name,
 		Description: task.Description,
 		Node:        task.Node,

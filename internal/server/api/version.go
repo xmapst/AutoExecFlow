@@ -11,15 +11,13 @@ import (
 )
 
 // version
-// @Summary		Version
-// @Description	Get server version
-// @Tags		Default
+// @Summary		版本
+// @Description	获取版本信息
+// @Tags		默认
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Success		200 {object} types.Base[types.Version]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[types.SVersion]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/version [get]
 func version(c *gin.Context) {
 	base.Send(c, base.WithData(&types.SVersion{

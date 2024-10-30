@@ -5,16 +5,15 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
+	_ "github.com/xmapst/AutoExecFlow/types"
 )
 
 // Detail
-// @Summary		Detail
-// @Description	Get task pool details
-// @Tags		Pool
+// @Summary		详情
+// @Description	获取工作池信息
+// @Tags		工作池
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
 // @Success		200 {object} types.SBase[types.SPool]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/pool [get]

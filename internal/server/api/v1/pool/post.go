@@ -10,14 +10,11 @@ import (
 )
 
 // Post
-// @Summary		Setting
-// @Description	Configuring the Task Pool Size
-// @Tags		Pool
+// @Summary		设置
+// @Description	设置工作池大小
+// @Tags		工作池
 // @Accept		application/json
-// @Accept		application/yaml
-// @Accept		multipart/form-data
 // @Produce		application/json
-// @Produce		application/yaml
 // @Param		setting body types.SPool true "pool setting"
 // @Success		200 {object} types.SBase[types.SPool]
 // @Failure		500 {object} types.SBase[any]

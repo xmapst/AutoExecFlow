@@ -10,19 +10,16 @@ import (
 )
 
 // Post
-// @Summary		Create
-// @Description	Create a task
-// @Tags		Task
+// @Summary		创建
+// @Description	创建任务
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
-// @Accept		multipart/form-data
 // @Produce		application/json
-// @Produce		application/yaml
-// @param		name query string false "task name"
-// @Param		async query bool false "task asynchronously" default(false)
-// @Param		timeout query string false "task timeout"
-// @Param		env query []string false "task envs"
-// @Param		steps body types.STaskStepsReq true "scripts"
+// @param		name query string false "任务名称"
+// @Param		async query bool false "是否异步执行" default(false)
+// @Param		timeout query string false "执行超时时间"
+// @Param		env query []string false "任务环境变量"
+// @Param		steps body types.STaskStepsReq true "步骤内容"
 // @Success		200 {object} types.SBase[types.STaskCreateRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task [post]

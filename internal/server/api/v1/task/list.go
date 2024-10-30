@@ -16,17 +16,15 @@ import (
 )
 
 // List
-// @Summary		List
-// @Description	Get the all task list
-// @Tags		Task
+// @Summary		列表
+// @Description	获取任务列表, 支持WS长连接
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		page query int false "page number" default(1)
-// @Param		size query int false "paging Size" default(100)
-// @Param		prefix query string false "Keywords"
-// @Success		200 {object} types.SBase[types.STaskListRes]
+// @Param		page query int false "页码" default(1)
+// @Param		size query int false "分页大小" default(100)
+// @Param		prefix query string false "关键字"
+// @Success		200 {object} types.SBase[types.STaskListDetailRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task [get]
 func List(c *gin.Context) {
@@ -76,7 +74,7 @@ func List(c *gin.Context) {
 		}
 	}()
 
-	var lastTaskList *types.STaskListRes // 缓存上一次的推送数据
+	var lastTaskList *types.STaskListDetailRes // 缓存上一次的推送数据
 	for {
 		select {
 		case <-ctx.Done():

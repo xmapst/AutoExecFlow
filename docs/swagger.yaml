@@ -1,1378 +1,1041 @@
-openapi: 3.0.1
+definitions:
+  types.Code:
+    enum:
+    - 0
+    - 1001
+    - 1002
+    - 1003
+    - 1004
+    - 1005
+    type: integer
+    x-enum-varnames:
+    - CodeSuccess
+    - CodeRunning
+    - CodeFailed
+    - CodeNoData
+    - CodePending
+    - CodePaused
+  types.SBase-any:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data: {}
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-array_types_STaskStepRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        items:
+          $ref: '#/definitions/types.STaskStepRes'
+        type: array
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SFileListRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.SFileListRes'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SHealthyz:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.SHealthyz'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SPool:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.SPool'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_STaskCreateRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.STaskCreateRes'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_STaskDetailRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.STaskDetailRes'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_STaskListDetailRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.STaskListDetailRes'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_STaskStepLogListRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        items:
+          $ref: '#/definitions/types.STaskStepLogRes'
+        type: array
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_STaskStepRes:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.STaskStepRes'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SVersion:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/types.Code'
+        example: 255
+      data:
+        $ref: '#/definitions/types.SVersion'
+      msg:
+        example: message
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SFileListRes:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/types.SFileRes'
+        type: array
+      total:
+        type: integer
+    type: object
+  types.SFileRes:
+    properties:
+      is_dir:
+        type: boolean
+      mod_time:
+        type: integer
+      mode:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      size:
+        type: integer
+    type: object
+  types.SHealthyz:
+    properties:
+      client:
+        type: string
+      server:
+        type: string
+      state:
+        type: string
+    type: object
+  types.SPageRes:
+    properties:
+      current:
+        description: 当前页
+        type: integer
+      size:
+        description: 页大小
+        type: integer
+      total:
+        description: 总页数
+        type: integer
+    type: object
+  types.SPool:
+    properties:
+      size:
+        example: 30
+        type: integer
+    required:
+    - size
+    type: object
+  types.STaskCreateRes:
+    properties:
+      count:
+        description: 步骤数量
+        type: integer
+      name:
+        description: 任务名称
+        type: string
+    type: object
+  types.STaskDetailRes:
+    properties:
+      count:
+        description: 步骤数量
+        type: integer
+      description:
+        description: 任务描述
+        type: string
+      disable:
+        description: 是否禁用
+        type: boolean
+      env:
+        additionalProperties:
+          type: string
+        description: 任务环境变量
+        type: object
+      msg:
+        description: 任务信息
+        type: string
+      name:
+        description: 任务名称
+        type: string
+      node:
+        description: 节点名称
+        type: string
+      state:
+        description: 任务状态
+        type: string
+      time:
+        allOf:
+        - $ref: '#/definitions/types.STimeRes'
+        description: 时间
+      timeout:
+        description: 任务超时时间
+        type: string
+    type: object
+  types.STaskListDetailRes:
+    properties:
+      page:
+        allOf:
+        - $ref: '#/definitions/types.SPageRes'
+        description: 分页
+      tasks:
+        description: 任务列表
+        items:
+          $ref: '#/definitions/types.STaskDetailRes'
+        type: array
+    type: object
+  types.STaskReq:
+    properties:
+      async:
+        description: 是否异步执行
+        example: false
+        type: boolean
+      description:
+        description: 任务描述
+        type: string
+      disable:
+        description: 是否禁用
+        example: false
+        type: boolean
+      env:
+        additionalProperties:
+          type: string
+        description: 任务环境变量
+        example:
+          key: value
+          key1: value1
+        type: object
+      name:
+        description: 任务名称
+        example: task_name
+        type: string
+      node:
+        description: Node 执行节点
+        example: ""
+        type: string
+      step:
+        description: 任务步骤
+        items:
+          $ref: '#/definitions/types.STaskStepReq'
+        type: array
+      timeout:
+        description: 任务超时时间
+        example: 24h
+        type: string
+    type: object
+  types.STaskStepLogRes:
+    properties:
+      content:
+        description: 内容
+        type: string
+      line:
+        description: 行号
+        type: integer
+      timestamp:
+        description: 时间戳
+        type: integer
+    type: object
+  types.STaskStepReq:
+    properties:
+      content:
+        description: 步骤内容
+        example: sleep 10
+        type: string
+      depends:
+        description: 步骤依赖
+        example:
+        - ""
+        items:
+          type: string
+        type: array
+      description:
+        description: 步骤描述
+        example: script.ps1
+        type: string
+      disable:
+        description: 是否禁用
+        example: false
+        type: boolean
+      env:
+        additionalProperties:
+          type: string
+        description: 步骤环境变量
+        example:
+          key: value
+          key1: value1
+        type: object
+      name:
+        description: 步骤名称
+        example: script.ps1
+        type: string
+      timeout:
+        description: 步骤超时时间
+        example: 3m
+        type: string
+      type:
+        description: 步骤超时时间
+        example: powershell
+        type: string
+    type: object
+  types.STaskStepRes:
+    properties:
+      code:
+        description: 步骤退出码
+        type: integer
+      content:
+        description: 步骤内容
+        type: string
+      depends:
+        description: 步骤依赖
+        items:
+          type: string
+        type: array
+      description:
+        description: 步骤描述
+        type: string
+      disable:
+        description: 是否禁用
+        type: boolean
+      env:
+        additionalProperties:
+          type: string
+        description: 步骤环境变量
+        type: object
+      msg:
+        description: 步骤信息
+        type: string
+      name:
+        description: 步骤名称
+        type: string
+      state:
+        description: 步骤状态
+        type: string
+      time:
+        allOf:
+        - $ref: '#/definitions/types.STimeRes'
+        description: 时间
+      timeout:
+        description: 步骤超时时间
+        type: string
+      type:
+        description: 步骤类型
+        type: string
+    type: object
+  types.STimeRes:
+    properties:
+      end:
+        description: 结束时间
+        type: string
+      start:
+        description: 开始时间
+        type: string
+    type: object
+  types.SVersion:
+    properties:
+      build_time:
+        type: string
+      git:
+        $ref: '#/definitions/types.SVersionGit'
+      go:
+        $ref: '#/definitions/types.SVersionGO'
+      user:
+        $ref: '#/definitions/types.SVersionUser'
+      version:
+        type: string
+    type: object
+  types.SVersionGO:
+    properties:
+      arch:
+        type: string
+      os:
+        type: string
+      version:
+        type: string
+    type: object
+  types.SVersionGit:
+    properties:
+      branch:
+        type: string
+      commit:
+        type: string
+      url:
+        type: string
+    type: object
+  types.SVersionUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
 info:
-  title: Auto Exec Flow
-  description: "An `API` for cross-platform custom orchestration of execution steps\
-    \ without any third-party dependencies. Based on `DAG`, it implements the scheduling\
-    \ function of sequential execution of dependent steps and concurrent execution\
-    \ of non-dependent steps. <br /><br /> \
-    \ It provides `API` remote operation mode, batch execution of `Shell` , `Powershell` ,\
-    \ `Python` and other commands, and easily completes common management tasks such as\
-    \ running automated operation and maintenance scripts, polling processes, installing\
-    \ or uninstalling software, updating applications, and installing patches.
-    "
   contact:
     name: AutoExecFlow
     url: https://github.com/xmapst/AutoExecFlow/issues
+  description: |-
+    An `API` for cross-platform custom orchestration of execution steps
+    without any third-party dependencies. Based on `DAG`, it implements the scheduling
+    function of sequential execution of dependent steps and concurrent execution of
+    non-dependent steps. <br /><br /> It provides `API` remote operation mode, batch
+    execution of `Shell` , `Powershell` , `Python` and other commands, and easily
+    completes common management tasks such as running automated operation and maintenance
+    scripts, polling processes, installing or uninstalling software, updating applications,
+    and installing patches.
   license:
     name: GPL-3.0
     url: https://github.com/xmapst/AutoExecFlow/blob/main/LICENSE
+  title: Auto Exec Flow
   version: "1.0"
 paths:
+  /api/v1/event:
+    get:
+      consumes:
+      - application/json
+      description: 订阅系统事件
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 事件
+      tags:
+      - 事件
   /api/v1/pool:
     get:
-      tags:
-        - Pool
-      summary: Detail
-      description: Get task pool details
-      parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
+      consumes:
+      - application/json
+      description: 获取工作池信息
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/poolResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/poolResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_SPool'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 详情
+      tags:
+      - 工作池
     post:
-      tags:
-        - Pool
-      summary: Setting
-      description: Configuring the Task Pool Size
+      consumes:
+      - application/json
+      description: 设置工作池大小
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-      requestBody:
-        description: body
-        content:
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/poolRequestYaml'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/poolRequestJson'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/poolRequestJson'
+      - description: pool setting
+        in: body
+        name: setting
         required: true
+        schema:
+          $ref: '#/definitions/types.SPool'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/poolResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/poolResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_SPool'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 设置
+      tags:
+      - 工作池
   /api/v1/pty:
     get:
-      tags:
-        - System
-      summary: Terminal
-      description: websocket terminal
+      consumes:
+      - application/json
+      description: Websocket的pty终端
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 终端
+      tags:
+      - 系统
   /api/v1/task:
     get:
-      tags:
-        - Task
-      summary: List
-      description: Get the task list
+      consumes:
+      - application/json
+      description: 获取任务列表, 支持WS长连接
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: page
-          in: query
-          description: page number
-          schema:
-            type: integer
-            default: 1
-        - name: size
-          in: query
-          description: size number
-          schema:
-            type: integer
-            default: 100
-        - name: prefix
-          in: query
-          description: keyword prefix
-          schema:
-            type: string
-            default: ''
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 100
+        description: 分页大小
+        in: query
+        name: size
+        type: integer
+      - description: 关键字
+        in: query
+        name: prefix
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/taskListResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/taskListResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskListDetailRes'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 列表
+      tags:
+      - 任务
     post:
-      tags:
-        - Task
-      summary: Create
-      description: Create a task
+      consumes:
+      - application/json
+      description: 创建任务
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: name
-          in: query
-          description: task name
-          schema:
-            type: string
-            default: task_name
-        - name: description
-          in: query
-          description: task description
-          schema:
-            type: string
-            default: task_description
-        - name: async
-          in: query
-          description: task asynchronously
-          schema:
-            type: boolean
-            default: false
-        - name: timeout
-          in: query
-          description: task timeout
-          schema:
-            type: string
-            default: 3m
-        - name: disable
-          in: query
-          description: task disable
-          schema:
-            type: boolean
-            default: false
-        - name: env
-          in: query
-          description: task envs
-          style: form
-          explode: false
-          schema:
-            type: array
-            items:
-              type: string
-      requestBody:
-        description: body
-        content:
-          application/yaml:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/stepRequestYaml'
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/stepRequestJson'
-          multipart/form-data:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/stepRequestJson'
+      - description: 任务名称
+        in: query
+        name: name
+        type: string
+      - default: false
+        description: 是否异步执行
+        in: query
+        name: async
+        type: boolean
+      - description: 执行超时时间
+        in: query
+        name: timeout
+        type: string
+      - collectionFormat: csv
+        description: 任务环境变量
+        in: query
+        items:
+          type: string
+        name: env
+        type: array
+      - description: 步骤内容
+        in: body
+        name: steps
         required: true
+        schema:
+          items:
+            $ref: '#/definitions/types.STaskStepReq'
+          type: array
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/taskCreateResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/taskCreateResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskCreateRes'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 创建
+      tags:
+      - 任务
   /api/v1/task/{task}:
-    put:
-      tags:
-        - Task
-      summary: Manager
-      description: "Task management, can terminate, suspend, and resolve"
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定任务
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: action
-          in: query
-          description: management action
-          schema:
-            type: string
-            default: paused
-            enum:
-              - paused
-              - kill
-              - pause
-              - resume
-        - name: duration
-          in: query
-          description: "how long to pause; if empty, manual continuation is required"
-          schema:
-            type: string
-            default: 1m
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
+          schema:
+            $ref: '#/definitions/types.SBase-any'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 删除
+      tags:
+      - 任务
     get:
-      tags:
-        - Step
-      summary: List
-      description: Get the list of steps for a specified task
+      consumes:
+      - application/json
+      description: 获取指定任务的步骤列表, 支持WS长连接
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/stepResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/stepResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-array_types_STaskStepRes'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 列表
+      tags:
+      - 步骤
+    put:
+      consumes:
+      - application/json
+      description: 管理任务, 支持暂停、恢复、终止、超时暂停自动恢复
+      parameters:
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - default: paused
+        description: 操作项
+        enum:
+        - paused
+        - kill
+        - pause
+        - resume
+        in: query
+        name: action
+        type: string
+      - default: 1m
+        description: 暂停多久, 如果没设置则需要手工恢复
+        in: query
+        name: duration
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 管理
+      tags:
+      - 任务
   /api/v1/task/{task}/step/{step}:
     get:
-      tags:
-        - Step
-      summary: Log
-      description: Step Execution Output
+      consumes:
+      - application/json
+      description: 指定任务指定步骤的执行输出, 支持WS长连接
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: step
-          in: path
-          description: step name
-          required: true
-          schema:
-            type: string
-            default: step_name
-      responses:
-        "200":
-          description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/stepLogResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/stepLogResponseJson'
-        "500":
-          description: Internal Server Error
-    put:
-      tags:
-        - Step
-      summary: Manager
-      description: "Step management, can terminate, suspend, and resolve"
-      parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: step
-          in: path
-          description: step name
-          required: true
-          schema:
-            type: string
-            default: step_name
-        - name: action
-          in: query
-          description: management action
-          schema:
-            type: string
-            default: paused
-            enum:
-              - paused
-              - kill
-              - pause
-              - resume
-        - name: duration
-          in: query
-          description: "how long to pause; if empty, manual continuation is required"
-          schema:
-            type: string
-            default: 1m
-      responses:
-        "200":
-          description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-        "500":
-          description: Internal Server Error
-  /api/v1/task/{task}/workspace:
-    get:
-      tags:
-        - Workspace
-      summary: Get
-      description: Get file/folder contents
-      parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: path
-          in: query
-          description: dir path
-          schema:
-            type: string
-            default: /
-      responses:
-        "200":
-          description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/workspaceResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/workspaceResponseJson'
-        "500":
-          description: Internal Server Error
-    post:
-      tags:
-        - Workspace
-      summary: Upload
-      description: Upload a file or directory
-      parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: path
-          in: query
-          description: dir path
-          schema:
-            type: string
-            default: /
-      requestBody:
+      - description: 任务名称
+        in: path
+        name: task
         required: true
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - files
-              type: object
-              properties:
-                files:
-                  type: string
-                  description: files
-                  format: binary
+        type: string
+      - description: 步骤名称
+        in: path
+        name: step
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskStepLogListRes'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 日志
+      tags:
+      - 步骤
+    put:
+      consumes:
+      - application/json
+      description: 管理指定任务的指定步骤, 支持暂停、恢复、终止、超时暂停自动恢复
+      parameters:
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - description: 步骤名称
+        in: path
+        name: step
+        required: true
+        type: string
+      - default: paused
+        description: 操作项
+        enum:
+        - paused
+        - kill
+        - pause
+        - resume
+        in: query
+        name: action
+        type: string
+      - default: 1m
+        description: 暂停多久, 如果没设置则需要手工恢复
+        in: query
+        name: duration
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 管理
+      tags:
+      - 步骤
+  /api/v1/task/{task}/workspace:
     delete:
-      tags:
-        - Workspace
-      summary: Delete
-      description: Delete file/folder contents
+      consumes:
+      - application/json
+      description: 删除指定目录或文件
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: path
-          in: query
-          description: dir path
-          schema:
-            type: string
-            default: /
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - description: 路径
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
+          schema:
+            $ref: '#/definitions/types.SBase-any'
         "500":
           description: Internal Server Error
-  /api/v2/task/{task}:
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 删除
+      tags:
+      - 工作目录
     get:
-      tags:
-        - Task
-      summary: Detail
-      description: Get task detail
+      consumes:
+      - application/json
+      description: 获取目录列表或下载指定文件
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - description: 路径
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/taskResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/taskResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_SFileListRes'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 列表或下载
+      tags:
+      - 工作目录
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传文件或目录
+      parameters:
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - description: 路径
+        in: query
+        name: path
+        type: string
+      - description: 文件
+        in: formData
+        name: files
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 上传
+      tags:
+      - 工作目录
   /api/v2/task:
     post:
-      tags:
-        - Task
-      summary: CreateV2
-      description: Create a task
+      consumes:
+      - application/json
+      description: 创建任务
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-      requestBody:
-        description: body
-        content:
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/taskRequestYaml'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/taskRequestJson'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/taskRequestJson'
+      - description: 任务内容
+        in: body
+        name: task
         required: true
+        schema:
+          $ref: '#/definitions/types.STaskReq'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/taskCreateResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/taskCreateResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskCreateRes'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 创建
+      tags:
+      - 任务
+  /api/v2/task/{task}:
+    get:
+      consumes:
+      - application/json
+      description: 获取任务详情
+      parameters:
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskDetailRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 详情
+      tags:
+      - 任务
   /api/v2/task/{task}/step/{step}:
     get:
-      tags:
-        - Step
-      summary: Detail
-      description: Get step detail
+      consumes:
+      - application/json
+      description: 获取步骤详情
       parameters:
-        - $ref: '#/components/parameters/Accept'
-        - $ref: '#/components/parameters/Content-Type'
-        - name: task
-          in: path
-          description: task name
-          required: true
-          schema:
-            type: string
-            default: task_name
-        - name: step
-          in: path
-          description: step name
-          required: true
-          schema:
-            type: string
-            default: step_name
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - description: 步骤名称
+        in: path
+        name: step
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                    example: 0
-                  Message:
-                    type: string
-                    example: success
-                  Timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  Data:
-                    $ref: '#/components/schemas/stepResponseYaml'
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    example: 0
-                  msg:
-                    type: string
-                    example: success
-                  timestamp:
-                    type: integer
-                    example: 1719977634080348943
-                  data:
-                    $ref: '#/components/schemas/stepResponseJson'
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskStepRes'
         "500":
           description: Internal Server Error
-components:
-  parameters:
-    Content-Type:
-      in: header
-      name: Content-Type
-      schema:
-        type: string
-        default: application/yaml
-        enum:
-          - application/yaml
-          - application/json
-    Accept:
-      in: header
-      name: Accept
-      schema:
-        type: string
-        default: application/yaml
-        enum:
-          - application/yaml
-          - application/json
-  schemas:
-    poolResponseYaml:
-      type: object
-      properties:
-        Size:
-          type: integer
-          example: 30
-        Total:
-          type: integer
-          example: 50
-        Running:
-          type: integer
-          example: 10
-        Waiting:
-          type: integer
-          example: 20
-    poolResponseJson:
-      type: object
-      properties:
-        size:
-          type: integer
-          example: 30
-        total:
-          type: integer
-          example: 50
-        running:
-          type: integer
-          example: 10
-        waiting:
-          type: integer
-          example: 20
-    poolRequestYaml:
-      required:
-        - Size
-      type: object
-      properties:
-        Size:
-          type: integer
-          example: 30
-    poolRequestJson:
-      required:
-        - size
-      type: object
-      properties:
-        size:
-          type: integer
-          example: 30
-    pageResponseYaml:
-      type: object
-      properties:
-        Current:
-          type: integer
-          example: 1
-        Size:
-          type: integer
-          example: 100
-        Total:
-          type: integer
-          example: 100
-    pageResponseJson:
-      type: object
-      properties:
-        current:
-          type: integer
-          example: 1
-        size:
-          type: integer
-          example: 100
-        total:
-          type: integer
-          example: 100
-    timeResponseYaml:
-      type: object
-      properties:
-        Start:
-          type: string
-          example: 2021-01-01T00:00:00Z
-        End:
-          type: string
-          example: 2021-01-01T00:00:00Z
-    timeResponseJson:
-      type: object
-      properties:
-        start:
-          type: string
-          example: 2021-01-01T00:00:00Z
-        end:
-          type: string
-          example: 2021-01-01T00:00:00Z
-    env:
-      type: object
-      properties:
-        K1:
-          type: string
-          example: v1
-        K2:
-          type: string
-          example: v2
-    taskResponseYaml:
-      type: object
-      properties:
-        Name:
-          type: string
-          example: task-name
-        Description:
-          type: string
-          example: task description
-        State:
-          type: string
-          example: running
-        Message:
-          type: string
-          example: task is running
-        Count:
-          type: integer
-          example: 1
-        Env:
-          $ref: '#/components/schemas/env'
-        Timeout:
-          type: string
-          example: 24h
-        Disable:
-          type: boolean
-          example: false
-        Time:
-          $ref: '#/components/schemas/timeResponseYaml'
-    taskResponseJson:
-      type: object
-      properties:
-        name:
-          type: string
-          example: task-name
-        description:
-          type: string
-          example: task description
-        state:
-          type: string
-          example: running
-        msg:
-          type: string
-          example: task is running
-        count:
-          type: integer
-          example: 1
-        env:
-          $ref: '#/components/schemas/env'
-        timeout:
-          type: string
-          example: 24h
-        disable:
-          type: boolean
-          example: false
-        time:
-          $ref: '#/components/schemas/timeResponseJson'
-    taskListResponseYaml:
-      type: object
-      properties:
-        Page:
-          $ref: '#/components/schemas/pageResponseYaml'
-        Tasks:
-          type: array
-          items:
-            $ref: '#/components/schemas/taskResponseYaml'
-    taskListResponseJson:
-      type: object
-      properties:
-        Page:
-          $ref: '#/components/schemas/pageResponseJson'
-        Tasks:
-          type: array
-          items:
-            $ref: '#/components/schemas/taskResponseJson'
-    taskCreateResponseYaml:
-      type: object
-      properties:
-        Name:
-          type: string
-          example: task-name
-        Count:
-          type: integer
-          example: 1
-    taskCreateResponseJson:
-      type: object
-      properties:
-        name:
-          type: string
-          example: task-name
-        count:
-          type: integer
-          example: 1
-    stepResponseYaml:
-      type: object
-      properties:
-        Name:
-          type: string
-          example: step-name
-        Description:
-          type: string
-          example: step description
-        Code:
-          type: integer
-          example: 0
-        State:
-          type: string
-          example: success
-        Message:
-          type: string
-          example: step success execute
-        Timeout:
-          type: string
-          example: 24h
-        Disable:
-          type: boolean
-          example: false
-        Depends:
-          type: array
-          items:
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 详情
+      tags:
+      - 步骤
+  /healthyz:
+    get:
+      consumes:
+      - application/json
+      description: 用于检测服务是否正常
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SHealthyz'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 健康
+      tags:
+      - 默认
+  /heartbeat:
+    get:
+      consumes:
+      - application/json
+      description: 用于判断服务是否正常
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
             type: string
-            example: step-name
-        Env:
-          $ref: '#/components/schemas/env'
-        Type:
-          type: string
-          example: bash
-        Content:
-          type: string
-          example: |
-            #!/bin/bash
-            echo "hello world"
-        Time:
-          $ref: '#/components/schemas/timeResponseYaml'
-    stepResponseJson:
-      type: object
-      properties:
-        name:
-          type: string
-          example: step-name
-        description:
-          type: string
-          example: step description
-        code:
-          type: integer
-          example: 0
-        state:
-          type: string
-          example: success
-        msg:
-          type: string
-          example: step success execute
-        timeout:
-          type: string
-          example: 24h
-        disable:
-          type: boolean
-          example: false
-        depends:
-          type: array
-          items:
+        "500":
+          description: Internal Server Error
+          schema:
             type: string
-            example: step-name
-        env:
-          $ref: '#/components/schemas/env'
-        type:
-          type: string
-          example: bash
-        content:
-          type: string
-          example: |
-            #!/bin/bash
-            echo "hello world"
-        time:
-          $ref: '#/components/schemas/timeResponseJson'
-    stepLogResponseYaml:
-      type: object
-      properties:
-        Timestamp:
-          type: integer
-          example: 1719977634080348943
-        Line:
-          type: integer
-          example: 0
-        Content:
-          type: string
-          example: hello world
-    stepLogResponseJson:
-      type: object
-      properties:
-        timestamp:
-          type: integer
-          example: 1719977634080348943
-        line:
-          type: integer
-          example: 0
-        content:
-          type: string
-          example: hello world
-    workspaceResponseYaml:
-      type: object
-      properties:
-        Total:
-          type: integer
-          example: 1
-        Files:
-          type: array
-          items:
-            type: object
-            properties:
-              Name:
-                type: string
-                example: file.txt
-              Path:
-                type: string
-                example: /file.txt
-              Size:
-                type: integer
-                example: 100
-              Mode:
-                type: string
-                example: -rw-r--r--
-              ModeTime:
-                type: string
-                example: 2023-08-01T09:01:01Z
-              IsDir:
-                type: boolean
-                example: false
-    workspaceResponseJson:
-      type: object
-      properties:
-        total:
-          type: integer
-          example: 1
-        files:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-                example: file.txt
-              path:
-                type: string
-                example: /file.txt
-              size:
-                type: integer
-                example: 100
-              mode:
-                type: string
-                example: -rw-r--r--
-              modeTime:
-                type: string
-                example: 2023-08-01T09:01:01Z
-              is_dir:
-                type: boolean
-                example: false
-    stepRequestJson:
-      type: object
-      properties:
-        name:
-          type: string
-          example: script.ps1
-        description:
-          type: string
-          example: script description
-        timeout:
-          type: string
-          example: 3m
-        disable:
-          type: boolean
-          example: false
-        depends:
-          type: array
-          example:
-            - ""
-          items:
-            type: string
-        env:
-          $ref: '#/components/schemas/env'
-        type:
-          type: string
-          example: powershell
-        content:
-          type: string
-          example: sleep 10
-    stepRequestYaml:
-      type: object
-      properties:
-        Name:
-          type: string
-          example: script.ps1
-        Description:
-          type: string
-          example: script description
-        Timeout:
-          type: string
-          example: 3m
-        Disable:
-          type: boolean
-          example: false
-        Depends:
-          type: array
-          example:
-            - ""
-          items:
-            type: string
-        Env:
-          $ref: '#/components/schemas/env'
-        Type:
-          type: string
-          example: powershell
-        Content:
-          type: string
-          example: sleep 10
-    taskRequestJson:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "task_name"
-        description:
-          type: string
-          example: "task description"
-        async:
-          type: boolean
-          example: false
-        timeout:
-          type: string
-          example: "24h"
-        disable:
-          type: boolean
-          example: false
-        env:
-          $ref: '#/components/schemas/env'
-        step:
-          type: array
-          items:
-            $ref: '#/components/schemas/stepRequestJson'
-    taskRequestYaml:
-      type: object
-      properties:
-        Name:
-          type: string
-          example: "task_name"
-        Description:
-          type: string
-          example: "task description"
-        Async:
-          type: boolean
-          example: false
-        Timeout:
-          type: string
-          example: "24h"
-        Disable:
-          type: boolean
-          example: false
-        Env:
-          $ref: '#/components/schemas/env'
-        Step:
-          type: array
-          items:
-            $ref: '#/components/schemas/stepRequestYaml'
+      summary: 心跳
+      tags:
+      - 默认
+  /version:
+    get:
+      consumes:
+      - application/json
+      description: 获取版本信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SVersion'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 版本
+      tags:
+      - 默认
+swagger: "2.0"

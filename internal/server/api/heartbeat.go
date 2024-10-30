@@ -7,15 +7,13 @@ import (
 )
 
 // heartbeat
-// @Summary		Heartbeat
-// @Description	heartbeat
-// @Tags		Default
+// @Summary		心跳
+// @Description	用于判断服务是否正常
+// @Tags		默认
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Success		200 {object} any
-// @Failure		500 {object} any
+// @Success		200 {object} string
+// @Failure		500 {object} string
 // @Router		/heartbeat [get]
 func heartbeat(c *gin.Context) {
 	c.AbortWithStatus(http.StatusOK)

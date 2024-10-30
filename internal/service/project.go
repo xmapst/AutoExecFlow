@@ -12,6 +12,6 @@ func Project(name string) *SProjectService {
 	}
 }
 
-func ProjectList(req *types.SPageReq) *types.SProjectListRes {
+func ProjectList(req *types.SPageReq) *types.SProjectListDetailRes {
 	return nil
 }

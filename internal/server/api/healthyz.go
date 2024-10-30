@@ -8,13 +8,11 @@ import (
 )
 
 // healthyz
-// @Summary		Healthyz
-// @Description	healthyz
-// @Tags		Default
+// @Summary		健康
+// @Description 用于检测服务是否正常
+// @Tags		默认
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
 // @Success		200 {object} types.SBase[types.SHealthyz]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/healthyz [get]

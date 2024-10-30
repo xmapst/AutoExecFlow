@@ -10,13 +10,11 @@ import (
 )
 
 // PtyWs
-// @Summary		Terminal
-// @Description	websocket terminal
-// @Tags		System
+// @Summary		终端
+// @Description	Websocket的pty终端
+// @Tags		系统
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
 // @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/pty [get]

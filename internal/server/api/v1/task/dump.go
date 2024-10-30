@@ -11,15 +11,13 @@ import (
 )
 
 // Dump
-// @Summary		Dump
-// @Description	dump task
-// @Tags		Task
+// @Summary		导出
+// @Description	导出任务
+// @Tags		任务
 // @Accept		application/json
-// @Accept		application/yaml
 // @Produce		application/json
-// @Produce		application/yaml
-// @Param		task path string true "task name"
-// @Success		200 {object} types.SBase[string]
+// @Param		task path string true "任务名称"
+// @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/dump [get]
 
