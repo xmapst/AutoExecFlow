@@ -1,13 +1,28 @@
 package types
 
-type SProjectListDetailRes struct {
-	Page     SPageRes        `json:"page" yaml:"Page"`
-	Projects SProjectListRes `json:"projects" yaml:"Projects"`
+type SProjectListRes struct {
+	Page     SPageRes     `json:"page" yaml:"Page"`
+	Projects SProjectsRes `json:"projects" yaml:"Projects"`
 }
 
-type SProjectListRes []*SProjectRes
+type SProjectsRes []*SProjectRes
 
 type SProjectRes struct {
-	Name    string `json:"name" yaml:"Name"`
-	Disable bool   `json:"disable" yaml:"Disable"`
+	Name        string `json:"name" yaml:"Name"`
+	Description string `json:"description,omitempty" yaml:"Description,omitempty"`
+	Disable     bool   `json:"disable" yaml:"Disable"`
+	Type        string `json:"type" yaml:"Type"`
+	Content     string `json:"content" yaml:"Content"`
+}
+
+type SProjectCreateReq struct {
+	Name string `json:"name" yaml:"Name" binding:"required"`
+	SProjectUpdateReq
+}
+
+type SProjectUpdateReq struct {
+	Description string `json:"description,omitempty" yaml:"Description,omitempty"`
+	Disable     *bool  `json:"disable" yaml:"Disable"`
+	Type        string `json:"type" yaml:"Type" binding:"required"`
+	Content     string `json:"content" yaml:"Content" binding:"required"`
 }

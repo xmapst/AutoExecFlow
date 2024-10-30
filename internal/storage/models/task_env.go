@@ -2,7 +2,7 @@ package models
 
 type STaskEnv struct {
 	SBase
-	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
+	TaskName string `json:"task_name,omitempty" gorm:"size:256;index;not null;comment:任务名称"`
 	SEnv
 }
 

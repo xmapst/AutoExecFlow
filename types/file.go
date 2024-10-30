@@ -10,6 +10,8 @@ type SFileRes struct {
 }
 
 type SFileListRes struct {
-	Total int         `json:"total" yaml:"Total"`
-	Files []*SFileRes `json:"files" yaml:"Files"`
+	Total int       `json:"total" yaml:"Total"`
+	Files SFilesRes `json:"files" yaml:"Files"`
 }
+
+type SFilesRes []*SFileRes

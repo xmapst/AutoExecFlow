@@ -32,7 +32,7 @@ func Step(taskName string, stepName string) *SStepService {
 	}
 }
 
-func (ss *SStepService) Create(globalTimeout time.Duration, step *types.STaskStepReq) error {
+func (ss *SStepService) Create(globalTimeout time.Duration, step *types.SStepReq) error {
 	if globalTimeout <= 0 {
 		return errors.New("global timeout must be greater than 0")
 	}
@@ -50,7 +50,7 @@ func (ss *SStepService) Create(globalTimeout time.Duration, step *types.STaskSte
 	return nil
 }
 
-func (ss *SStepService) review(step *types.STaskStepReq) (time.Duration, error) {
+func (ss *SStepService) review(step *types.SStepReq) (time.Duration, error) {
 	step.Name = reg.ReplaceAllString(step.Name, "")
 	if step.Name == "" {
 		step.Name = ksuid.New().String()
@@ -82,7 +82,7 @@ func (ss *SStepService) review(step *types.STaskStepReq) (time.Duration, error) 
 	return timeout, nil
 }
 
-func (ss *SStepService) saveStep(timeout time.Duration, step *types.STaskStepReq) (err error) {
+func (ss *SStepService) saveStep(timeout time.Duration, step *types.SStepReq) (err error) {
 	defer func() {
 		if err != nil {
 			_ = storage.Task(ss.taskName).Step(step.Name).ClearAll()
@@ -123,14 +123,14 @@ func (ss *SStepService) saveStep(timeout time.Duration, step *types.STaskStepReq
 	return
 }
 
-func (ss *SStepService) Detail() (types.Code, *types.STaskStepRes, error) {
+func (ss *SStepService) Detail() (types.Code, *types.SStepRes, error) {
 	db := storage.Task(ss.taskName).Step(ss.stepName)
 	step, err := db.Get()
 	if err != nil {
 		logx.Errorln(err)
 		return types.CodeFailed, nil, err
 	}
-	data := &types.STaskStepRes{
+	data := &types.SStepRes{
 		Name:        step.Name,
 		Description: step.Description,
 		State:       models.StateMap[*step.State],
@@ -178,14 +178,14 @@ func (ss *SStepService) Delete() error {
 	return storage.Task(ss.taskName).Step(ss.stepName).ClearAll()
 }
 
-func (ss *SStepService) Log() (types.Code, types.STaskStepLogListRes, error) {
+func (ss *SStepService) Log() (types.Code, types.SLogsRes, error) {
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
 		return types.CodeFailed, nil, err
 	}
 	switch *step.State {
 	case models.StatePending:
-		return types.CodePending, types.STaskStepLogListRes{
+		return types.CodePending, types.SLogsRes{
 			{
 				Timestamp: time.Now().UnixNano(),
 				Line:      1,
@@ -193,7 +193,7 @@ func (ss *SStepService) Log() (types.Code, types.STaskStepLogListRes, error) {
 			},
 		}, errors.New(step.Message)
 	case models.StatePaused:
-		return types.CodePaused, types.STaskStepLogListRes{
+		return types.CodePaused, types.SLogsRes{
 			{
 				Timestamp: time.Now().UnixNano(),
 				Line:      1,
@@ -206,7 +206,7 @@ func (ss *SStepService) Log() (types.Code, types.STaskStepLogListRes, error) {
 	}
 }
 
-func (ss *SStepService) log(latestLine *int64) (res types.STaskStepLogListRes, done bool) {
+func (ss *SStepService) log(latestLine *int64) (res types.SLogsRes, done bool) {
 	logs := storage.Task(ss.taskName).Step(ss.stepName).Log().List(latestLine)
 	for _, v := range logs {
 		if v.Content == common.ConsoleStart {
@@ -216,7 +216,7 @@ func (ss *SStepService) log(latestLine *int64) (res types.STaskStepLogListRes, d
 			done = true
 			continue
 		}
-		res = append(res, &types.STaskStepLogRes{
+		res = append(res, &types.SLogRes{
 			Timestamp: v.Timestamp,
 			Line:      *v.Line,
 			Content:   v.Content,
@@ -291,7 +291,7 @@ func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error
 func (ss *SStepService) createOnceHandler(once *sync.Once, code types.Code, message string) stateHandlerFn {
 	return func(ws *websocket.Conn, latest *int64) (bool, error) {
 		once.Do(func() {
-			_ = ws.WriteJSON(base.WithData([]types.STaskStepLogRes{
+			_ = ws.WriteJSON(base.WithData([]types.SLogRes{
 				{
 					Timestamp: time.Now().UnixNano(),
 					Line:      1,

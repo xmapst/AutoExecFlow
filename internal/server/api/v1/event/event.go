@@ -14,7 +14,7 @@ import (
 
 // Stream
 // @Summary 	事件
-// @Description 订阅系统事件
+// @Description 订阅系统事件, SSE
 // @Tags 		事件
 // @Accept		application/json
 // @Produce		application/json

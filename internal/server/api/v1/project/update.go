@@ -10,27 +10,32 @@ import (
 	"github.com/xmapst/AutoExecFlow/types"
 )
 
-// Detail
-// @Summary 	详情
-// @Description 获取项目详情
+// Post
+// @Summary 	更新
+// @Description 更新项目
 // @Tags 		项目
 // @Accept		application/json
 // @Produce		application/json
 // @Param		project path string true "项目名称"
-// @Success		200 {object} types.SBase[types.SProjectRes]
+// @Param		content body types.SProjectUpdateReq true "更新内容"
+// @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v1/project/{project} [get]
-func Detail(c *gin.Context) {
+// @Router		/api/v1/project/{project} [post]
+func Update(c *gin.Context) {
 	projectName := c.Param("project")
 	if projectName == "" {
-		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("project does not exist")))
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	res, err := service.Project(projectName).Detail()
-	if err != nil {
+	var req = new(types.SProjectUpdateReq)
+	if err := c.ShouldBind(req); err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
 	}
-	base.Send(c, base.WithData(res).WithCode(types.CodeSuccess))
+	if err := service.Project(projectName).Update(req); err != nil {
+		logx.Errorln(err)
+		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
+		return
+	}
 }

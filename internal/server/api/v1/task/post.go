@@ -19,7 +19,7 @@ import (
 // @Param		async query bool false "是否异步执行" default(false)
 // @Param		timeout query string false "执行超时时间"
 // @Param		env query []string false "任务环境变量"
-// @Param		steps body types.STaskStepsReq true "步骤内容"
+// @Param		steps body types.SStepsReq true "步骤内容"
 // @Success		200 {object} types.SBase[types.STaskCreateRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task [post]

@@ -20,7 +20,7 @@ import (
 // @Produce		application/json
 // @Param		task path string true "任务名称"
 // @Param		step path string true "步骤名称"
-// @Success		200 {object} types.SBase[types.STaskStepLogListRes]
+// @Success		200 {object} types.SBase[types.SLogsRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/step/{step} [get]
 func Log(c *gin.Context) {

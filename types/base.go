@@ -10,6 +10,11 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 )
 
+const (
+	XTaskName  = "X-Task-Name"
+	XTaskState = "X-Task-STATE"
+)
+
 type SBase[T any] struct {
 	Code      Code    `json:"code" yaml:"Code" example:"255"`
 	Message   Message `json:"msg" yaml:"Message" example:"message" swaggertype:"string"`
@@ -86,4 +91,26 @@ type STTYSize struct {
 	Rows uint16 `json:"rows"`
 	X    uint16 `json:"x"`
 	Y    uint16 `json:"y"`
+}
+
+type SPageRes struct {
+	// 当前页
+	Current int64 `json:"current" yaml:"Current"`
+	// 页大小
+	Size int64 `json:"size" yaml:"Size"`
+	// 总页数
+	Total int64 `json:"total" yaml:"Total"`
+}
+
+type SPageReq struct {
+	Page   int64  `json:"page" query:"page" yaml:"Page" example:"1"`
+	Size   int64  `json:"size" query:"size" yaml:"Size" example:"10"`
+	Prefix string `json:"prefix" query:"prefix" yaml:"Prefix" example:""`
+}
+
+type STimeRes struct {
+	// 开始时间
+	Start string `json:"start,omitempty" yaml:"Start,omitempty"`
+	// 结束时间
+	End string `json:"end,omitempty" yaml:"End,omitempty"`
 }

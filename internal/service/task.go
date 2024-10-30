@@ -48,7 +48,7 @@ func TaskList(req *types.SPageReq) *types.STaskListDetailRes {
 		},
 	}
 	for _, task := range tasks {
-		res := &types.STaskDetailRes{
+		res := &types.STaskRes{
 			Name:        task.Name,
 			Description: task.Description,
 			Node:        task.Node,
@@ -163,7 +163,7 @@ func (ts *STaskService) review(task *types.STaskReq) (time.Duration, error) {
 	return timeout, nil
 }
 
-func (ts *STaskService) reviewStep(async bool, steps types.STaskStepsReq) error {
+func (ts *STaskService) reviewStep(async bool, steps types.SStepsReq) error {
 	// 检查步骤名称是否重复
 	if err := ts.uniqStepsName(steps); err != nil {
 		return err
@@ -181,7 +181,7 @@ func (ts *STaskService) reviewStep(async bool, steps types.STaskStepsReq) error 
 	return nil
 }
 
-func (ts *STaskService) uniqStepsName(steps types.STaskStepsReq) error {
+func (ts *STaskService) uniqStepsName(steps types.SStepsReq) error {
 	counts := make(map[string]int)
 	for _, v := range steps {
 		counts[v.Name]++
@@ -243,7 +243,7 @@ func (ts *STaskService) Delete() error {
 	return storage.Task(ts.name).ClearAll()
 }
 
-func (ts *STaskService) Detail() (types.Code, *types.STaskDetailRes, error) {
+func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
@@ -251,7 +251,7 @@ func (ts *STaskService) Detail() (types.Code, *types.STaskDetailRes, error) {
 		return types.CodeFailed, nil, err
 	}
 
-	data := &types.STaskDetailRes{
+	data := &types.STaskRes{
 		Name:        task.Name,
 		Description: task.Description,
 		Node:        task.Node,
@@ -311,7 +311,7 @@ func (ts *STaskService) Dump() (*types.STaskReq, error) {
 	}
 	steps := storage.Task(ts.name).StepList(storage.All)
 	for _, step := range steps {
-		stepRes := &types.STaskStepReq{
+		stepRes := &types.SStepReq{
 			Name:    step.Name,
 			Type:    step.Type,
 			Content: step.Content,
@@ -329,7 +329,7 @@ func (ts *STaskService) Dump() (*types.STaskReq, error) {
 	return res, nil
 }
 
-func (ts *STaskService) Steps() (code types.Code, data []*types.STaskStepRes, err error) {
+func (ts *STaskService) Steps() (code types.Code, data types.SStepsRes, err error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
@@ -343,7 +343,7 @@ func (ts *STaskService) Steps() (code types.Code, data []*types.STaskStepRes, er
 	var groups = make(map[models.State][]string)
 	for _, step := range steps {
 		groups[*step.State] = append(groups[*step.State], step.Name)
-		res := &types.STaskStepRes{
+		res := &types.SStepRes{
 			Name:    step.Name,
 			State:   models.StateMap[*step.State],
 			Code:    *step.Code,

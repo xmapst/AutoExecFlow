@@ -23,7 +23,6 @@ import (
 // @Produce		application/json
 // @Param		page query int false "页码" default(1)
 // @Param		size query int false "分页大小" default(100)
-// @Param		prefix query string false "关键字"
 // @Success		200 {object} types.SBase[types.STaskListDetailRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task [get]
@@ -32,13 +31,13 @@ func List(c *gin.Context) {
 		Page: 1,
 		Size: 10,
 	}
-	err := c.ShouldBindQuery(req)
-	if err != nil {
+	if err := c.ShouldBindQuery(req); err != nil {
 		base.Send(c, base.WithError[any](err))
 		return
 	}
 	var ws *websocket.Conn
 	if c.IsWebsocket() {
+		var err error
 		ws, err = base.Upgrade(c.Writer, c.Request)
 		if err != nil {
 			logx.Errorln(err)
@@ -85,7 +84,7 @@ func List(c *gin.Context) {
 		currentTaskList := service.TaskList(req)
 		// 如果数据没有变化，只发送心跳
 		if reflect.DeepEqual(lastTaskList, currentTaskList) {
-			err = ws.WriteMessage(websocket.PingMessage, nil)
+			err := ws.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
 				return
 			}
@@ -93,7 +92,7 @@ func List(c *gin.Context) {
 			continue
 		}
 
-		err = ws.WriteJSON(base.WithData(currentTaskList))
+		err := ws.WriteJSON(base.WithData(currentTaskList))
 		if err != nil {
 			return
 		}

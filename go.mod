@@ -30,6 +30,9 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
+	github.com/swaggo/files v1.0.1
+	github.com/swaggo/gin-swagger v1.6.0
+	github.com/swaggo/swag v1.16.4
 	github.com/traefik/yaegi v0.16.1
 	github.com/xmapst/go-rabbitmq v0.14.2-5
 	github.com/yargevad/filepathx v1.0.0
@@ -54,6 +57,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1 // indirect
+	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/PuerkitoBio/goquery v1.10.0 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
@@ -78,6 +82,7 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
+	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -133,6 +138,7 @@ require (
 	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

@@ -32,9 +32,9 @@ func Pointer[T any](v T) *T {
 }
 
 type SBase struct {
-	ID        uint      `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint      `json:"id" gorm:"primarykey;comment:ID"`
+	CreatedAt time.Time `json:"created_at;comment:创建时间"`
+	UpdatedAt time.Time `json:"updated_at;comment:更新时间"`
 }
 
 type IBase interface {
@@ -102,6 +102,6 @@ func Paginate(db *gorm.DB, page, pageSize int64) *gorm.DB {
 type SEnvs []*SEnv
 
 type SEnv struct {
-	Name  string `json:"name,omitempty" gorm:"index;not null;comment:名称"`
-	Value string `json:"value,omitempty" gorm:"comment:值"`
+	Name  string `json:"name,omitempty" gorm:"size:256;index;not null;comment:名称"`
+	Value string `json:"value,omitempty" gorm:"size:256;comment:值"`
 }

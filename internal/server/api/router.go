@@ -6,11 +6,16 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/xmapst/AutoExecFlow/docs"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/middleware/zap"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/event"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/pool"
+	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/project"
+	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/project/build"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/sys"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/step"
@@ -58,11 +63,23 @@ func New(relativePath string) *gin.Engine {
 	baseGroup.GET("/healthyz", healthyz)
 	baseGroup.GET("/heartbeat", heartbeat)
 	baseGroup.HEAD("/heartbeat", heartbeat)
+	// swagger
+	docs.SwaggerInfo.BasePath = relativePath
+	baseGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	api := baseGroup.Group("/api")
 	// V1
 	{
 		// event
 		api.GET("/v1/event", event.Stream)
+		// project
+		api.GET("/v1/project", project.List)
+		api.POST("/v1/project", project.Post)
+		api.PUT("/v1/project/:project", project.Update)
+		api.GET("/v1/project/:project", project.Detail)
+		api.DELETE("/v1/project/:project", project.Delete)
+		api.GET("/v1/project/:project/build", build.List)
+		//api.GET("/v1/project/:project/build/:build", build.Detail)
+		//api.DELETE("/v1/project/:project/build/:build", build.Delete)
 		// task
 		api.GET("/v1/task", task.List)
 		api.POST("/v1/task", task.Post)

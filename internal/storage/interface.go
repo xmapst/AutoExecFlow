@@ -144,6 +144,8 @@ type IProject interface {
 }
 
 type IProjectBuild interface {
+	// Get 根据名称获取指定构建
+	Get(name string) (res *models.SProjectBuild, err error)
 	// Insert 插入
 	Insert(names ...string) (err error)
 	// List 获取所有
