@@ -7,13 +7,13 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
-type stepEnv struct {
+type sStepEnv struct {
 	*gorm.DB
 	tName string
 	sName string
 }
 
-func (s *stepEnv) List() (res models.Envs) {
+func (s *sStepEnv) List() (res models.Envs) {
 	s.Model(&models.StepEnv{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -24,7 +24,7 @@ func (s *stepEnv) List() (res models.Envs) {
 	return
 }
 
-func (s *stepEnv) Insert(envs ...*models.Env) (err error) {
+func (s *sStepEnv) Insert(envs ...*models.Env) (err error) {
 	if len(envs) == 0 {
 		return
 	}
@@ -39,7 +39,7 @@ func (s *stepEnv) Insert(envs ...*models.Env) (err error) {
 	return s.Create(&_envs).Error
 }
 
-func (s *stepEnv) Get(name string) (res string, err error) {
+func (s *sStepEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
@@ -55,7 +55,7 @@ func (s *stepEnv) Get(name string) (res string, err error) {
 	return
 }
 
-func (s *stepEnv) Remove(name string) (err error) {
+func (s *sStepEnv) Remove(name string) (err error) {
 	if name == "" {
 		return errors.New("name is empty")
 	}
@@ -66,7 +66,7 @@ func (s *stepEnv) Remove(name string) (err error) {
 	}).Delete(&models.StepEnv{}).Error
 }
 
-func (s *stepEnv) RemoveAll() (err error) {
+func (s *sStepEnv) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,

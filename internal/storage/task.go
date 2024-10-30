@@ -8,18 +8,18 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
-type task struct {
+type sTask struct {
 	*gorm.DB
 	tName string
 
 	env IEnv
 }
 
-func (t *task) Name() string {
+func (t *sTask) Name() string {
 	return t.tName
 }
 
-func (t *task) ClearAll() error {
+func (t *sTask) ClearAll() error {
 	if err := t.Remove(); err != nil {
 		return err
 	}
@@ -35,13 +35,13 @@ func (t *task) ClearAll() error {
 	return nil
 }
 
-func (t *task) Remove() (err error) {
+func (t *sTask) Remove() (err error) {
 	return t.Where(map[string]interface{}{
 		"name": t.tName,
 	}).Delete(&models.Task{}).Error
 }
 
-func (t *task) State() (state models.State, err error) {
+func (t *sTask) State() (state models.State, err error) {
 	err = t.Model(&models.Task{}).
 		Select("state").
 		Where(map[string]interface{}{
@@ -52,7 +52,7 @@ func (t *task) State() (state models.State, err error) {
 	return
 }
 
-func (t *task) IsDisable() (disable bool) {
+func (t *sTask) IsDisable() (disable bool) {
 	if t.Model(&models.Task{}).
 		Select("disable").
 		Where(map[string]interface{}{
@@ -65,9 +65,9 @@ func (t *task) IsDisable() (disable bool) {
 	return
 }
 
-func (t *task) Env() IEnv {
+func (t *sTask) Env() IEnv {
 	if t.env == nil {
-		t.env = &taskEnv{
+		t.env = &sTaskEnv{
 			DB:    t.DB,
 			tName: t.tName,
 		}
@@ -75,7 +75,7 @@ func (t *task) Env() IEnv {
 	return t.env
 }
 
-func (t *task) Timeout() (res time.Duration, err error) {
+func (t *sTask) Timeout() (res time.Duration, err error) {
 	err = t.Model(&models.Task{}).
 		Select("timeout").
 		Where(map[string]interface{}{
@@ -86,7 +86,7 @@ func (t *task) Timeout() (res time.Duration, err error) {
 	return
 }
 
-func (t *task) Get() (res *models.Task, err error) {
+func (t *sTask) Get() (res *models.Task, err error) {
 	res = new(models.Task)
 	err = t.Model(&models.Task{}).
 		Where(map[string]interface{}{
@@ -97,7 +97,7 @@ func (t *task) Get() (res *models.Task, err error) {
 	return
 }
 
-func (t *task) Update(value *models.TaskUpdate) (err error) {
+func (t *sTask) Update(value *models.TaskUpdate) (err error) {
 	if value == nil {
 		return
 	}
@@ -109,8 +109,8 @@ func (t *task) Update(value *models.TaskUpdate) (err error) {
 		Error
 }
 
-func (t *task) Step(name string) IStep {
-	return &step{
+func (t *sTask) Step(name string) IStep {
+	return &sStep{
 		DB:    t.DB,
 		genv:  t.Env(),
 		tName: t.tName,
@@ -118,17 +118,17 @@ func (t *task) Step(name string) IStep {
 	}
 }
 
-func (t *task) StepCreate(step *models.Step) (err error) {
+func (t *sTask) StepCreate(step *models.Step) (err error) {
 	step.TaskName = t.tName
 	return t.Create(step).Error
 }
 
-func (t *task) StepCount() (res int64) {
+func (t *sTask) StepCount() (res int64) {
 	t.Model(&models.Step{}).Count(&res)
 	return
 }
 
-func (t *task) StepNameList(str string) (res []string) {
+func (t *sTask) StepNameList(str string) (res []string) {
 	query := t.Model(&models.Step{}).
 		Select("name").
 		Order("id ASC").
@@ -142,7 +142,7 @@ func (t *task) StepNameList(str string) (res []string) {
 	return
 }
 
-func (t *task) StepStateList(str string) (res map[string]models.State) {
+func (t *sTask) StepStateList(str string) (res map[string]models.State) {
 	var steps models.Steps
 	query := t.Model(&models.Step{}).
 		Select("name, state").
@@ -161,7 +161,7 @@ func (t *task) StepStateList(str string) (res map[string]models.State) {
 	return
 }
 
-func (t *task) StepList(str string) (res models.Steps) {
+func (t *sTask) StepList(str string) (res models.Steps) {
 	query := t.Model(&models.Step{}).
 		Order("id ASC").
 		Where(map[string]interface{}{

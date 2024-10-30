@@ -6,13 +6,13 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
-type stepDepend struct {
+type sStepDepend struct {
 	*gorm.DB
 	tName string
 	sName string
 }
 
-func (s *stepDepend) List() (res []string) {
+func (s *sStepDepend) List() (res []string) {
 	s.Model(&models.StepDepend{}).
 		Select("name").
 		Where(map[string]interface{}{
@@ -24,7 +24,7 @@ func (s *stepDepend) List() (res []string) {
 	return
 }
 
-func (s *stepDepend) Insert(depends ...string) (err error) {
+func (s *sStepDepend) Insert(depends ...string) (err error) {
 	if len(depends) == 0 {
 		return
 	}
@@ -39,7 +39,7 @@ func (s *stepDepend) Insert(depends ...string) (err error) {
 	return s.Create(&stepDepends).Error
 }
 
-func (s *stepDepend) RemoveAll() (err error) {
+func (s *sStepDepend) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,

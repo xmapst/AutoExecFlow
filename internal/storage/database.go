@@ -18,11 +18,11 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-type database struct {
+type sDatabase struct {
 	*gorm.DB
 }
 
-func newDB(nodeName, rawURL string) (*database, error) {
+func newDB(nodeName, rawURL string) (*sDatabase, error) {
 	before, after, found := strings.Cut(rawURL, "://")
 	if !found {
 		return nil, errors.New("invalid storage url")
@@ -66,7 +66,7 @@ func newDB(nodeName, rawURL string) (*database, error) {
 	//设置打开数据库连接的最大数量
 	_db.SetMaxIdleConns(runtime.NumCPU() * 15)
 
-	d := &database{DB: gdb}
+	d := &sDatabase{DB: gdb}
 
 	if before == TYPE_SQLITE {
 		d.initSqlite()
@@ -80,6 +80,8 @@ func newDB(nodeName, rawURL string) (*database, error) {
 		&models.StepEnv{},
 		&models.StepDepend{},
 		&models.StepLog{},
+		&models.Project{},
+		&models.ProjectBuild{},
 	); err != nil {
 		logx.Errorln(err)
 		return nil, err
@@ -113,7 +115,7 @@ func newDB(nodeName, rawURL string) (*database, error) {
 	return d, nil
 }
 
-func (d *database) initSqlite() {
+func (d *sDatabase) initSqlite() {
 	// 开启外键约束
 	d.Exec("PRAGMA foreign_keys=ON;")
 	// 写同步
@@ -128,11 +130,11 @@ func (d *database) initSqlite() {
 	d.Exec("PRAGMA mode=rwc;")
 }
 
-func (d *database) Name() string {
+func (d *sDatabase) Name() string {
 	return d.DB.Name()
 }
 
-func (d *database) Close() error {
+func (d *sDatabase) Close() error {
 	db, err := d.DB.DB()
 	if err != nil {
 		return err
@@ -140,18 +142,18 @@ func (d *database) Close() error {
 	return db.Close()
 }
 
-func (d *database) Task(name string) ITask {
-	return &task{
+func (d *sDatabase) Task(name string) ITask {
+	return &sTask{
 		DB:    d.DB,
 		tName: name,
 	}
 }
 
-func (d *database) TaskCreate(task *models.Task) (err error) {
+func (d *sDatabase) TaskCreate(task *models.Task) (err error) {
 	return d.Create(task).Error
 }
 
-func (d *database) TaskCount(state models.State) (res int64) {
+func (d *sDatabase) TaskCount(state models.State) (res int64) {
 	if state != models.StateAll {
 		d.Model(&models.Task{}).Distinct("DISTINCT name").Where("state = ?", state).Count(&res)
 		return
@@ -160,8 +162,32 @@ func (d *database) TaskCount(state models.State) (res int64) {
 	return
 }
 
-func (d *database) TaskList(page, pageSize int64, str string) (res models.Tasks, total int64) {
+func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.Tasks, total int64) {
 	query := d.Model(&models.Task{}).
+		Order("id DESC")
+	if str != "" {
+		query.Where("name LIKE ?", str+"%")
+	}
+	query.Count(&total).
+		Scopes(func(db *gorm.DB) *gorm.DB {
+			return models.Paginate(db, page, pageSize)
+		}).Find(&res)
+	return
+}
+
+func (d *sDatabase) Project(name string) IProject {
+	return &sProject{
+		DB:   d.DB,
+		name: name,
+	}
+}
+
+func (d *sDatabase) ProjectCreate(project *models.Project) (err error) {
+	return d.Create(project).Error
+}
+
+func (d *sDatabase) ProjectList(page, pageSize int64, str string) (res models.Projects, total int64) {
+	query := d.Model(&models.Project{}).
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")

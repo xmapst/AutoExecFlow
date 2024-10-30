@@ -8,7 +8,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
-type step struct {
+type sStep struct {
 	*gorm.DB
 	genv  IEnv
 	tName string
@@ -19,11 +19,11 @@ type step struct {
 	log    ILog
 }
 
-func (s *step) Name() string {
+func (s *sStep) Name() string {
 	return s.sName
 }
 
-func (s *step) ClearAll() error {
+func (s *sStep) ClearAll() error {
 	if err := s.Remove(); err != nil {
 		return err
 	}
@@ -36,14 +36,14 @@ func (s *step) ClearAll() error {
 	return s.Log().RemoveAll()
 }
 
-func (s *step) Remove() (err error) {
+func (s *sStep) Remove() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"name":      s.sName,
 	}).Delete(&models.Step{}).Error
 }
 
-func (s *step) State() (state models.State, err error) {
+func (s *sStep) State() (state models.State, err error) {
 	err = s.Model(&models.Step{}).
 		Select("state").
 		Where(map[string]interface{}{
@@ -55,7 +55,7 @@ func (s *step) State() (state models.State, err error) {
 	return
 }
 
-func (s *step) IsDisable() (disable bool) {
+func (s *sStep) IsDisable() (disable bool) {
 	if s.Model(&models.Step{}).
 		Select("disable").
 		Where(map[string]interface{}{
@@ -69,9 +69,9 @@ func (s *step) IsDisable() (disable bool) {
 	return
 }
 
-func (s *step) Env() IEnv {
+func (s *sStep) Env() IEnv {
 	if s.env == nil {
-		s.env = &stepEnv{
+		s.env = &sStepEnv{
 			DB:    s.DB,
 			tName: s.tName,
 			sName: s.sName,
@@ -80,11 +80,11 @@ func (s *step) Env() IEnv {
 	return s.env
 }
 
-func (s *step) TaskName() string {
+func (s *sStep) TaskName() string {
 	return s.tName
 }
 
-func (s *step) Timeout() (res time.Duration, err error) {
+func (s *sStep) Timeout() (res time.Duration, err error) {
 	err = s.Model(&models.Step{}).
 		Select("timeout").
 		Where(map[string]interface{}{
@@ -96,7 +96,7 @@ func (s *step) Timeout() (res time.Duration, err error) {
 	return
 }
 
-func (s *step) Type() (res string, err error) {
+func (s *sStep) Type() (res string, err error) {
 	err = s.Model(&models.Step{}).
 		Select("type").
 		Where(map[string]interface{}{
@@ -108,7 +108,7 @@ func (s *step) Type() (res string, err error) {
 	return
 }
 
-func (s *step) Content() (res string, err error) {
+func (s *sStep) Content() (res string, err error) {
 	err = s.Model(&models.Step{}).
 		Select("content").
 		Where(map[string]interface{}{
@@ -120,7 +120,7 @@ func (s *step) Content() (res string, err error) {
 	return
 }
 
-func (s *step) Get() (res *models.Step, err error) {
+func (s *sStep) Get() (res *models.Step, err error) {
 	res = new(models.Step)
 	err = s.Model(&models.Step{}).
 		Where(map[string]interface{}{
@@ -132,7 +132,7 @@ func (s *step) Get() (res *models.Step, err error) {
 	return
 }
 
-func (s *step) Update(value *models.StepUpdate) (err error) {
+func (s *sStep) Update(value *models.StepUpdate) (err error) {
 	if value == nil {
 		return
 	}
@@ -145,9 +145,9 @@ func (s *step) Update(value *models.StepUpdate) (err error) {
 		Error
 }
 
-func (s *step) GlobalEnv() IEnv {
+func (s *sStep) GlobalEnv() IEnv {
 	if s.genv == nil {
-		s.genv = &taskEnv{
+		s.genv = &sTaskEnv{
 			DB:    s.DB,
 			tName: s.tName,
 		}
@@ -155,9 +155,9 @@ func (s *step) GlobalEnv() IEnv {
 	return s.genv
 }
 
-func (s *step) Depend() IDepend {
+func (s *sStep) Depend() IDepend {
 	if s.depend == nil {
-		s.depend = &stepDepend{
+		s.depend = &sStepDepend{
 			DB:    s.DB,
 			tName: s.tName,
 			sName: s.sName,
@@ -166,9 +166,9 @@ func (s *step) Depend() IDepend {
 	return s.depend
 }
 
-func (s *step) Log() ILog {
+func (s *sStep) Log() ILog {
 	if s.log == nil {
-		s.log = &stepLog{
+		s.log = &sStepLog{
 			DB:    s.DB,
 			tName: s.tName,
 			sName: s.sName,

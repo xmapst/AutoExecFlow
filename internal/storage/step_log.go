@@ -11,7 +11,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-type stepLog struct {
+type sStepLog struct {
 	*gorm.DB
 	tName string
 	sName string
@@ -19,7 +19,7 @@ type stepLog struct {
 	lock sync.Mutex
 }
 
-func (s *stepLog) List(latestLine *int64) (res models.StepLogs) {
+func (s *sStepLog) List(latestLine *int64) (res models.StepLogs) {
 	query := s.Model(&models.StepLog{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -33,7 +33,7 @@ func (s *stepLog) List(latestLine *int64) (res models.StepLogs) {
 	return
 }
 
-func (s *stepLog) Insert(log *models.StepLog) error {
+func (s *sStepLog) Insert(log *models.StepLog) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	log.TaskName = s.tName
@@ -53,7 +53,7 @@ func (s *stepLog) Insert(log *models.StepLog) error {
 	})
 }
 
-func (s *stepLog) Write(content string) {
+func (s *sStepLog) Write(content string) {
 	if err := s.Insert(&models.StepLog{
 		Timestamp: time.Now().UnixNano(),
 		Content:   content,
@@ -62,11 +62,11 @@ func (s *stepLog) Write(content string) {
 	}
 }
 
-func (s *stepLog) Writef(format string, args ...interface{}) {
+func (s *sStepLog) Writef(format string, args ...interface{}) {
 	s.Write(fmt.Sprintf(format, args...))
 }
 
-func (s *stepLog) RemoveAll() (err error) {
+func (s *sStepLog) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,

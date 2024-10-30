@@ -7,12 +7,12 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
-type taskEnv struct {
+type sTaskEnv struct {
 	*gorm.DB
 	tName string
 }
 
-func (t *taskEnv) List() (res models.Envs) {
+func (t *sTaskEnv) List() (res models.Envs) {
 	t.Model(&models.TaskEnv{}).
 		Where(map[string]interface{}{
 			"task_name": t.tName,
@@ -22,7 +22,7 @@ func (t *taskEnv) List() (res models.Envs) {
 	return
 }
 
-func (t *taskEnv) Insert(envs ...*models.Env) (err error) {
+func (t *sTaskEnv) Insert(envs ...*models.Env) (err error) {
 	if len(envs) == 0 {
 		return
 	}
@@ -36,7 +36,7 @@ func (t *taskEnv) Insert(envs ...*models.Env) (err error) {
 	return t.Create(&_envs).Error
 }
 
-func (t *taskEnv) Get(name string) (res string, err error) {
+func (t *sTaskEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
@@ -51,7 +51,7 @@ func (t *taskEnv) Get(name string) (res string, err error) {
 	return
 }
 
-func (t *taskEnv) Remove(name string) (err error) {
+func (t *sTaskEnv) Remove(name string) (err error) {
 	if name == "" {
 		return errors.New("name is empty")
 	}
@@ -61,7 +61,7 @@ func (t *taskEnv) Remove(name string) (err error) {
 	}).Delete(&models.TaskEnv{}).Error
 }
 
-func (t *taskEnv) RemoveAll() (err error) {
+func (t *sTaskEnv) RemoveAll() (err error) {
 	return t.Where(map[string]interface{}{
 		"task_name": t.tName,
 	}).Delete(&models.TaskEnv{}).Error

@@ -9,35 +9,44 @@ import (
 const All = ""
 
 type IStorage interface {
-	Name() string
+	Name() (name string)
 	Close() (err error)
 
-	Task(name string) ITask
+	// Task 任务接口
+	Task(name string) (task ITask)
 	// TaskCreate 创建任务
 	TaskCreate(task *models.Task) (err error)
 	// TaskCount 指定状态任务总数, -1为所有
 	TaskCount(state models.State) (res int64)
 	// TaskList 获取任务,支持分页, 模糊匹配
 	TaskList(page, pageSize int64, str string) (res models.Tasks, total int64)
+
+	// Project 项目接口
+	Project(name string) (project IProject)
+	// ProjectCreate 创建项目
+	ProjectCreate(project *models.Project) (err error)
+	// ProjectList 获取项目,支持分页, 模糊匹配
+	ProjectList(page, pageSize int64, str string) (res models.Projects, total int64)
 }
 
 type IBase interface {
 	// Name 名称
-	Name() string
+	Name() (name string)
 	// ClearAll 清理
-	ClearAll() error
+	ClearAll() (err error)
 	// Remove 删除
 	Remove() (err error)
-	// State 获取状态
-	State() (state models.State, err error)
-	// IsDisable 是否禁用
-	IsDisable() bool
-	// Env 环境变量接口
-	Env() IEnv
 }
 
 type ITask interface {
 	IBase
+
+	// IsDisable 是否禁用
+	IsDisable() (disable bool)
+	// State 获取状态
+	State() (state models.State, err error)
+	// Env 环境变量接口
+	Env() (env IEnv)
 
 	// Timeout 超时时间
 	Timeout() (res time.Duration, err error)
@@ -62,8 +71,16 @@ type ITask interface {
 
 type IStep interface {
 	IBase
+
+	// IsDisable 是否禁用
+	IsDisable() (disable bool)
+	// State 获取状态
+	State() (state models.State, err error)
+	// Env 环境变量接口
+	Env() (env IEnv)
+
 	// TaskName 任务名称
-	TaskName() string
+	TaskName() (taskName string)
 	// Timeout 超时时间
 	Timeout() (res time.Duration, err error)
 	// Type 类型
@@ -75,11 +92,11 @@ type IStep interface {
 	// Update 更新
 	Update(value *models.StepUpdate) (err error)
 	// GlobalEnv 全局环境变量接口
-	GlobalEnv() IEnv
+	GlobalEnv() (env IEnv)
 	// Depend 依赖接口
-	Depend() IDepend
+	Depend() (depend IDepend)
 	// Log 日志接口
-	Log() ILog
+	Log() (log ILog)
 }
 
 type ILog interface {
@@ -104,4 +121,35 @@ type IDepend interface {
 	List() (res []string)
 	Insert(depends ...string) (err error)
 	RemoveAll() (err error)
+}
+
+type IProject interface {
+	IBase
+
+	// 执行相关
+	Build() (build IProjectBuild)
+	// 任务接口
+	Task(name string) (task ITask)
+
+	// 更新
+	Update(value *models.ProjectUpdate) (err error)
+	// 获取
+	Get() (res *models.Project, err error)
+	// IsDisable 是否禁用
+	IsDisable() (disable bool)
+	// 类型
+	Type() (res string, err error)
+	// 内容
+	Content() (res string, err error)
+}
+
+type IProjectBuild interface {
+	// Insert 插入
+	Insert(names ...string) (err error)
+	// List 获取所有
+	List() (res models.ProjectBuilds)
+	// Remove 删除
+	Remove(name string) (err error)
+	// ClearAll 清理
+	ClearAll() (err error)
 }

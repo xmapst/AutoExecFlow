@@ -43,3 +43,15 @@ func TaskCount(state models.State) (res int64) {
 func TaskList(page, pageSize int64, str string) (res []*models.Task, total int64) {
 	return storage.TaskList(page, pageSize, str)
 }
+
+func Project(name string) IProject {
+	return storage.Project(name)
+}
+
+func ProjectCreate(project *models.Project) (err error) {
+	return storage.ProjectCreate(project)
+}
+
+func ProjectList(page, pageSize int64, str string) (res []*models.Project, total int64) {
+	return storage.ProjectList(page, pageSize, str)
+}
