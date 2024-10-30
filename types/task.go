@@ -7,7 +7,7 @@ const (
 
 // Response struct
 
-type TaskCreateRes struct {
+type STaskCreateRes struct {
 	// 任务名称
 	Name string `json:"name" yaml:"Name"`
 	// 步骤数量
@@ -16,14 +16,14 @@ type TaskCreateRes struct {
 	ID string `json:"id" yaml:"ID" swaggerignore:"true"`
 }
 
-type TaskListRes struct {
+type STaskListRes struct {
 	// 分页
-	Page PageRes `json:"page" yaml:"Page"`
+	Page SPageRes `json:"page" yaml:"Page"`
 	// 任务列表
-	Tasks []*TaskRes `json:"tasks" yaml:"Tasks"`
+	Tasks []*STaskRes `json:"tasks" yaml:"Tasks"`
 }
 
-type PageRes struct {
+type SPageRes struct {
 	// 当前页
 	Current int64 `json:"current" yaml:"Current"`
 	// 页大小
@@ -32,7 +32,7 @@ type PageRes struct {
 	Total int64 `json:"total" yaml:"Total"`
 }
 
-type TaskRes struct {
+type STaskRes struct {
 	// 任务名称
 	Name string `json:"name" yaml:"Name"`
 	// 任务描述
@@ -52,10 +52,10 @@ type TaskRes struct {
 	// 是否禁用
 	Disable bool `json:"disable" yaml:"Disable"`
 	// 时间
-	Time *TimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
+	Time *STimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
 }
 
-type TaskStepRes struct {
+type STaskStepRes struct {
 	// 步骤名称
 	Name string `json:"name" yaml:"Name"`
 	// 步骤描述
@@ -79,17 +79,17 @@ type TaskStepRes struct {
 	// 步骤内容
 	Content string `json:"content,omitempty" yaml:"Content,omitempty"`
 	// 时间
-	Time *TimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
+	Time *STimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
 }
 
-type TimeRes struct {
+type STimeRes struct {
 	// 开始时间
 	Start string `json:"start,omitempty" yaml:"Start,omitempty"`
 	// 结束时间
 	End string `json:"end,omitempty" yaml:"End,omitempty"`
 }
 
-type TaskStepLogRes struct {
+type STaskStepLogRes struct {
 	// 时间戳
 	Timestamp int64 `json:"timestamp" yaml:"Timestamp"`
 	// 行号
@@ -100,7 +100,7 @@ type TaskStepLogRes struct {
 
 // Request struct
 
-type TaskStepReq struct {
+type STaskStepReq struct {
 	// 步骤名称
 	Name string `json:"name,omitempty" form:"name" yaml:"Name,omitempty" example:"script.ps1"`
 	// 步骤描述
@@ -126,7 +126,7 @@ type TaskStepReq struct {
 	CommandContent string `json:"command_content,omitempty" form:"command_content" yaml:"CommandContent,omitempty" example:"sleep 10" swaggerignore:"true"`
 }
 
-type TaskReq struct {
+type STaskReq struct {
 	// 任务名称
 	Name string `json:"name,omitempty" query:"name"  form:"name" yaml:"Name,omitempty" example:"task_name"`
 	// 任务描述
@@ -142,15 +142,15 @@ type TaskReq struct {
 	// 任务环境变量
 	Env map[string]string `json:"env,omitempty" query:"env" form:"env" yaml:"Env,omitempty" example:"key:value,key1:value1"`
 	// 任务步骤
-	Step TaskStepsReq `json:"step,omitempty" form:"step" yaml:"Step,omitempty"`
+	Step STaskStepsReq `json:"step,omitempty" form:"step" yaml:"Step,omitempty"`
 
 	// Deprecated, use Env
 	EnvVars []string `json:"env_vars,omitempty" query:"env_vars" form:"env_vars" yaml:"EnvVars,omitempty" example:"" swaggerignore:"true"`
 }
 
-type TaskStepsReq []*TaskStepReq
+type STaskStepsReq []*STaskStepReq
 
-type PageReq struct {
+type SPageReq struct {
 	Page   int64  `json:"page" query:"page" yaml:"Page" example:"1"`
 	Size   int64  `json:"size" query:"size" yaml:"Size" example:"10"`
 	Prefix string `json:"prefix" query:"prefix" yaml:"Prefix" example:""`

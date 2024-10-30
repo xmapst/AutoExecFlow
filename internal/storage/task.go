@@ -38,11 +38,11 @@ func (t *sTask) ClearAll() error {
 func (t *sTask) Remove() (err error) {
 	return t.Where(map[string]interface{}{
 		"name": t.tName,
-	}).Delete(&models.Task{}).Error
+	}).Delete(&models.STask{}).Error
 }
 
 func (t *sTask) State() (state models.State, err error) {
-	err = t.Model(&models.Task{}).
+	err = t.Model(&models.STask{}).
 		Select("state").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -53,7 +53,7 @@ func (t *sTask) State() (state models.State, err error) {
 }
 
 func (t *sTask) IsDisable() (disable bool) {
-	if t.Model(&models.Task{}).
+	if t.Model(&models.STask{}).
 		Select("disable").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -76,7 +76,7 @@ func (t *sTask) Env() IEnv {
 }
 
 func (t *sTask) Timeout() (res time.Duration, err error) {
-	err = t.Model(&models.Task{}).
+	err = t.Model(&models.STask{}).
 		Select("timeout").
 		Where(map[string]interface{}{
 			"name": t.tName,
@@ -86,9 +86,9 @@ func (t *sTask) Timeout() (res time.Duration, err error) {
 	return
 }
 
-func (t *sTask) Get() (res *models.Task, err error) {
-	res = new(models.Task)
-	err = t.Model(&models.Task{}).
+func (t *sTask) Get() (res *models.STask, err error) {
+	res = new(models.STask)
+	err = t.Model(&models.STask{}).
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).
@@ -97,11 +97,11 @@ func (t *sTask) Get() (res *models.Task, err error) {
 	return
 }
 
-func (t *sTask) Update(value *models.TaskUpdate) (err error) {
+func (t *sTask) Update(value *models.STaskUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return t.Model(&models.Task{}).
+	return t.Model(&models.STask{}).
 		Where(map[string]interface{}{
 			"name": t.tName,
 		}).
@@ -118,18 +118,18 @@ func (t *sTask) Step(name string) IStep {
 	}
 }
 
-func (t *sTask) StepCreate(step *models.Step) (err error) {
+func (t *sTask) StepCreate(step *models.SStep) (err error) {
 	step.TaskName = t.tName
 	return t.Create(step).Error
 }
 
 func (t *sTask) StepCount() (res int64) {
-	t.Model(&models.Step{}).Count(&res)
+	t.Model(&models.SStep{}).Count(&res)
 	return
 }
 
 func (t *sTask) StepNameList(str string) (res []string) {
-	query := t.Model(&models.Step{}).
+	query := t.Model(&models.SStep{}).
 		Select("name").
 		Order("id ASC").
 		Where(map[string]interface{}{
@@ -143,8 +143,8 @@ func (t *sTask) StepNameList(str string) (res []string) {
 }
 
 func (t *sTask) StepStateList(str string) (res map[string]models.State) {
-	var steps models.Steps
-	query := t.Model(&models.Step{}).
+	var steps models.SSteps
+	query := t.Model(&models.SStep{}).
 		Select("name, state").
 		Order("id ASC").
 		Where(map[string]interface{}{
@@ -161,8 +161,8 @@ func (t *sTask) StepStateList(str string) (res map[string]models.State) {
 	return
 }
 
-func (t *sTask) StepList(str string) (res models.Steps) {
-	query := t.Model(&models.Step{}).
+func (t *sTask) StepList(str string) (res models.SSteps) {
+	query := t.Model(&models.SStep{}).
 		Order("id ASC").
 		Where(map[string]interface{}{
 			"task_name": t.tName,

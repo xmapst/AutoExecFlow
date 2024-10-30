@@ -16,17 +16,17 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
 )
 
-type DaemonSet struct {
+type SDaemonSet struct {
 	context.Context
 	Client appv1.DaemonSetInterface
-	*types.Resource
+	*types.SResource
 	Storage storage.IStep
 }
 
-func (d *DaemonSet) Restart() error {
+func (d *SDaemonSet) Restart() error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		path := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
-		_, err := d.Client.Patch(d.Context, d.Resource.GetName(), kubetypes.StrategicMergePatchType, []byte(path), metav1.PatchOptions{})
+		_, err := d.Client.Patch(d.Context, d.SResource.GetName(), kubetypes.StrategicMergePatchType, []byte(path), metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -34,9 +34,9 @@ func (d *DaemonSet) Restart() error {
 	})
 }
 
-func (d *DaemonSet) Scale(_ int32) error { return nil }
+func (d *SDaemonSet) Scale(_ int32) error { return nil }
 
-func (d *DaemonSet) Update() error {
+func (d *SDaemonSet) Update() error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		result, err := d.Client.Get(d.Context, d.GetName(), metav1.GetOptions{})
 		if err != nil {
@@ -74,7 +74,7 @@ func (d *DaemonSet) Update() error {
 	})
 }
 
-func (d *DaemonSet) Println() error {
+func (d *SDaemonSet) Println() error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		result, err := d.Client.Get(d.Context, d.GetName(), metav1.GetOptions{})
 		if err != nil {

@@ -13,8 +13,8 @@ type sStepEnv struct {
 	sName string
 }
 
-func (s *sStepEnv) List() (res models.Envs) {
-	s.Model(&models.StepEnv{}).
+func (s *sStepEnv) List() (res models.SEnvs) {
+	s.Model(&models.SStepEnv{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"step_name": s.sName,
@@ -24,16 +24,16 @@ func (s *sStepEnv) List() (res models.Envs) {
 	return
 }
 
-func (s *sStepEnv) Insert(envs ...*models.Env) (err error) {
+func (s *sStepEnv) Insert(envs ...*models.SEnv) (err error) {
 	if len(envs) == 0 {
 		return
 	}
-	var _envs []models.StepEnv
+	var _envs []models.SStepEnv
 	for _, env := range envs {
-		_envs = append(_envs, models.StepEnv{
+		_envs = append(_envs, models.SStepEnv{
 			TaskName: s.tName,
 			StepName: s.sName,
-			Env:      *env,
+			SEnv:     *env,
 		})
 	}
 	return s.Create(&_envs).Error
@@ -43,7 +43,7 @@ func (s *sStepEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
-	err = s.Model(&models.StepEnv{}).
+	err = s.Model(&models.SStepEnv{}).
 		Select("value").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -63,12 +63,12 @@ func (s *sStepEnv) Remove(name string) (err error) {
 		"task_name": s.tName,
 		"step_name": s.sName,
 		"name":      name,
-	}).Delete(&models.StepEnv{}).Error
+	}).Delete(&models.SStepEnv{}).Error
 }
 
 func (s *sStepEnv) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,
-	}).Delete(&models.StepEnv{}).Error
+	}).Delete(&models.SStepEnv{}).Error
 }

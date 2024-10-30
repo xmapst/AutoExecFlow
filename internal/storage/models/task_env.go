@@ -1,7 +1,11 @@
 package models
 
-type TaskEnv struct {
-	Base
+type STaskEnv struct {
+	SBase
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
-	Env
+	SEnv
+}
+
+func (s *STaskEnv) TableName() string {
+	return "t_task_env"
 }

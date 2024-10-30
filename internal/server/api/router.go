@@ -24,14 +24,14 @@ import (
 // New
 // @title			Auto Exec Flow
 // @version			1.0
-// @description		An `API` for cross-platform custom orchestration of execution steps
-// @description		without any third-party dependencies. Based on `DAG`, it implements the scheduling
-// @description		function of sequential execution of dependent steps and concurrent execution of
-// @description		non-dependent steps. <br /><br /> It provides `API` remote operation mode, batch
-// @description		execution of `Shell` , `Powershell` , `Python` and other commands, and easily
-// @description		completes common management tasks such as running automated operation and maintenance
-// @description		scripts, polling processes, installing or uninstalling software, updating applications,
-// @description		and installing patches.
+// @Description		An `API` for cross-platform custom orchestration of execution steps
+// @Description		without any third-party dependencies. Based on `DAG`, it implements the scheduling
+// @Description		function of sequential execution of dependent steps and concurrent execution of
+// @Description		non-dependent steps. <br /><br /> It provides `API` remote operation mode, batch
+// @Description		execution of `Shell` , `Powershell` , `Python` and other commands, and easily
+// @Description		completes common management tasks such as running automated operation and maintenance
+// @Description		scripts, polling processes, installing or uninstalling software, updating applications,
+// @Description		and installing patches.
 // @contact.name	AutoExecFlow
 // @contact.url		https://github.com/xmapst/AutoExecFlow/issues
 // @license.name	GPL-3.0

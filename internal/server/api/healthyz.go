@@ -9,17 +9,17 @@ import (
 
 // healthyz
 // @Summary		Healthyz
-// @description	healthyz
+// @Description	healthyz
 // @Tags		Default
 // @Accept		application/json
 // @Accept		application/yaml
 // @Produce		application/json
 // @Produce		application/yaml
-// @Success		200 {object} types.Base[types.Healthyz]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[types.SHealthyz]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/healthyz [get]
 func healthyz(c *gin.Context) {
-	base.Send(c, base.WithData(&types.Healthyz{
+	base.Send(c, base.WithData(&types.SHealthyz{
 		Server: c.Request.Host,
 		Client: c.Request.RemoteAddr,
 		State:  "Running",

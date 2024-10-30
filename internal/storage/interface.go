@@ -15,18 +15,18 @@ type IStorage interface {
 	// Task 任务接口
 	Task(name string) (task ITask)
 	// TaskCreate 创建任务
-	TaskCreate(task *models.Task) (err error)
+	TaskCreate(task *models.STask) (err error)
 	// TaskCount 指定状态任务总数, -1为所有
 	TaskCount(state models.State) (res int64)
 	// TaskList 获取任务,支持分页, 模糊匹配
-	TaskList(page, pageSize int64, str string) (res models.Tasks, total int64)
+	TaskList(page, pageSize int64, str string) (res models.STasks, total int64)
 
 	// Project 项目接口
 	Project(name string) (project IProject)
 	// ProjectCreate 创建项目
-	ProjectCreate(project *models.Project) (err error)
+	ProjectCreate(project *models.SProject) (err error)
 	// ProjectList 获取项目,支持分页, 模糊匹配
-	ProjectList(page, pageSize int64, str string) (res models.Projects, total int64)
+	ProjectList(page, pageSize int64, str string) (res models.SProjects, total int64)
 }
 
 type IBase interface {
@@ -51,14 +51,14 @@ type ITask interface {
 	// Timeout 超时时间
 	Timeout() (res time.Duration, err error)
 	// Get 根据名称获取指定任务
-	Get() (res *models.Task, err error)
+	Get() (res *models.STask, err error)
 	// Update 更新
-	Update(value *models.TaskUpdate) (err error)
+	Update(value *models.STaskUpdate) (err error)
 
 	// Step 步骤接口
 	Step(name string) IStep
 	// StepCreate 创建步骤
-	StepCreate(step *models.Step) (err error)
+	StepCreate(step *models.SStep) (err error)
 	// StepCount 任务总数
 	StepCount() (res int64)
 	// StepNameList 所有步骤名称
@@ -66,7 +66,7 @@ type ITask interface {
 	// StepStateList 获取任务下所有步骤状态
 	StepStateList(str string) (res map[string]models.State)
 	// StepList 获取任务下所有步骤
-	StepList(str string) (res models.Steps)
+	StepList(str string) (res models.SSteps)
 }
 
 type IStep interface {
@@ -88,9 +88,9 @@ type IStep interface {
 	// Content 内容
 	Content() (res string, err error)
 	// Get 根据名称获取指定步骤
-	Get() (res *models.Step, err error)
+	Get() (res *models.SStep, err error)
 	// Update 更新
-	Update(value *models.StepUpdate) (err error)
+	Update(value *models.SStepUpdate) (err error)
 	// GlobalEnv 全局环境变量接口
 	GlobalEnv() (env IEnv)
 	// Depend 依赖接口
@@ -101,17 +101,17 @@ type IStep interface {
 
 type ILog interface {
 	// List 获取指定任务指定步骤所有日志, 增量查询
-	List(latestLine *int64) (res models.StepLogs)
+	List(latestLine *int64) (res models.SStepLogs)
 	// Insert 插入
-	Insert(log *models.StepLog) (err error)
+	Insert(log *models.SStepLog) (err error)
 	Write(content string)
 	Writef(format string, args ...interface{})
 	RemoveAll() (err error)
 }
 
 type IEnv interface {
-	List() (res models.Envs)
-	Insert(env ...*models.Env) (err error)
+	List() (res models.SEnvs)
+	Insert(env ...*models.SEnv) (err error)
 	Get(name string) (string, error)
 	Remove(name string) (err error)
 	RemoveAll() (err error)
@@ -132,9 +132,9 @@ type IProject interface {
 	Task(name string) (task ITask)
 
 	// 更新
-	Update(value *models.ProjectUpdate) (err error)
+	Update(value *models.SProjectUpdate) (err error)
 	// 获取
-	Get() (res *models.Project, err error)
+	Get() (res *models.SProject, err error)
 	// IsDisable 是否禁用
 	IsDisable() (disable bool)
 	// 类型
@@ -147,7 +147,7 @@ type IProjectBuild interface {
 	// Insert 插入
 	Insert(names ...string) (err error)
 	// List 获取所有
-	List() (res models.ProjectBuilds)
+	List() (res models.SProjectBuilds)
 	// Remove 删除
 	Remove(name string) (err error)
 	// ClearAll 清理

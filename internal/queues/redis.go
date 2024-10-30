@@ -6,12 +6,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type redisBroker struct {
+type sRedisBroker struct {
 	client *redis.Client
 }
 
-func newRedisBroker(rawURL string) (*redisBroker, error) {
-	r := &redisBroker{}
+func newRedisBroker(rawURL string) (*sRedisBroker, error) {
+	r := &sRedisBroker{}
 	opt, err := redis.ParseURL(rawURL)
 	if err != nil {
 		return nil, err
@@ -23,37 +23,37 @@ func newRedisBroker(rawURL string) (*redisBroker, error) {
 	return r, nil
 }
 
-func (r *redisBroker) PublishEvent(data string) error {
+func (r *sRedisBroker) PublishEvent(data string) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *redisBroker) PublishTask(node string, data string) error {
+func (r *sRedisBroker) PublishTask(node string, data string) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *redisBroker) PublishManager(node string, data string) error {
+func (r *sRedisBroker) PublishManager(node string, data string) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *redisBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
+func (r *sRedisBroker) SubscribeEvent(ctx context.Context, handler HandleFn) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *redisBroker) SubscribeTask(ctx context.Context, node string, handler Handle) error {
+func (r *sRedisBroker) SubscribeTask(ctx context.Context, node string, handler HandleFn) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *redisBroker) SubscribeManager(ctx context.Context, node string, handler Handle) error {
+func (r *sRedisBroker) SubscribeManager(ctx context.Context, node string, handler HandleFn) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *redisBroker) Shutdown(ctx context.Context) {
+func (r *sRedisBroker) Shutdown(ctx context.Context) {
 	//TODO implement me
 	panic("implement me")
 }

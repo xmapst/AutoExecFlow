@@ -12,15 +12,15 @@ import (
 
 // Delete
 // @Summary		Delete
-// @description	Delete task
+// @Description	Delete task
 // @Tags		Task
 // @Accept		application/json
 // @Accept		application/yaml
 // @Produce		application/json
 // @Produce		application/yaml
 // @Param		task path string true "task name"
-// @Success		200 {object} types.Base[any]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task} [delete]
 func Delete(c *gin.Context) {
 	taskName := c.Param("task")

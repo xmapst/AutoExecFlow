@@ -13,7 +13,7 @@ type sStepDepend struct {
 }
 
 func (s *sStepDepend) List() (res []string) {
-	s.Model(&models.StepDepend{}).
+	s.Model(&models.SStepDepend{}).
 		Select("name").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -28,9 +28,9 @@ func (s *sStepDepend) Insert(depends ...string) (err error) {
 	if len(depends) == 0 {
 		return
 	}
-	var stepDepends []models.StepDepend
+	var stepDepends []models.SStepDepend
 	for _, depend := range depends {
-		stepDepends = append(stepDepends, models.StepDepend{
+		stepDepends = append(stepDepends, models.SStepDepend{
 			TaskName: s.tName,
 			StepName: s.sName,
 			Name:     depend,
@@ -43,5 +43,5 @@ func (s *sStepDepend) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,
-	}).Delete(&models.StepDepend{}).Error
+	}).Delete(&models.SStepDepend{}).Error
 }

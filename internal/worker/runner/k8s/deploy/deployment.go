@@ -17,14 +17,14 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
 )
 
-type Deployment struct {
+type SDeployment struct {
 	context.Context
 	Client appv1.DeploymentInterface
-	*types.Resource
+	*types.SResource
 	Storage storage.IStep
 }
 
-func (d *Deployment) Restart() error {
+func (d *SDeployment) Restart() error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		path := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
 		_, err := d.Client.Patch(d.Context, d.GetName(), kubetypes.StrategicMergePatchType, []byte(path), metav1.PatchOptions{})
@@ -35,7 +35,7 @@ func (d *Deployment) Restart() error {
 	})
 }
 
-func (d *Deployment) Scale(replicas int32) error {
+func (d *SDeployment) Scale(replicas int32) error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		scale := &autoscalingv1.Scale{
 			Spec: autoscalingv1.ScaleSpec{
@@ -52,7 +52,7 @@ func (d *Deployment) Scale(replicas int32) error {
 	})
 }
 
-func (d *Deployment) Update() error {
+func (d *SDeployment) Update() error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		result, err := d.Client.Get(d.Context, d.GetName(), metav1.GetOptions{})
 		if err != nil {
@@ -90,7 +90,7 @@ func (d *Deployment) Update() error {
 	})
 }
 
-func (d *Deployment) Println() error {
+func (d *SDeployment) Println() error {
 	return kuberetry.RetryOnConflict(kuberetry.DefaultRetry, func() error {
 		result, err := d.Client.Get(d.Context, d.GetName(), metav1.GetOptions{})
 		if err != nil {

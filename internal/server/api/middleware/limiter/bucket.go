@@ -5,15 +5,15 @@ import (
 	"time"
 )
 
-type Bucket struct {
+type SBucket struct {
 	tokens   int64
 	lock     sync.Mutex
 	rate     int64 // 每秒加入的令牌数
 	lastTime int64
 }
 
-func newBucket(rate int64) *Bucket {
-	b := &Bucket{
+func newBucket(rate int64) *SBucket {
+	b := &SBucket{
 		rate: rate,
 	}
 
@@ -21,7 +21,7 @@ func newBucket(rate int64) *Bucket {
 }
 
 // IsAccept 是否接受请求
-func (b *Bucket) IsAccept() bool {
+func (b *SBucket) IsAccept() bool {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 	now := time.Now().UnixNano()

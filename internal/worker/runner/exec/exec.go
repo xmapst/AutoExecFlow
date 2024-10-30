@@ -16,7 +16,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 )
 
-type Cmd struct {
+type SCmd struct {
 	storage storage.IStep
 
 	done      chan struct{}
@@ -35,8 +35,8 @@ type Cmd struct {
 func New(
 	storage storage.IStep,
 	shell, workspace, scriptDir string,
-) (*Cmd, error) {
-	var c = &Cmd{
+) (*SCmd, error) {
+	var c = &SCmd{
 		storage:   storage,
 		workspace: workspace,
 		shell:     shell,
@@ -71,7 +71,7 @@ func New(
 	return c, nil
 }
 
-func (c *Cmd) scriptSuffix() string {
+func (c *SCmd) scriptSuffix() string {
 	switch c.shell {
 	case "python", "python2", "python3", "py", "py2", "py3":
 		return ".py"
@@ -79,11 +79,11 @@ func (c *Cmd) scriptSuffix() string {
 	return c.selfScriptSuffix()
 }
 
-func (c *Cmd) Clear() error {
+func (c *SCmd) Clear() error {
 	return os.Remove(c.scriptName)
 }
 
-func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
+func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
 		if _err := recover(); _err != nil {
 			err = fmt.Errorf("%v", _err)
@@ -137,7 +137,7 @@ func (c *Cmd) Run(ctx context.Context) (code int64, err error) {
 	return
 }
 
-func (c *Cmd) newCmd() error {
+func (c *SCmd) newCmd() error {
 	timeout, err := c.storage.Timeout()
 	if err != nil {
 		return err
@@ -177,7 +177,7 @@ func (c *Cmd) newCmd() error {
 	return nil
 }
 
-func (c *Cmd) consoleOutput() {
+func (c *SCmd) consoleOutput() {
 	defer close(c.done)
 	for {
 		var line string

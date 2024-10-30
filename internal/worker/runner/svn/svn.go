@@ -6,19 +6,19 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 )
 
-type Svn struct {
+type SSvn struct {
 }
 
-func New(storage storage.IStep, command, workspace string) (*Svn, error) {
-	return &Svn{}, nil
+func New(storage storage.IStep, command, workspace string) (*SSvn, error) {
+	return &SSvn{}, nil
 }
 
-func (s *Svn) Run(ctx context.Context) (code int64, err error) {
+func (s *SSvn) Run(ctx context.Context) (code int64, err error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Svn) Clear() error {
+func (s *SSvn) Clear() error {
 	//TODO implement me
 	panic("implement me")
 }

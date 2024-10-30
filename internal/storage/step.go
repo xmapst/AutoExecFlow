@@ -40,11 +40,11 @@ func (s *sStep) Remove() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"name":      s.sName,
-	}).Delete(&models.Step{}).Error
+	}).Delete(&models.SStep{}).Error
 }
 
 func (s *sStep) State() (state models.State, err error) {
-	err = s.Model(&models.Step{}).
+	err = s.Model(&models.SStep{}).
 		Select("state").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -56,7 +56,7 @@ func (s *sStep) State() (state models.State, err error) {
 }
 
 func (s *sStep) IsDisable() (disable bool) {
-	if s.Model(&models.Step{}).
+	if s.Model(&models.SStep{}).
 		Select("disable").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -85,7 +85,7 @@ func (s *sStep) TaskName() string {
 }
 
 func (s *sStep) Timeout() (res time.Duration, err error) {
-	err = s.Model(&models.Step{}).
+	err = s.Model(&models.SStep{}).
 		Select("timeout").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -97,7 +97,7 @@ func (s *sStep) Timeout() (res time.Duration, err error) {
 }
 
 func (s *sStep) Type() (res string, err error) {
-	err = s.Model(&models.Step{}).
+	err = s.Model(&models.SStep{}).
 		Select("type").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -109,7 +109,7 @@ func (s *sStep) Type() (res string, err error) {
 }
 
 func (s *sStep) Content() (res string, err error) {
-	err = s.Model(&models.Step{}).
+	err = s.Model(&models.SStep{}).
 		Select("content").
 		Where(map[string]interface{}{
 			"task_name": s.tName,
@@ -120,9 +120,9 @@ func (s *sStep) Content() (res string, err error) {
 	return
 }
 
-func (s *sStep) Get() (res *models.Step, err error) {
-	res = new(models.Step)
-	err = s.Model(&models.Step{}).
+func (s *sStep) Get() (res *models.SStep, err error) {
+	res = new(models.SStep)
+	err = s.Model(&models.SStep{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"name":      s.sName,
@@ -132,11 +132,11 @@ func (s *sStep) Get() (res *models.Step, err error) {
 	return
 }
 
-func (s *sStep) Update(value *models.StepUpdate) (err error) {
+func (s *sStep) Update(value *models.SStepUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return s.Model(&models.Step{}).
+	return s.Model(&models.SStep{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"name":      s.sName,

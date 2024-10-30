@@ -14,7 +14,7 @@ import (
 
 // Log
 // @Summary		Log
-// @description	Step Execution Output
+// @Description	Step Execution Output
 // @Tags		Step
 // @Accept		application/json
 // @Accept		application/yaml
@@ -22,8 +22,8 @@ import (
 // @Produce		application/yaml
 // @Param		task path string true "task name"
 // @Param		step path string true "step name"
-// @Success		200 {object} types.Base[[]types.TaskStepLogRes]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[[]types.STaskStepLogRes]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/step/{step} [get]
 func Log(c *gin.Context) {
 	taskName := c.Param("task")

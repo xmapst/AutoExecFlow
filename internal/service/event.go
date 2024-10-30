@@ -6,14 +6,14 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/queues"
 )
 
-type EventService struct {
+type SEventService struct {
 }
 
-func Event() *EventService {
-	return &EventService{}
+func Event() *SEventService {
+	return &SEventService{}
 }
 
-func (e *EventService) Subscribe(ctx context.Context, event chan string) error {
+func (e *SEventService) Subscribe(ctx context.Context, event chan string) error {
 	return queues.SubscribeEvent(ctx, func(data string) error {
 		event <- data
 		return nil

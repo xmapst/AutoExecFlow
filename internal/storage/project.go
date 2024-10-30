@@ -31,7 +31,7 @@ func (p *sProject) ClearAll() error {
 func (p *sProject) Remove() (err error) {
 	return p.Where(map[string]interface{}{
 		"name": p.name,
-	}).Delete(&models.Project{}).Error
+	}).Delete(&models.SProject{}).Error
 }
 
 func (p *sProject) Build() IProjectBuild {
@@ -48,11 +48,11 @@ func (p *sProject) Task(name string) ITask {
 	}
 }
 
-func (p *sProject) Update(value *models.ProjectUpdate) (err error) {
+func (p *sProject) Update(value *models.SProjectUpdate) (err error) {
 	if value == nil {
 		return
 	}
-	return p.Model(&models.Project{}).
+	return p.Model(&models.SProject{}).
 		Where(map[string]interface{}{
 			"name": p.name,
 		}).
@@ -60,8 +60,8 @@ func (p *sProject) Update(value *models.ProjectUpdate) (err error) {
 		Error
 }
 
-func (p *sProject) Get() (res *models.Project, err error) {
-	res = new(models.Project)
+func (p *sProject) Get() (res *models.SProject, err error) {
+	res = new(models.SProject)
 	err = p.Where(map[string]interface{}{
 		"name": p.name,
 	}).First(res).Error
@@ -69,7 +69,7 @@ func (p *sProject) Get() (res *models.Project, err error) {
 }
 
 func (p *sProject) IsDisable() (disable bool) {
-	if p.Model(&models.Project{}).
+	if p.Model(&models.SProject{}).
 		Select("disable").
 		Where(map[string]interface{}{
 			"name": p.name,
@@ -82,7 +82,7 @@ func (p *sProject) IsDisable() (disable bool) {
 }
 
 func (p *sProject) Type() (res string, err error) {
-	err = p.Model(&models.Project{}).
+	err = p.Model(&models.SProject{}).
 		Select("type").
 		Where(map[string]interface{}{
 			"name": p.name,
@@ -93,7 +93,7 @@ func (p *sProject) Type() (res string, err error) {
 }
 
 func (p *sProject) Content() (res string, err error) {
-	err = p.Model(&models.Project{}).
+	err = p.Model(&models.SProject{}).
 		Select("content").
 		Where(map[string]interface{}{
 			"name": p.name,

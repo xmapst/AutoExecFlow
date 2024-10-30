@@ -15,14 +15,14 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-type step struct {
+type sStep struct {
 	storage   storage.IStep
 	workspace string
 	scriptDir string
 }
 
 func newStep(storage storage.IStep, workspace, scriptDir string) dag.VertexFunc {
-	s := &step{
+	s := &sStep{
 		storage:   storage,
 		workspace: workspace,
 		scriptDir: scriptDir,
@@ -30,10 +30,10 @@ func newStep(storage storage.IStep, workspace, scriptDir string) dag.VertexFunc 
 	return s.vertexFunc()
 }
 
-func (s *step) vertexFunc() dag.VertexFunc {
+func (s *sStep) vertexFunc() dag.VertexFunc {
 	// build step
 	return func(ctx context.Context, taskName, stepName string) (err error) {
-		if err = s.storage.Update(&models.StepUpdate{
+		if err = s.storage.Update(&models.SStepUpdate{
 			State:    models.Pointer(models.StateRunning),
 			OldState: models.Pointer(models.StatePending),
 			Message:  "step is running",
@@ -44,7 +44,7 @@ func (s *step) vertexFunc() dag.VertexFunc {
 		}
 
 		// proc step
-		var res = new(models.StepUpdate)
+		var res = new(models.SStepUpdate)
 		defer func() {
 			if _err := recover(); _err != nil {
 				logx.Errorln(_err)
@@ -104,12 +104,12 @@ func (s *step) vertexFunc() dag.VertexFunc {
 	}
 }
 
-func (s *step) before(ctx context.Context, taskName, stepName string) {
+func (s *sStep) before(ctx context.Context, taskName, stepName string) {
 	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "started")
 	return
 }
 
-func (s *step) after(ctx context.Context, taskName, stepName string) {
+func (s *sStep) after(ctx context.Context, taskName, stepName string) {
 	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "end")
 	return
 }

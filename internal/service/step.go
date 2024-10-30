@@ -20,19 +20,19 @@ import (
 	"github.com/xmapst/AutoExecFlow/types"
 )
 
-type StepService struct {
+type SStepService struct {
 	taskName string
 	stepName string
 }
 
-func Step(taskName string, stepName string) *StepService {
-	return &StepService{
+func Step(taskName string, stepName string) *SStepService {
+	return &SStepService{
 		taskName: taskName,
 		stepName: stepName,
 	}
 }
 
-func (ss *StepService) Create(globalTimeout time.Duration, step *types.TaskStepReq) error {
+func (ss *SStepService) Create(globalTimeout time.Duration, step *types.STaskStepReq) error {
 	if globalTimeout <= 0 {
 		return errors.New("global timeout must be greater than 0")
 	}
@@ -50,7 +50,7 @@ func (ss *StepService) Create(globalTimeout time.Duration, step *types.TaskStepR
 	return nil
 }
 
-func (ss *StepService) review(step *types.TaskStepReq) (time.Duration, error) {
+func (ss *SStepService) review(step *types.STaskStepReq) (time.Duration, error) {
 	step.Name = reg.ReplaceAllString(step.Name, "")
 	if step.Name == "" {
 		step.Name = ksuid.New().String()
@@ -82,13 +82,13 @@ func (ss *StepService) review(step *types.TaskStepReq) (time.Duration, error) {
 	return timeout, nil
 }
 
-func (ss *StepService) saveStep(timeout time.Duration, step *types.TaskStepReq) (err error) {
+func (ss *SStepService) saveStep(timeout time.Duration, step *types.STaskStepReq) (err error) {
 	defer func() {
 		if err != nil {
 			_ = storage.Task(ss.taskName).Step(step.Name).ClearAll()
 		}
 	}()
-	err = storage.Task(ss.taskName).StepCreate(&models.Step{
+	err = storage.Task(ss.taskName).StepCreate(&models.SStep{
 		TaskName:    ss.taskName,
 		Name:        step.Name,
 		Description: step.Description,
@@ -96,7 +96,7 @@ func (ss *StepService) saveStep(timeout time.Duration, step *types.TaskStepReq) 
 		Content:     step.Content,
 		Timeout:     timeout,
 		Disable:     models.Pointer(step.Disable),
-		StepUpdate: models.StepUpdate{
+		SStepUpdate: models.SStepUpdate{
 			Message:  "the step is waiting to be scheduled for execution",
 			Code:     models.Pointer(int64(0)),
 			State:    models.Pointer(models.StatePending),
@@ -108,7 +108,7 @@ func (ss *StepService) saveStep(timeout time.Duration, step *types.TaskStepReq) 
 	}
 	// save step env
 	for name, value := range step.Env {
-		if err = storage.Task(ss.taskName).Step(step.Name).Env().Insert(&models.Env{
+		if err = storage.Task(ss.taskName).Step(step.Name).Env().Insert(&models.SEnv{
 			Name:  name,
 			Value: value,
 		}); err != nil {
@@ -123,14 +123,14 @@ func (ss *StepService) saveStep(timeout time.Duration, step *types.TaskStepReq) 
 	return
 }
 
-func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
+func (ss *SStepService) Detail() (types.Code, *types.STaskStepRes, error) {
 	db := storage.Task(ss.taskName).Step(ss.stepName)
 	step, err := db.Get()
 	if err != nil {
 		logx.Errorln(err)
 		return types.CodeFailed, nil, err
 	}
-	data := &types.TaskStepRes{
+	data := &types.STaskStepRes{
 		Name:        step.Name,
 		Description: step.Description,
 		State:       models.StateMap[*step.State],
@@ -141,7 +141,7 @@ func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
 		Env:         make(map[string]string),
 		Type:        step.Type,
 		Content:     step.Content,
-		Time: &types.TimeRes{
+		Time: &types.STimeRes{
 			Start: step.STimeStr(),
 			End:   step.ETimeStr(),
 		},
@@ -154,7 +154,7 @@ func (ss *StepService) Detail() (types.Code, *types.TaskStepRes, error) {
 	return types.Code(data.Code), data, nil
 }
 
-func (ss *StepService) Manager(action string, duration string) error {
+func (ss *SStepService) Manager(action string, duration string) error {
 	task, err := storage.Task(ss.taskName).Get()
 	if err != nil {
 		logx.Errorln(err)
@@ -174,18 +174,18 @@ func (ss *StepService) Manager(action string, duration string) error {
 	return queues.PublishManager(task.Node, utils.JoinWithInvisibleChar(ss.taskName, ss.stepName, action, duration))
 }
 
-func (ss *StepService) Delete() error {
+func (ss *SStepService) Delete() error {
 	return storage.Task(ss.taskName).Step(ss.stepName).ClearAll()
 }
 
-func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
+func (ss *SStepService) Log() (types.Code, []*types.STaskStepLogRes, error) {
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
 		return types.CodeFailed, nil, err
 	}
 	switch *step.State {
 	case models.StatePending:
-		return types.CodePending, []*types.TaskStepLogRes{
+		return types.CodePending, []*types.STaskStepLogRes{
 			{
 				Timestamp: time.Now().UnixNano(),
 				Line:      1,
@@ -193,7 +193,7 @@ func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
 			},
 		}, errors.New(step.Message)
 	case models.StatePaused:
-		return types.CodePaused, []*types.TaskStepLogRes{
+		return types.CodePaused, []*types.STaskStepLogRes{
 			{
 				Timestamp: time.Now().UnixNano(),
 				Line:      1,
@@ -206,7 +206,7 @@ func (ss *StepService) Log() (types.Code, []*types.TaskStepLogRes, error) {
 	}
 }
 
-func (ss *StepService) log(latestLine *int64) (res []*types.TaskStepLogRes, done bool) {
+func (ss *SStepService) log(latestLine *int64) (res []*types.STaskStepLogRes, done bool) {
 	logs := storage.Task(ss.taskName).Step(ss.stepName).Log().List(latestLine)
 	for _, v := range logs {
 		if v.Content == common.ConsoleStart {
@@ -216,7 +216,7 @@ func (ss *StepService) log(latestLine *int64) (res []*types.TaskStepLogRes, done
 			done = true
 			continue
 		}
-		res = append(res, &types.TaskStepLogRes{
+		res = append(res, &types.STaskStepLogRes{
 			Timestamp: v.Timestamp,
 			Line:      *v.Line,
 			Content:   v.Content,
@@ -229,9 +229,9 @@ func (ss *StepService) log(latestLine *int64) (res []*types.TaskStepLogRes, done
 	return
 }
 
-type stateHandler func(ws *websocket.Conn, latest *int64) (bool, error)
+type stateHandlerFn func(ws *websocket.Conn, latest *int64) (bool, error)
 
-func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error {
+func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error {
 	db := storage.Task(ss.taskName).Step(ss.stepName)
 	step, err := db.Get()
 	if err != nil {
@@ -246,7 +246,7 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 		models.StateUnknown: new(sync.Once),
 	}
 	// 状态处理函数映射
-	handlers := map[models.State]stateHandler{
+	handlers := map[models.State]stateHandlerFn{
 		models.StatePending: ss.createOnceHandler(onceMap[models.StatePending], types.CodePending, "step is pending"),
 		models.StatePaused:  ss.createOnceHandler(onceMap[models.StatePaused], types.CodePaused, "step is paused"),
 		models.StateUnknown: ss.createOnceHandler(onceMap[models.StateUnknown], types.CodeNoData, "step status unknown"),
@@ -288,10 +288,10 @@ func (ss *StepService) LogStream(ctx context.Context, ws *websocket.Conn) error 
 	}
 }
 
-func (ss *StepService) createOnceHandler(once *sync.Once, code types.Code, message string) stateHandler {
+func (ss *SStepService) createOnceHandler(once *sync.Once, code types.Code, message string) stateHandlerFn {
 	return func(ws *websocket.Conn, latest *int64) (bool, error) {
 		once.Do(func() {
-			_ = ws.WriteJSON(base.WithData([]types.TaskStepLogRes{
+			_ = ws.WriteJSON(base.WithData([]types.STaskStepLogRes{
 				{
 					Timestamp: time.Now().UnixNano(),
 					Line:      1,
@@ -303,7 +303,7 @@ func (ss *StepService) createOnceHandler(once *sync.Once, code types.Code, messa
 	}
 }
 
-func (ss *StepService) handleRunningState(ws *websocket.Conn, latestLine *int64) (bool, error) {
+func (ss *SStepService) handleRunningState(ws *websocket.Conn, latestLine *int64) (bool, error) {
 	res, done := ss.log(latestLine)
 	err := ws.WriteJSON(base.WithData(res).WithCode(types.CodeRunning).WithError(errors.New("in progress")))
 	if err != nil {
@@ -315,7 +315,7 @@ func (ss *StepService) handleRunningState(ws *websocket.Conn, latestLine *int64)
 	return true, nil
 }
 
-func (ss *StepService) handleFinalState(code types.Code) stateHandler {
+func (ss *SStepService) handleFinalState(code types.Code) stateHandlerFn {
 	return func(ws *websocket.Conn, latestLine *int64) (bool, error) {
 		db := storage.Task(ss.taskName).Step(ss.stepName)
 		step, err := db.Get()

@@ -1,7 +1,7 @@
 package models
 
-type StepLog struct {
-	Base
+type SStepLog struct {
+	SBase
 	TaskName  string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName  string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
 	Timestamp int64  `json:"timestamp,omitempty" gorm:"not null;comment:时间戳"`
@@ -9,19 +9,23 @@ type StepLog struct {
 	Content   string `json:"content,omitempty" gorm:"comment:内容"`
 }
 
-type StepLogs []*StepLog
+func (s *SStepLog) TableName() string {
+	return "t_step_log"
+}
 
-func (l StepLogs) Len() int {
+type SStepLogs []*SStepLog
+
+func (l SStepLogs) Len() int {
 	return len(l)
 }
 
-func (l StepLogs) Less(i, j int) bool {
+func (l SStepLogs) Less(i, j int) bool {
 	if l[i].Line == nil || l[j].Line == nil {
 		return l[i].Timestamp < l[j].Timestamp
 	}
 	return *l[i].Line < *l[j].Line
 }
 
-func (l StepLogs) Swap(i, j int) {
+func (l SStepLogs) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }

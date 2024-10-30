@@ -17,15 +17,15 @@ import (
 
 // List
 // @Summary		List
-// @description	Get the list of steps for a specified task
+// @Description	Get the list of steps for a specified task
 // @Tags		Step
 // @Accept		application/json
 // @Accept		application/yaml
 // @Produce		application/json
 // @Produce		application/yaml
 // @Param		task path string true "task name"
-// @Success		200 {object} types.Base[[]types.TaskStepRes]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[[]types.STaskStepRes]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task} [get]
 func List(c *gin.Context) {
 	taskName := c.Param("task")
@@ -66,7 +66,7 @@ func List(c *gin.Context) {
 	}()
 	var lastCode types.Code
 	var lastError error
-	var lastList []*types.TaskStepRes
+	var lastList []*types.STaskStepRes
 	for {
 		select {
 		case <-ctx.Done():

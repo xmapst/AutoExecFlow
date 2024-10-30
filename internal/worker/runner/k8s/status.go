@@ -19,7 +19,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
 )
 
-type statusViewer struct {
+type sStatusViewer struct {
 	ctx     context.Context
 	lw      cache.ListerWatcher
 	fn      func(obj runtime.Unstructured) (string, bool, error)
@@ -28,8 +28,8 @@ type statusViewer struct {
 
 // Status StatusViewerFor returns a StatusViewer for the resource specified by kind.
 // https://github.com/kubernetes/kubectl/blob/master/pkg/polymorphichelpers/rollout_status.go
-func Status(ctx context.Context, storage storage.IStep, dynamicClient dynamic.Interface, resource *types.Resource) error {
-	var s = &statusViewer{
+func Status(ctx context.Context, storage storage.IStep, dynamicClient dynamic.Interface, resource *types.SResource) error {
+	var s = &sStatusViewer{
 		ctx:     ctx,
 		storage: storage,
 	}
@@ -65,7 +65,7 @@ func Status(ctx context.Context, storage storage.IStep, dynamicClient dynamic.In
 	return nil
 }
 
-func (s *statusViewer) status() {
+func (s *sStatusViewer) status() {
 	_, err := watchtools.UntilWithSync(s.ctx, s.lw, &unstructured.Unstructured{}, nil, func(e watch.Event) (bool, error) {
 		switch t := e.Type; t {
 		case watch.Added, watch.Modified:
@@ -92,7 +92,7 @@ func (s *statusViewer) status() {
 	}
 }
 
-func (s *statusViewer) getResourceCondition(status appsv1.DeploymentStatus, condType appsv1.DeploymentConditionType) *appsv1.DeploymentCondition {
+func (s *sStatusViewer) getResourceCondition(status appsv1.DeploymentStatus, condType appsv1.DeploymentConditionType) *appsv1.DeploymentCondition {
 	for i := range status.Conditions {
 		c := status.Conditions[i]
 		if c.Type == condType {
@@ -102,7 +102,7 @@ func (s *statusViewer) getResourceCondition(status appsv1.DeploymentStatus, cond
 	return nil
 }
 
-func (s *statusViewer) watchDeployment(obj runtime.Unstructured) (string, bool, error) {
+func (s *sStatusViewer) watchDeployment(obj runtime.Unstructured) (string, bool, error) {
 	deployment := &appsv1.Deployment{}
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.UnstructuredContent(), deployment)
 	if err != nil {
@@ -134,7 +134,7 @@ func (s *statusViewer) watchDeployment(obj runtime.Unstructured) (string, bool, 
 		deployment.Namespace, deployment.Name), false, nil
 }
 
-func (s *statusViewer) watchDaemonSet(obj runtime.Unstructured) (string, bool, error) {
+func (s *sStatusViewer) watchDaemonSet(obj runtime.Unstructured) (string, bool, error) {
 	daemon := &appsv1.DaemonSet{}
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.UnstructuredContent(), daemon)
 	if err != nil {
@@ -159,7 +159,7 @@ func (s *statusViewer) watchDaemonSet(obj runtime.Unstructured) (string, bool, e
 		daemon.Namespace, daemon.Name), false, nil
 }
 
-func (s *statusViewer) watchStatefulSet(obj runtime.Unstructured) (string, bool, error) {
+func (s *sStatusViewer) watchStatefulSet(obj runtime.Unstructured) (string, bool, error) {
 	sts := &appsv1.StatefulSet{}
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.UnstructuredContent(), sts)
 	if err != nil {

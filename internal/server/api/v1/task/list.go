@@ -17,7 +17,7 @@ import (
 
 // List
 // @Summary		List
-// @description	Get the all task list
+// @Description	Get the all task list
 // @Tags		Task
 // @Accept		application/json
 // @Accept		application/yaml
@@ -26,11 +26,11 @@ import (
 // @Param		page query int false "page number" default(1)
 // @Param		size query int false "paging Size" default(100)
 // @Param		prefix query string false "Keywords"
-// @Success		200 {object} types.Base[types.TaskListRes]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[types.STaskListRes]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task [get]
 func List(c *gin.Context) {
-	var req = &types.PageReq{
+	var req = &types.SPageReq{
 		Page: 1,
 		Size: 10,
 	}
@@ -76,7 +76,7 @@ func List(c *gin.Context) {
 		}
 	}()
 
-	var lastTaskList *types.TaskListRes // 缓存上一次的推送数据
+	var lastTaskList *types.STaskListRes // 缓存上一次的推送数据
 	for {
 		select {
 		case <-ctx.Done():

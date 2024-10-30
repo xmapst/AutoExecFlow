@@ -14,27 +14,27 @@ import (
 )
 
 func init() {
-	plugins.Register(Name, new(Plugin))
+	plugins.Register(Name, new(SPlugin))
 }
 
 const Name = "starlark"
 
-type Plugin struct {
+type SPlugin struct {
 }
 
-func (p *Plugin) Name() string {
+func (p *SPlugin) Name() string {
 	return Name
 }
 
-func (p *Plugin) Description() string {
+func (p *SPlugin) Description() string {
 	return "starlark plugin provider"
 }
 
-func (p *Plugin) WithEnv([]string) plugins.IPlugin {
+func (p *SPlugin) WithEnv([]string) plugins.IPlugin {
 	return p
 }
 
-func (p *Plugin) Run(ctx context.Context, content string) error {
+func (p *SPlugin) Run(ctx context.Context, content string) error {
 	filename := filepath.Join(os.TempDir(), ksuid.New().String())
 	defer os.RemoveAll(filename)
 	if err := os.WriteFile(filename, []byte(content), os.ModePerm); err != nil {
@@ -43,7 +43,7 @@ func (p *Plugin) Run(ctx context.Context, content string) error {
 	return p.RunFile(ctx, filename)
 }
 
-func (p *Plugin) RunFile(ctx context.Context, filename string) error {
+func (p *SPlugin) RunFile(ctx context.Context, filename string) error {
 	thread := &starlark.Thread{
 		Load: starlib.Loader,
 		Name: ksuid.New().String(),

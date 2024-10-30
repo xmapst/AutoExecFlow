@@ -12,7 +12,7 @@ import (
 
 // Manager
 // @Summary		Manager
-// @description	Step management, can terminate, suspend, and resolve
+// @Description	Step management, can terminate, suspend, and resolve
 // @Tags		Step
 // @Accept		application/json
 // @Accept		application/yaml
@@ -22,8 +22,8 @@ import (
 // @Param		step path string true "step name"
 // @Param		action query string false "management action" Enums(paused,kill,pause,resume) default(paused)
 // @Param		duration query string false "how long to pause; if empty, manual continuation is required" default(1m)
-// @Success		200 {object} types.Base[any]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/step/{step} [put]
 func Manager(c *gin.Context) {
 	taskName := c.Param("task")

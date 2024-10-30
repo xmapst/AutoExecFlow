@@ -16,7 +16,7 @@ import (
 
 // Delete
 // @Summary		Delete
-// @description	Delete file/folder contents
+// @Description	Delete file/folder contents
 // @Tags		Workspace
 // @Accept		application/json
 // @Accept		application/yaml
@@ -24,8 +24,8 @@ import (
 // @Produce		application/yaml
 // @Param		task path string true "task name"
 // @Param		path query string false "dir path"
-// @Success		200 {object} types.Base[any]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/workspace [delete]
 func Delete(c *gin.Context) {
 	task := c.Param("task")

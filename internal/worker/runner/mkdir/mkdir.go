@@ -13,7 +13,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 )
 
-type Mkdir struct {
+type SMkdir struct {
 	storage   storage.IStep
 	workspace string
 
@@ -23,14 +23,14 @@ type Mkdir struct {
 func New(
 	storage storage.IStep,
 	workspace string,
-) (*Mkdir, error) {
-	return &Mkdir{
+) (*SMkdir, error) {
+	return &SMkdir{
 		storage:   storage,
 		workspace: workspace,
 	}, nil
 }
 
-func (m *Mkdir) Run(ctx context.Context) (code int64, err error) {
+func (m *SMkdir) Run(ctx context.Context) (code int64, err error) {
 	content, err := m.storage.Content()
 	if err != nil {
 		return common.CodeSystemErr, err
@@ -52,6 +52,6 @@ func (m *Mkdir) Run(ctx context.Context) (code int64, err error) {
 	return common.CodeSuccess, nil
 }
 
-func (m *Mkdir) Clear() error {
+func (m *SMkdir) Clear() error {
 	return nil
 }

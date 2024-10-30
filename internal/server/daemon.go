@@ -28,7 +28,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/reaper"
 )
 
-type Program struct {
+type sProgram struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
 	sHash     []byte
@@ -39,8 +39,8 @@ type Program struct {
 	cron      *cron.Cron
 }
 
-func New() *Program {
-	p := &Program{
+func New() service.Interface {
+	p := &sProgram{
 		sURL: strings.TrimSuffix(config.App.SelfUpdateURL, "/"),
 		cron: cron.New(),
 		wg:   new(sync.WaitGroup),
@@ -51,7 +51,7 @@ func New() *Program {
 	return p
 }
 
-func (p *Program) init() error {
+func (p *sProgram) init() error {
 	if _, err := p.cron.AddFunc("@every 1m", func() {
 		debug.FreeOSMemory()
 	}); err != nil {
@@ -76,7 +76,7 @@ func (p *Program) init() error {
 	return nil
 }
 
-func (p *Program) Start(service.Service) error {
+func (p *sProgram) Start(service.Service) error {
 	reaper.Run()
 	p.cron.Start()
 	err := p.init()
@@ -90,7 +90,7 @@ func (p *Program) Start(service.Service) error {
 	return p.startAPI()
 }
 
-func (p *Program) startWorker() error {
+func (p *sProgram) startWorker() error {
 	// 调整工作池的大小
 	worker.SetSize(config.App.PoolSize)
 	logx.Infoln("number of workers", worker.GetSize())
@@ -105,7 +105,7 @@ func (p *Program) startWorker() error {
 	return worker.Start(p.ctx)
 }
 
-func (p *Program) startAPI() error {
+func (p *sProgram) startAPI() error {
 	// 首次激活事件监听
 	ctx, cancel := context.WithCancel(p.ctx)
 	defer cancel()
@@ -120,7 +120,7 @@ func (p *Program) startAPI() error {
 	return p.startServer()
 }
 
-func (p *Program) startServer() error {
+func (p *sProgram) startServer() error {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
 	p.http = &http.Server{
@@ -161,7 +161,7 @@ func (p *Program) startServer() error {
 	return nil
 }
 
-func (p *Program) loadListeners(hosts []string) error {
+func (p *sProgram) loadListeners(hosts []string) error {
 	for _, ln := range p.listeners {
 		_ = ln.Close()
 	}
@@ -184,7 +184,7 @@ func (p *Program) loadListeners(hosts []string) error {
 	return nil
 }
 
-func (p *Program) close() {
+func (p *sProgram) close() {
 	logx.Info("shutdown server")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
@@ -202,7 +202,7 @@ func (p *Program) close() {
 	}
 }
 
-func (p *Program) Stop(service.Service) error {
+func (p *sProgram) Stop(service.Service) error {
 	logx.Infoln("stop service")
 	p.close()
 	p.wg.Wait()

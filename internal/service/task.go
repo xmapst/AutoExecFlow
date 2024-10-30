@@ -21,17 +21,17 @@ import (
 // 只允许中文,英文(含大小写),0-9,-_.~字符
 var reg = regexp.MustCompile("[^a-zA-Z\\p{Han}0-9\\-_.~]")
 
-type TaskService struct {
+type STaskService struct {
 	name string
 }
 
-func Task(name string) *TaskService {
-	return &TaskService{
+func Task(name string) *STaskService {
+	return &STaskService{
 		name: name,
 	}
 }
 
-func TaskList(req *types.PageReq) *types.TaskListRes {
+func TaskList(req *types.SPageReq) *types.STaskListRes {
 	tasks, total := storage.TaskList(req.Page, req.Size, req.Prefix)
 	if tasks == nil {
 		return nil
@@ -40,15 +40,15 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 	if total%req.Size != 0 {
 		pageTotal += 1
 	}
-	var list = &types.TaskListRes{
-		Page: types.PageRes{
+	var list = &types.STaskListRes{
+		Page: types.SPageRes{
 			Current: req.Page,
 			Size:    req.Size,
 			Total:   pageTotal,
 		},
 	}
 	for _, task := range tasks {
-		res := &types.TaskRes{
+		res := &types.STaskRes{
 			Name:        task.Name,
 			Description: task.Description,
 			Node:        task.Node,
@@ -57,7 +57,7 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 			Env:         make(map[string]string),
 			Timeout:     task.Timeout.String(),
 			Disable:     *task.Disable,
-			Time: &types.TimeRes{
+			Time: &types.STimeRes{
 				Start: task.STimeStr(),
 				End:   task.ETimeStr(),
 			},
@@ -82,7 +82,7 @@ func TaskList(req *types.PageReq) *types.TaskListRes {
 	return list
 }
 
-func (ts *TaskService) Create(task *types.TaskReq) (err error) {
+func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 	// 检查请求内容
 	timeout, err := ts.review(task)
 	if err != nil {
@@ -135,7 +135,7 @@ func (ts *TaskService) Create(task *types.TaskReq) (err error) {
 	return queues.PublishTask(task.Node, ts.name)
 }
 
-func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
+func (ts *STaskService) review(task *types.STaskReq) (time.Duration, error) {
 	if task.Step == nil || len(task.Step) == 0 {
 		return 0, errors.New("key: 'Task.Step' Error:Field validation for 'Step' failed on the 'required' tag")
 	}
@@ -163,7 +163,7 @@ func (ts *TaskService) review(task *types.TaskReq) (time.Duration, error) {
 	return timeout, nil
 }
 
-func (ts *TaskService) reviewStep(async bool, steps types.TaskStepsReq) error {
+func (ts *STaskService) reviewStep(async bool, steps types.STaskStepsReq) error {
 	// 检查步骤名称是否重复
 	if err := ts.uniqStepsName(steps); err != nil {
 		return err
@@ -181,7 +181,7 @@ func (ts *TaskService) reviewStep(async bool, steps types.TaskStepsReq) error {
 	return nil
 }
 
-func (ts *TaskService) uniqStepsName(steps types.TaskStepsReq) error {
+func (ts *STaskService) uniqStepsName(steps types.STaskStepsReq) error {
 	counts := make(map[string]int)
 	for _, v := range steps {
 		counts[v.Name]++
@@ -197,16 +197,16 @@ func (ts *TaskService) uniqStepsName(steps types.TaskStepsReq) error {
 	}
 	return fmt.Errorf("%v", errs)
 }
-func (ts *TaskService) saveTask(timeout time.Duration, task *types.TaskReq) (time.Duration, error) {
+func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (time.Duration, error) {
 	// save task
-	err := storage.TaskCreate(&models.Task{
+	err := storage.TaskCreate(&models.STask{
 		Name:        task.Name,
 		Description: task.Description,
 		Node:        task.Node,
 		Async:       models.Pointer(task.Async),
 		Timeout:     timeout,
 		Disable:     models.Pointer(task.Disable),
-		TaskUpdate: models.TaskUpdate{
+		STaskUpdate: models.STaskUpdate{
 			Message:  "the task is waiting to be scheduled for execution",
 			State:    models.Pointer(models.StatePending),
 			OldState: models.Pointer(models.StatePending),
@@ -218,7 +218,7 @@ func (ts *TaskService) saveTask(timeout time.Duration, task *types.TaskReq) (tim
 
 	// save task env
 	for name, value := range task.Env {
-		if err = storage.Task(task.Name).Env().Insert(&models.Env{
+		if err = storage.Task(task.Name).Env().Insert(&models.SEnv{
 			Name:  name,
 			Value: value,
 		}); err != nil {
@@ -228,7 +228,7 @@ func (ts *TaskService) saveTask(timeout time.Duration, task *types.TaskReq) (tim
 	return timeout, nil
 }
 
-func (ts *TaskService) Delete() error {
+func (ts *STaskService) Delete() error {
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
 		logx.Errorln(err)
@@ -243,7 +243,7 @@ func (ts *TaskService) Delete() error {
 	return storage.Task(ts.name).ClearAll()
 }
 
-func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
+func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
@@ -251,7 +251,7 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 		return types.CodeFailed, nil, err
 	}
 
-	data := &types.TaskRes{
+	data := &types.STaskRes{
 		Name:        task.Name,
 		Description: task.Description,
 		Node:        task.Node,
@@ -260,7 +260,7 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 		Env:         make(map[string]string),
 		Timeout:     task.Timeout.String(),
 		Disable:     *task.Disable,
-		Time: &types.TimeRes{
+		Time: &types.STimeRes{
 			Start: task.STimeStr(),
 			End:   task.ETimeStr(),
 		},
@@ -280,7 +280,7 @@ func (ts *TaskService) Detail() (types.Code, *types.TaskRes, error) {
 	return ConvertState(*task.State), data, nil
 }
 
-func (ts *TaskService) Manager(action string, duration string) error {
+func (ts *STaskService) Manager(action string, duration string) error {
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
 		logx.Errorln(err)
@@ -292,12 +292,12 @@ func (ts *TaskService) Manager(action string, duration string) error {
 	return queues.PublishManager(task.Node, utils.JoinWithInvisibleChar(ts.name, action, duration))
 }
 
-func (ts *TaskService) Dump() (*types.TaskReq, error) {
+func (ts *STaskService) Dump() (*types.STaskReq, error) {
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
 		return nil, err
 	}
-	res := &types.TaskReq{
+	res := &types.STaskReq{
 		Name:        task.Name,
 		Description: task.Description,
 		Node:        task.Node,
@@ -311,7 +311,7 @@ func (ts *TaskService) Dump() (*types.TaskReq, error) {
 	}
 	steps := storage.Task(ts.name).StepList(storage.All)
 	for _, step := range steps {
-		stepRes := &types.TaskStepReq{
+		stepRes := &types.STaskStepReq{
 			Name:    step.Name,
 			Type:    step.Type,
 			Content: step.Content,
@@ -329,7 +329,7 @@ func (ts *TaskService) Dump() (*types.TaskReq, error) {
 	return res, nil
 }
 
-func (ts *TaskService) Steps() (code types.Code, data []*types.TaskStepRes, err error) {
+func (ts *STaskService) Steps() (code types.Code, data []*types.STaskStepRes, err error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
@@ -343,7 +343,7 @@ func (ts *TaskService) Steps() (code types.Code, data []*types.TaskStepRes, err 
 	var groups = make(map[models.State][]string)
 	for _, step := range steps {
 		groups[*step.State] = append(groups[*step.State], step.Name)
-		res := &types.TaskStepRes{
+		res := &types.STaskStepRes{
 			Name:    step.Name,
 			State:   models.StateMap[*step.State],
 			Code:    *step.Code,
@@ -353,7 +353,7 @@ func (ts *TaskService) Steps() (code types.Code, data []*types.TaskStepRes, err 
 			Env:     make(map[string]string),
 			Type:    step.Type,
 			Content: step.Content,
-			Time: &types.TimeRes{
+			Time: &types.STimeRes{
 				Start: step.STimeStr(),
 				End:   step.ETimeStr(),
 			},

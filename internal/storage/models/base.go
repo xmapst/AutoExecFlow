@@ -31,53 +31,53 @@ func Pointer[T any](v T) *T {
 	return &v
 }
 
-type Base struct {
+type SBase struct {
 	ID        uint      `json:"id" gorm:"primarykey"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type BaseModel interface {
+type IBase interface {
 	GetID() uint
 	GetCreateTime() time.Time
 	GetUpdateTime() time.Time
 }
 
-func (b *Base) GetID() uint {
+func (b *SBase) GetID() uint {
 	return b.ID
 }
 
-func (b *Base) GetCreateTime() time.Time {
+func (b *SBase) GetCreateTime() time.Time {
 	return b.CreatedAt
 }
 
-func (b *Base) GetUpdateTime() time.Time {
+func (b *SBase) GetUpdateTime() time.Time {
 	return b.UpdatedAt
 }
 
-func (b *Base) BeforeCreate(tx *gorm.DB) error {
+func (b *SBase) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-func (b *Base) AfterCreate(tx *gorm.DB) error {
+func (b *SBase) AfterCreate(tx *gorm.DB) error {
 	//logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
 }
 
-func (b *Base) BeforeUpdate(tx *gorm.DB) error {
+func (b *SBase) BeforeUpdate(tx *gorm.DB) error {
 	return nil
 }
 
-func (b *Base) AfterUpdate(tx *gorm.DB) error {
+func (b *SBase) AfterUpdate(tx *gorm.DB) error {
 	//logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
 }
 
-func (b *Base) BeforeDelete(tx *gorm.DB) error {
+func (b *SBase) BeforeDelete(tx *gorm.DB) error {
 	return nil
 }
 
-func (b *Base) AfterDelete(tx *gorm.DB) error {
+func (b *SBase) AfterDelete(tx *gorm.DB) error {
 	//logx.Debugln(tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...))
 	return nil
 }
@@ -99,9 +99,9 @@ func Paginate(db *gorm.DB, page, pageSize int64) *gorm.DB {
 	return db.Offset(int(offset)).Limit(int(pageSize))
 }
 
-type Envs []*Env
+type SEnvs []*SEnv
 
-type Env struct {
+type SEnv struct {
 	Name  string `json:"name,omitempty" gorm:"index;not null;comment:名称"`
 	Value string `json:"value,omitempty" gorm:"comment:值"`
 }

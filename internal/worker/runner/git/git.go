@@ -21,16 +21,16 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-type Git struct {
+type SGit struct {
 	ctx       context.Context
 	cncl      context.CancelFunc
 	gopt      *git.CloneOptions
-	conf      *gitConfig
+	conf      *sGitConfig
 	storage   storage.IStep
 	workspace string
 }
 
-type gitConfig struct {
+type sGitConfig struct {
 	Url          string `json:"url"`
 	User         string `json:"user"`
 	Token        string `json:"token"`
@@ -42,12 +42,12 @@ type gitConfig struct {
 	SingleBranch *bool  `json:"single_branch,omitempty"`
 }
 
-func New(storage storage.IStep, workspace string) (*Git, error) {
-	g := &Git{
+func New(storage storage.IStep, workspace string) (*SGit, error) {
+	g := &SGit{
 		gopt: &git.CloneOptions{
 			SingleBranch: true,
 		},
-		conf: &gitConfig{
+		conf: &sGitConfig{
 			SubDir: "",
 			User:   "git",
 		},
@@ -61,7 +61,7 @@ func New(storage storage.IStep, workspace string) (*Git, error) {
 	return g, nil
 }
 
-func (g *Git) parseConfig() error {
+func (g *SGit) parseConfig() error {
 	content, err := g.storage.Content()
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (g *Git) parseConfig() error {
 	return nil
 }
 
-func (g *Git) homeDir() string {
+func (g *SGit) homeDir() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		if runtime.GOOS == "windows" {
@@ -129,7 +129,7 @@ func (g *Git) homeDir() string {
 	return home
 }
 
-func (g *Git) Run(ctx context.Context) (code int64, err error) {
+func (g *SGit) Run(ctx context.Context) (code int64, err error) {
 	logx.Infoln("git clone")
 	g.storage.Log().Write("git clone")
 	timeout, err := g.storage.Timeout()
@@ -163,7 +163,7 @@ func (g *Git) Run(ctx context.Context) (code int64, err error) {
 	return common.CodeSuccess, err
 }
 
-func (g *Git) Clear() error {
+func (g *SGit) Clear() error {
 	if g.cncl != nil {
 		g.cncl()
 		g.cncl = nil

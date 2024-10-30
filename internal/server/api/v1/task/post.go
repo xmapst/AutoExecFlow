@@ -11,7 +11,7 @@ import (
 
 // Post
 // @Summary		Create
-// @description	Create a task
+// @Description	Create a task
 // @Tags		Task
 // @Accept		application/json
 // @Accept		application/yaml
@@ -22,12 +22,12 @@ import (
 // @Param		async query bool false "task asynchronously" default(false)
 // @Param		timeout query string false "task timeout"
 // @Param		env query []string false "task envs"
-// @Param		steps body types.TaskStepsReq true "scripts"
-// @Success		200 {object} types.Base[types.TaskCreateRes]
-// @Failure		500 {object} types.Base[any]
+// @Param		steps body types.STaskStepsReq true "scripts"
+// @Success		200 {object} types.SBase[types.STaskCreateRes]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task [post]
 func Post(c *gin.Context) {
-	var req = new(types.TaskReq)
+	var req = new(types.STaskReq)
 	if err := c.ShouldBindQuery(req); err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
@@ -48,7 +48,7 @@ func Post(c *gin.Context) {
 	c.Request.Header.Set(types.XTaskName, req.Name)
 	c.Header(types.XTaskName, req.Name)
 
-	base.Send(c, base.WithData(&types.TaskCreateRes{
+	base.Send(c, base.WithData(&types.STaskCreateRes{
 		ID:    req.Name,
 		Name:  req.Name,
 		Count: len(req.Step),

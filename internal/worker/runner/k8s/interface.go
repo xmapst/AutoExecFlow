@@ -12,36 +12,36 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
 )
 
-type Resource interface {
+type IResource interface {
 	Scale(replicas int32) error
 	Update() error
 	Println() error
 	Restart() error
 }
 
-func ResourceFor(ctx context.Context, storage storage.IStep, client *kubernetes.Clientset, resource *types.Resource) Resource {
-	var rs Resource
+func ResourceFor(ctx context.Context, storage storage.IStep, client *kubernetes.Clientset, resource *types.SResource) IResource {
+	var rs IResource
 	switch resource.GetKind() {
 	case types.Deployment:
-		rs = &deploy.Deployment{
-			Context:  ctx,
-			Client:   client.AppsV1().Deployments(resource.GetNamespace()),
-			Resource: resource,
-			Storage:  storage,
+		rs = &deploy.SDeployment{
+			Context:   ctx,
+			Client:    client.AppsV1().Deployments(resource.GetNamespace()),
+			SResource: resource,
+			Storage:   storage,
 		}
 	case types.DaemonSet:
-		rs = &ds.DaemonSet{
-			Context:  ctx,
-			Client:   client.AppsV1().DaemonSets(resource.GetNamespace()),
-			Resource: resource,
-			Storage:  storage,
+		rs = &ds.SDaemonSet{
+			Context:   ctx,
+			Client:    client.AppsV1().DaemonSets(resource.GetNamespace()),
+			SResource: resource,
+			Storage:   storage,
 		}
 	case types.StatefulSet:
-		rs = &sts.StatefulSet{
-			Context:  ctx,
-			Client:   client.AppsV1().StatefulSets(resource.GetNamespace()),
-			Resource: resource,
-			Storage:  storage,
+		rs = &sts.SStatefulSet{
+			Context:   ctx,
+			Client:    client.AppsV1().StatefulSets(resource.GetNamespace()),
+			SResource: resource,
+			Storage:   storage,
 		}
 	}
 	return rs

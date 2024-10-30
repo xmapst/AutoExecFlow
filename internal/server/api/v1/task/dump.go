@@ -12,15 +12,15 @@ import (
 
 // Dump
 // @Summary		Dump
-// @description	dump task
+// @Description	dump task
 // @Tags		Task
 // @Accept		application/json
 // @Accept		application/yaml
 // @Produce		application/json
 // @Produce		application/yaml
 // @Param		task path string true "task name"
-// @Success		200 {object} types.Base[string]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[string]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/dump [get]
 
 func Dump(c *gin.Context) {

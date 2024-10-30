@@ -32,7 +32,7 @@ func Task(name string) ITask {
 	return storage.Task(name)
 }
 
-func TaskCreate(task *models.Task) (err error) {
+func TaskCreate(task *models.STask) (err error) {
 	return storage.TaskCreate(task)
 }
 
@@ -40,7 +40,7 @@ func TaskCount(state models.State) (res int64) {
 	return storage.TaskCount(state)
 }
 
-func TaskList(page, pageSize int64, str string) (res []*models.Task, total int64) {
+func TaskList(page, pageSize int64, str string) (res []*models.STask, total int64) {
 	return storage.TaskList(page, pageSize, str)
 }
 
@@ -48,10 +48,10 @@ func Project(name string) IProject {
 	return storage.Project(name)
 }
 
-func ProjectCreate(project *models.Project) (err error) {
+func ProjectCreate(project *models.SProject) (err error) {
 	return storage.ProjectCreate(project)
 }
 
-func ProjectList(page, pageSize int64, str string) (res []*models.Project, total int64) {
+func ProjectList(page, pageSize int64, str string) (res []*models.SProject, total int64) {
 	return storage.ProjectList(page, pageSize, str)
 }

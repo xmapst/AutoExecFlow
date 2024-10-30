@@ -39,7 +39,6 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 	config := &gorm.Config{
 		SkipDefaultTransaction: true,
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:         "t_",
 			SingularTable:       true,
 			NoLowerCase:         false,
 			IdentifierMaxLength: 256,
@@ -74,14 +73,14 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 
 	// 自动迁移表
 	if err = d.AutoMigrate(
-		&models.Task{},
-		&models.TaskEnv{},
-		&models.Step{},
-		&models.StepEnv{},
-		&models.StepDepend{},
-		&models.StepLog{},
-		&models.Project{},
-		&models.ProjectBuild{},
+		&models.STask{},
+		&models.STaskEnv{},
+		&models.SStep{},
+		&models.SStepEnv{},
+		&models.SStepDepend{},
+		&models.SStepLog{},
+		&models.SProject{},
+		&models.SProjectBuild{},
 	); err != nil {
 		logx.Errorln(err)
 		return nil, err
@@ -89,21 +88,21 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 
 	// 查找当前节点的所有任务, 包括空的任务名称列表
 	var tasks []string
-	d.Model(&models.Task{}).
+	d.Model(&models.STask{}).
 		Select("name").
 		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
 		Find(&tasks)
 
 	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
 	for _, taskName := range tasks {
-		d.Model(&models.Task{}).
+		d.Model(&models.STask{}).
 			Where("name = ?", taskName).
 			Updates(map[string]interface{}{
 				"node":    nodeName,
 				"state":   models.StateFailed,
 				"message": "execution failed due to system error",
 			})
-		d.Model(&models.Step{}).
+		d.Model(&models.SStep{}).
 			Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
 			Updates(map[string]interface{}{
 				"state":   models.StateFailed,
@@ -149,21 +148,21 @@ func (d *sDatabase) Task(name string) ITask {
 	}
 }
 
-func (d *sDatabase) TaskCreate(task *models.Task) (err error) {
+func (d *sDatabase) TaskCreate(task *models.STask) (err error) {
 	return d.Create(task).Error
 }
 
 func (d *sDatabase) TaskCount(state models.State) (res int64) {
 	if state != models.StateAll {
-		d.Model(&models.Task{}).Distinct("DISTINCT name").Where("state = ?", state).Count(&res)
+		d.Model(&models.STask{}).Distinct("DISTINCT name").Where("state = ?", state).Count(&res)
 		return
 	}
-	d.Model(&models.Task{}).Distinct("DISTINCT name").Count(&res)
+	d.Model(&models.STask{}).Distinct("DISTINCT name").Count(&res)
 	return
 }
 
-func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.Tasks, total int64) {
-	query := d.Model(&models.Task{}).
+func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.STasks, total int64) {
+	query := d.Model(&models.STask{}).
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")
@@ -182,12 +181,12 @@ func (d *sDatabase) Project(name string) IProject {
 	}
 }
 
-func (d *sDatabase) ProjectCreate(project *models.Project) (err error) {
+func (d *sDatabase) ProjectCreate(project *models.SProject) (err error) {
 	return d.Create(project).Error
 }
 
-func (d *sDatabase) ProjectList(page, pageSize int64, str string) (res models.Projects, total int64) {
-	query := d.Model(&models.Project{}).
+func (d *sDatabase) ProjectList(page, pageSize int64, str string) (res models.SProjects, total int64) {
+	query := d.Model(&models.SProject{}).
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")

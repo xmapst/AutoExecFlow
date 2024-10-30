@@ -9,15 +9,15 @@ import (
 	"github.com/xmapst/AutoExecFlow/types"
 )
 
-type PoolService struct {
+type SPoolService struct {
 }
 
-func Pool() *PoolService {
-	return &PoolService{}
+func Pool() *SPoolService {
+	return &SPoolService{}
 }
 
-func (p *PoolService) Get() *types.Pool {
-	return &types.Pool{
+func (p *SPoolService) Get() *types.SPool {
+	return &types.SPool{
 		Size:    worker.GetSize(),
 		Total:   storage.TaskCount(models.StateAll),
 		Running: storage.TaskCount(models.StateRunning),
@@ -25,7 +25,7 @@ func (p *PoolService) Get() *types.Pool {
 	}
 }
 
-func (p *PoolService) Set(size int) (*types.Pool, error) {
+func (p *SPoolService) Set(size int) (*types.SPool, error) {
 	if size <= 0 {
 		return p.Get(), nil
 	}

@@ -85,7 +85,7 @@ func managerTask(taskName, action, duration string) error {
 	case "kill":
 		err = manager.Kill()
 		if err == nil {
-			return storage.Task(taskName).Update(&models.TaskUpdate{
+			return storage.Task(taskName).Update(&models.STaskUpdate{
 				State:    models.Pointer(models.StateFailed),
 				OldState: t.State,
 				Message:  "has been killed",
@@ -94,7 +94,7 @@ func managerTask(taskName, action, duration string) error {
 	case "pause":
 		if manager.State() != dag.StatePaused {
 			_ = manager.Pause(duration)
-			return storage.Task(taskName).Update(&models.TaskUpdate{
+			return storage.Task(taskName).Update(&models.STaskUpdate{
 				State:    models.Pointer(models.StatePaused),
 				OldState: t.State,
 				Message:  "has been paused",
@@ -103,7 +103,7 @@ func managerTask(taskName, action, duration string) error {
 	case "resume":
 		if manager.State() == dag.StatePaused {
 			manager.Resume()
-			return storage.Task(taskName).Update(&models.TaskUpdate{
+			return storage.Task(taskName).Update(&models.STaskUpdate{
 				State:    t.OldState,
 				OldState: t.State,
 				Message:  "has been resumed",
@@ -126,7 +126,7 @@ func managerStep(taskName, stepName, action, duration string) error {
 	case "kill":
 		err = manager.Kill()
 		if err == nil {
-			return storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
+			return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
 				State:    models.Pointer(models.StateFailed),
 				OldState: s.State,
 				Message:  "has been killed",
@@ -138,7 +138,7 @@ func managerStep(taskName, stepName, action, duration string) error {
 		}
 		if manager.State() != dag.StatePaused {
 			_ = manager.Pause(duration)
-			return storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
+			return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
 				State:    models.Pointer(models.StatePaused),
 				OldState: s.State,
 				Message:  "has been paused",
@@ -147,7 +147,7 @@ func managerStep(taskName, stepName, action, duration string) error {
 	case "resume":
 		if manager.State() == dag.StatePaused {
 			manager.Resume()
-			return storage.Task(taskName).Step(stepName).Update(&models.StepUpdate{
+			return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
 				State:    s.OldState,
 				OldState: s.State,
 				Message:  "has been resumed",

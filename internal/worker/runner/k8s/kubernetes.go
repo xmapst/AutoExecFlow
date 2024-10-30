@@ -20,29 +20,29 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
 )
 
-type Kubectl struct {
+type SKubectl struct {
 	kubeConf            *rest.Config
 	client              *kubernetes.Clientset
 	dynamicClient       *dynamic.DynamicClient
 	storage             storage.IStep
 	subCommand          string
 	workspace           string
-	Config              string            `json:"kube_config" yaml:"KubeConfig"`
-	Namespace           string            `json:"namespace" yaml:"Namespace"`
-	ImageTag            string            `json:"image_tag" yaml:"ImageTag"`
-	IgnoreInitContainer *bool             `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
-	Resources           []*types.Resource `json:"resources" yaml:"Resources"`
+	Config              string             `json:"kube_config" yaml:"KubeConfig"`
+	Namespace           string             `json:"namespace" yaml:"Namespace"`
+	ImageTag            string             `json:"image_tag" yaml:"ImageTag"`
+	IgnoreInitContainer *bool              `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
+	Resources           []*types.SResource `json:"resources" yaml:"Resources"`
 }
 
-func New(storage storage.IStep, command, workspace string) (*Kubectl, error) {
-	return &Kubectl{
+func New(storage storage.IStep, command, workspace string) (*SKubectl, error) {
+	return &SKubectl{
 		storage:    storage,
 		subCommand: command,
 		workspace:  workspace,
 	}, nil
 }
 
-func (k *Kubectl) init() error {
+func (k *SKubectl) init() error {
 	content, err := k.storage.Content()
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func (k *Kubectl) init() error {
 	return nil
 }
 
-func (k *Kubectl) Run(ctx context.Context) (code int64, err error) {
+func (k *SKubectl) Run(ctx context.Context) (code int64, err error) {
 	timeout, err := k.storage.Timeout()
 	if err != nil {
 		return common.CodeSystemErr, err
@@ -158,7 +158,7 @@ func (k *Kubectl) Run(ctx context.Context) (code int64, err error) {
 	return
 }
 
-func (k *Kubectl) getResourceValue(lValue, gValue, env string) (string, error) {
+func (k *SKubectl) getResourceValue(lValue, gValue, env string) (string, error) {
 	if lValue != "" {
 		return lValue, nil
 	}
@@ -175,7 +175,7 @@ func (k *Kubectl) getResourceValue(lValue, gValue, env string) (string, error) {
 	return value, err
 }
 
-func (k *Kubectl) run(ctx context.Context, resource *types.Resource) (err error) {
+func (k *SKubectl) run(ctx context.Context, resource *types.SResource) (err error) {
 	var rs = ResourceFor(ctx, k.storage, k.client, resource)
 	switch k.subCommand {
 	case "restart":
@@ -200,6 +200,6 @@ func (k *Kubectl) run(ctx context.Context, resource *types.Resource) (err error)
 	return rs.Println()
 }
 
-func (k *Kubectl) Clear() error {
+func (k *SKubectl) Clear() error {
 	return nil
 }

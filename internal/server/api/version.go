@@ -12,7 +12,7 @@ import (
 
 // version
 // @Summary		Version
-// @description	Get server version
+// @Description	Get server version
 // @Tags		Default
 // @Accept		application/json
 // @Accept		application/yaml
@@ -22,20 +22,20 @@ import (
 // @Failure		500 {object} types.Base[any]
 // @Router		/version [get]
 func version(c *gin.Context) {
-	base.Send(c, base.WithData(&types.Version{
+	base.Send(c, base.WithData(&types.SVersion{
 		Version:   info.Version,
 		BuildTime: info.BuildTime,
-		Git: types.VersionGit{
+		Git: types.SVersionGit{
 			URL:    info.GitUrl,
 			Branch: info.GitBranch,
 			Commit: info.GitCommit,
 		},
-		Go: types.VersionGO{
+		Go: types.SVersionGO{
 			Version: runtime.Version(),
 			OS:      runtime.GOOS,
 			Arch:    runtime.GOARCH,
 		},
-		User: types.VersionUser{
+		User: types.SVersionUser{
 			Name:  info.UserName,
 			Email: info.UserEmail,
 		},

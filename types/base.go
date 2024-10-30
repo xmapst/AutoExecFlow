@@ -10,7 +10,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 )
 
-type Base[T any] struct {
+type SBase[T any] struct {
 	Code      Code    `json:"code" yaml:"Code" example:"255"`
 	Message   Message `json:"msg" yaml:"Message" example:"message" swaggertype:"string"`
 	Timestamp int64   `json:"timestamp" yaml:"Timestamp"`
@@ -81,7 +81,7 @@ var WebsocketMessageType = map[int]string{
 	websocket.PongMessage:   "pong",
 }
 
-type TTYSize struct {
+type STTYSize struct {
 	Cols uint16 `json:"cols"`
 	Rows uint16 `json:"rows"`
 	X    uint16 `json:"x"`

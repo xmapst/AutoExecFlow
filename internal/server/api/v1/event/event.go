@@ -12,6 +12,17 @@ import (
 	"github.com/xmapst/AutoExecFlow/types"
 )
 
+// Stream
+// @Summary Subscribe Event
+// @Description Subscribe Event
+// @Tags Event
+// @Accept		application/json
+// @Accept		application/yaml
+// @Produce		application/json
+// @Produce		application/yaml
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
+// @Router		/api/v1/event [get]
 func Stream(c *gin.Context) {
 	ctx, cancel := context.WithCancel(c)
 	defer cancel()

@@ -17,29 +17,29 @@ import (
 )
 
 func init() {
-	plugins.Register(Name, new(Plugin))
+	plugins.Register(Name, new(SPlugin))
 }
 
 const Name = "yeagi"
 
-type Plugin struct {
+type SPlugin struct {
 	env []string
 }
 
-func (p *Plugin) Name() string {
+func (p *SPlugin) Name() string {
 	return Name
 }
 
-func (p *Plugin) Description() string {
+func (p *SPlugin) Description() string {
 	return "yeagi plugin provider"
 }
 
-func (p *Plugin) WithEnv(env []string) plugins.IPlugin {
+func (p *SPlugin) WithEnv(env []string) plugins.IPlugin {
 	p.env = append(p.env, env...)
 	return p
 }
 
-func (p *Plugin) Run(ctx context.Context, content string) error {
+func (p *SPlugin) Run(ctx context.Context, content string) error {
 	filename := filepath.Join(os.TempDir(), ksuid.New().String())
 	defer os.RemoveAll(filename)
 	if err := os.WriteFile(filename, []byte(content), os.ModePerm); err != nil {
@@ -48,7 +48,7 @@ func (p *Plugin) Run(ctx context.Context, content string) error {
 	return p.RunFile(ctx, filename)
 }
 
-func (p *Plugin) RunFile(ctx context.Context, filename string) error {
+func (p *SPlugin) RunFile(ctx context.Context, filename string) error {
 	vm := interp.New(interp.Options{
 		Env: p.env,
 	})
@@ -78,7 +78,7 @@ func (p *Plugin) RunFile(ctx context.Context, filename string) error {
 	return p.executeSafely(ctx, vm, filename)
 }
 
-func (p *Plugin) executeSafely(ctx context.Context, vm *interp.Interpreter, filename string) (err error) {
+func (p *SPlugin) executeSafely(ctx context.Context, vm *interp.Interpreter, filename string) (err error) {
 	defer func() {
 		if _r := recover(); _r != nil {
 			if err != nil {

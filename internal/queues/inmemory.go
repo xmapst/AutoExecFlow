@@ -14,25 +14,25 @@ import (
 
 const defaultQueueSize = 1000
 
-type memDirect struct {
+type sMemDirect struct {
 	name    string
 	ch      chan string
-	subs    []*qsub
+	subs    []*sSub
 	unacked int32
 	closed  atomic.Bool
 	mu      sync.RWMutex
 	wg      sync.WaitGroup
 }
 
-func newMemDirect(name string) *memDirect {
-	return &memDirect{
+func newMemDirect(name string) *sMemDirect {
+	return &sMemDirect{
 		name: name,
 		ch:   make(chan string, defaultQueueSize),
-		subs: make([]*qsub, 0),
+		subs: make([]*sSub, 0),
 	}
 }
 
-type qsub struct {
+type sSub struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	cname  string
@@ -42,7 +42,7 @@ type qsub struct {
 }
 
 // Publish messages to all subscribers in a non-blocking manner.
-func (d *memDirect) publish(data string) {
+func (d *sMemDirect) publish(data string) {
 	if d.closed.Load() {
 		return
 	}
@@ -54,13 +54,13 @@ func (d *memDirect) publish(data string) {
 	}
 }
 
-func (d *memDirect) size() int {
+func (d *sMemDirect) size() int {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	return len(d.ch)
 }
 
-func (d *memDirect) close() {
+func (d *sMemDirect) close() {
 	if !d.closed.CompareAndSwap(false, true) {
 		return
 	}
@@ -75,9 +75,9 @@ func (d *memDirect) close() {
 	d.wg.Wait()
 }
 
-func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
+func (d *sMemDirect) subscribe(ctx context.Context, handle HandleFn) {
 	subCtx, cancel := context.WithCancel(ctx)
-	sub := &qsub{
+	sub := &sSub{
 		cname:  ksuid.New().String(),
 		ctx:    subCtx,
 		cancel: cancel,
@@ -116,7 +116,7 @@ func (d *memDirect) subscribe(ctx context.Context, handle Handle) {
 	}()
 }
 
-func (d *memDirect) removeSubscriber(cname string) {
+func (d *sMemDirect) removeSubscriber(cname string) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	for i, sub := range d.subs {
@@ -127,21 +127,21 @@ func (d *memDirect) removeSubscriber(cname string) {
 	}
 }
 
-type memTopic struct {
+type sMemTopic struct {
 	name      string
-	subs      []*qsub
+	subs      []*sSub
 	terminate chan struct{}
 	mu        sync.RWMutex
 }
 
-func newMemTopic(name string) *memTopic {
-	return &memTopic{
+func newMemTopic(name string) *sMemTopic {
+	return &sMemTopic{
 		name:      name,
 		terminate: make(chan struct{}),
 	}
 }
 
-func (t *memTopic) publish(event string) {
+func (t *sMemTopic) publish(event string) {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	for _, sub := range t.subs {
@@ -156,9 +156,9 @@ func (t *memTopic) publish(event string) {
 	}
 }
 
-func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
+func (t *sMemTopic) subscribe(ctx context.Context, handler HandleFn) {
 	subCtx, cancel := context.WithCancel(ctx)
-	sub := &qsub{
+	sub := &sSub{
 		cname:  ksuid.New().String(),
 		ctx:    subCtx,
 		cancel: cancel,
@@ -188,7 +188,7 @@ func (t *memTopic) subscribe(ctx context.Context, handler Handle) {
 	}()
 }
 
-func (t *memTopic) removeSubscriber(cname string) {
+func (t *sMemTopic) removeSubscriber(cname string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	for i, sub := range t.subs {
@@ -199,7 +199,7 @@ func (t *memTopic) removeSubscriber(cname string) {
 	}
 }
 
-func (t *memTopic) close() {
+func (t *sMemTopic) close() {
 	close(t.terminate)
 
 	t.mu.Lock()
@@ -210,66 +210,66 @@ func (t *memTopic) close() {
 	}
 }
 
-type memoryBroker struct {
+type sMemoryBroker struct {
 	directs   sync.Map
 	topics    sync.Map
 	terminate atomic.Bool
 }
 
-func newInMemoryBroker() *memoryBroker {
-	return &memoryBroker{}
+func newInMemoryBroker() *sMemoryBroker {
+	return &sMemoryBroker{}
 }
 
-func (m *memoryBroker) PublishTask(node string, data string) error {
+func (m *sMemoryBroker) PublishTask(node string, data string) error {
 	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
 	d, _ := m.directs.LoadOrStore(routingKey, newMemDirect(routingKey))
-	d.(*memDirect).publish(data)
+	d.(*sMemDirect).publish(data)
 	return nil
 }
 
-func (m *memoryBroker) SubscribeTask(ctx context.Context, node string, handler Handle) error {
+func (m *sMemoryBroker) SubscribeTask(ctx context.Context, node string, handler HandleFn) error {
 	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
 	d, _ := m.directs.LoadOrStore(routingKey, newMemDirect(routingKey))
-	d.(*memDirect).subscribe(ctx, handler)
+	d.(*sMemDirect).subscribe(ctx, handler)
 	return nil
 }
 
-func (m *memoryBroker) PublishEvent(data string) error {
+func (m *sMemoryBroker) PublishEvent(data string) error {
 	routingKey := fmt.Sprintf("%s.*", eventRoutingKey)
 	m.topics.Range(func(key, value any) bool {
 		if wildcard.Match(routingKey, key.(string)) {
-			value.(*memTopic).publish(data)
+			value.(*sMemTopic).publish(data)
 		}
 		return true
 	})
 	return nil
 }
 
-func (m *memoryBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
+func (m *sMemoryBroker) SubscribeEvent(ctx context.Context, handler HandleFn) error {
 	routingKey := fmt.Sprintf("%s.%s", eventRoutingKey, ksuid.New().String())
 	t, _ := m.topics.LoadOrStore(routingKey, newMemTopic(routingKey))
-	t.(*memTopic).subscribe(ctx, handler)
+	t.(*sMemTopic).subscribe(ctx, handler)
 	return nil
 }
 
-func (m *memoryBroker) PublishManager(node string, data string) error {
+func (m *sMemoryBroker) PublishManager(node string, data string) error {
 	m.topics.Range(func(key, value any) bool {
 		if wildcard.Match(fmt.Sprintf("%s.%s", managerRoutingKey, node), key.(string)) {
-			value.(*memTopic).publish(data)
+			value.(*sMemTopic).publish(data)
 		}
 		return true
 	})
 	return nil
 }
 
-func (m *memoryBroker) SubscribeManager(ctx context.Context, node string, handler Handle) error {
+func (m *sMemoryBroker) SubscribeManager(ctx context.Context, node string, handler HandleFn) error {
 	qname := fmt.Sprintf("%s.%s", managerRoutingKey, node)
 	t, _ := m.topics.LoadOrStore(qname, newMemTopic(qname))
-	t.(*memTopic).subscribe(ctx, handler)
+	t.(*sMemTopic).subscribe(ctx, handler)
 	return nil
 }
 
-func (m *memoryBroker) Shutdown(ctx context.Context) {
+func (m *sMemoryBroker) Shutdown(ctx context.Context) {
 	if !m.terminate.CompareAndSwap(false, true) {
 		return
 	}
@@ -277,18 +277,18 @@ func (m *memoryBroker) Shutdown(ctx context.Context) {
 	var wg sync.WaitGroup
 	m.directs.Range(func(_, value any) bool {
 		wg.Add(1)
-		go func(d *memDirect) {
+		go func(d *sMemDirect) {
 			defer wg.Done()
 			d.close()
-		}(value.(*memDirect))
+		}(value.(*sMemDirect))
 		return true
 	})
 	m.topics.Range(func(_, value any) bool {
 		wg.Add(1)
-		go func(t *memTopic) {
+		go func(t *sMemTopic) {
 			defer wg.Done()
 			t.close()
-		}(value.(*memTopic))
+		}(value.(*sMemTopic))
 		return true
 	})
 

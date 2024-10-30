@@ -20,7 +20,7 @@ import (
 
 // Get
 // @Summary		Get
-// @description	Get file/folder contents
+// @Description	Get file/folder contents
 // @Tags		Workspace
 // @Accept		application/json
 // @Accept		application/yaml
@@ -28,8 +28,8 @@ import (
 // @Produce		application/yaml
 // @Param		task path string true "task name"
 // @Param		path query string false "dir path"
-// @Success		200 {object} types.Base[types.FileListRes]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[types.SFileListRes]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/workspace [get]
 func Get(c *gin.Context) {
 	taskName := c.Param("task")
@@ -87,7 +87,7 @@ func Get(c *gin.Context) {
 		return
 	}
 
-	var infos = new(types.FileListRes)
+	var infos = new(types.SFileListRes)
 	for _, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
@@ -104,7 +104,7 @@ func Get(c *gin.Context) {
 			}
 		}
 		_path = strings.TrimPrefix(filepath.ToSlash(_path), filepath.ToSlash(prefix))
-		infos.Files = append(infos.Files, &types.FileRes{
+		infos.Files = append(infos.Files, &types.SFileRes{
 			Name:    info.Name(),
 			Path:    _path,
 			Size:    size,

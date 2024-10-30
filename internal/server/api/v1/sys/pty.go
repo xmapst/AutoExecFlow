@@ -11,14 +11,14 @@ import (
 
 // PtyWs
 // @Summary		Terminal
-// @description	websocket terminal
+// @Description	websocket terminal
 // @Tags		System
 // @Accept		application/json
 // @Accept		application/yaml
 // @Produce		application/json
 // @Produce		application/yaml
-// @Success		200 {object} types.Base[any]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/pty [get]
 func PtyWs(c *gin.Context) {
 	ws, err := base.Upgrade(c.Writer, c.Request)

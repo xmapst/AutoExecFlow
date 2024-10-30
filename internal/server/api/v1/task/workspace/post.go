@@ -15,7 +15,7 @@ import (
 
 // Post
 // @Summary		Upload
-// @description	Upload a file or directory
+// @Description	Upload a file or directory
 // @Tags		Workspace
 // @Accept		multipart/form-data
 // @Produce		application/json
@@ -23,8 +23,8 @@ import (
 // @Param		task path string true "task name"
 // @Param		path query string false "dir path"
 // @Param		files formData file true "files"
-// @Success		200 {object} types.Base[any]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task}/workspace [post]
 func Post(c *gin.Context) {
 	task := c.Param("task")

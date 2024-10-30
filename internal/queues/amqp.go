@@ -18,7 +18,7 @@ var (
 	topicExchangeName  = utils.ServiceName + "Topic"
 )
 
-type amqpBroker struct {
+type sAmqpBroker struct {
 	nodeName string
 	conn     *rabbitmq.Conn
 	// 防止相同生产者重复创建
@@ -30,8 +30,8 @@ type amqpBroker struct {
 	mu          sync.Mutex
 }
 
-func newAmqpBroker(nodeName, rawURL string) (*amqpBroker, error) {
-	a := &amqpBroker{
+func newAmqpBroker(nodeName, rawURL string) (*sAmqpBroker, error) {
+	a := &sAmqpBroker{
 		nodeName:     nodeName,
 		publisherMap: make(map[string]*rabbitmq.Publisher),
 		consumerMap:  make(map[string]*rabbitmq.Consumer),
@@ -60,12 +60,12 @@ func newAmqpBroker(nodeName, rawURL string) (*amqpBroker, error) {
 	return a, nil
 }
 
-func (a *amqpBroker) PublishTask(node string, data string) error {
+func (a *sAmqpBroker) PublishTask(node string, data string) error {
 	rkey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
 	return a.publishDirect(rkey, data)
 }
 
-func (a *amqpBroker) SubscribeTask(ctx context.Context, node string, handler Handle) error {
+func (a *sAmqpBroker) SubscribeTask(ctx context.Context, node string, handler HandleFn) error {
 	qname := fmt.Sprintf("%s_%s", taskRoutingKey, node)
 	d, _ := a.directs.LoadOrStore(qname, newMemDirect(qname))
 	a.mu.Lock()
@@ -73,23 +73,23 @@ func (a *amqpBroker) SubscribeTask(ctx context.Context, node string, handler Han
 	if _, ok := a.consumerMap[qname]; !ok {
 		var err error
 		a.consumerMap[qname], err = a.newDirectConsumer(qname, func(data string) error {
-			d.(*memDirect).publish(data)
+			d.(*sMemDirect).publish(data)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 	}
-	d.(*memDirect).subscribe(ctx, handler)
+	d.(*sMemDirect).subscribe(ctx, handler)
 	return nil
 }
 
-func (a *amqpBroker) PublishEvent(data string) error {
+func (a *sAmqpBroker) PublishEvent(data string) error {
 	rkey := fmt.Sprintf("%s.*", eventRoutingKey)
 	return a.publishTopic(rkey, data)
 }
 
-func (a *amqpBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
+func (a *sAmqpBroker) SubscribeEvent(ctx context.Context, handler HandleFn) error {
 	rkey := fmt.Sprintf("%s.*", eventRoutingKey)
 	t, _ := a.topics.LoadOrStore(rkey, newMemTopic(rkey))
 	a.mu.Lock()
@@ -98,23 +98,23 @@ func (a *amqpBroker) SubscribeEvent(ctx context.Context, handler Handle) error {
 		qname := fmt.Sprintf("%s_%s", eventRoutingKey, a.nodeName)
 		var err error
 		a.consumerMap[rkey], err = a.newTopicConsumer(rkey, qname, func(data string) error {
-			t.(*memTopic).publish(data)
+			t.(*sMemTopic).publish(data)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 	}
-	t.(*memTopic).subscribe(ctx, handler)
+	t.(*sMemTopic).subscribe(ctx, handler)
 	return nil
 }
 
-func (a *amqpBroker) PublishManager(node string, data string) error {
+func (a *sAmqpBroker) PublishManager(node string, data string) error {
 	routingKey := fmt.Sprintf("%s.%s", managerRoutingKey, node)
 	return a.publishTopic(routingKey, data)
 }
 
-func (a *amqpBroker) SubscribeManager(ctx context.Context, node string, handler Handle) error {
+func (a *sAmqpBroker) SubscribeManager(ctx context.Context, node string, handler HandleFn) error {
 	rkey := fmt.Sprintf("%s.%s", managerRoutingKey, node)
 	t, _ := a.topics.LoadOrStore(rkey, newMemTopic(rkey))
 	a.mu.Lock()
@@ -123,18 +123,18 @@ func (a *amqpBroker) SubscribeManager(ctx context.Context, node string, handler 
 		qname := fmt.Sprintf("%s_%s", managerRoutingKey, node)
 		var err error
 		a.consumerMap[rkey], err = a.newTopicConsumer(rkey, qname, func(data string) error {
-			t.(*memTopic).publish(data)
+			t.(*sMemTopic).publish(data)
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 	}
-	t.(*memTopic).subscribe(ctx, handler)
+	t.(*sMemTopic).subscribe(ctx, handler)
 	return nil
 }
 
-func (a *amqpBroker) Shutdown(ctx context.Context) {
+func (a *sAmqpBroker) Shutdown(ctx context.Context) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	for _, publisher := range a.publisherMap {
@@ -149,18 +149,18 @@ func (a *amqpBroker) Shutdown(ctx context.Context) {
 	var wg sync.WaitGroup
 	a.directs.Range(func(_, value any) bool {
 		wg.Add(1)
-		go func(t *memDirect) {
+		go func(t *sMemDirect) {
 			defer wg.Done()
 			t.close()
-		}(value.(*memDirect))
+		}(value.(*sMemDirect))
 		return true
 	})
 	a.topics.Range(func(_, value any) bool {
 		wg.Add(1)
-		go func(d *memTopic) {
+		go func(d *sMemTopic) {
 			defer wg.Done()
 			d.close()
-		}(value.(*memTopic))
+		}(value.(*sMemTopic))
 		return true
 	})
 
@@ -178,7 +178,7 @@ func (a *amqpBroker) Shutdown(ctx context.Context) {
 	}
 }
 
-func (a *amqpBroker) subscribe(ctx context.Context, consumer *rabbitmq.Consumer, handler Handle) {
+func (a *sAmqpBroker) subscribe(ctx context.Context, consumer *rabbitmq.Consumer, handler HandleFn) {
 	ctx, cancel := context.WithCancel(ctx)
 	go func() {
 		defer cancel()
@@ -201,15 +201,15 @@ func (a *amqpBroker) subscribe(ctx context.Context, consumer *rabbitmq.Consumer,
 	}()
 }
 
-func (a *amqpBroker) publishDirect(rkey, data string) error {
+func (a *sAmqpBroker) publishDirect(rkey, data string) error {
 	return a.publish(directExchangeName, rkey, data)
 }
 
-func (a *amqpBroker) publishTopic(rkey, data string) error {
+func (a *sAmqpBroker) publishTopic(rkey, data string) error {
 	return a.publish(topicExchangeName, rkey, data)
 }
 
-func (a *amqpBroker) publish(ename, rkey, data string) error {
+func (a *sAmqpBroker) publish(ename, rkey, data string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	publisher, ok := a.publisherMap[ename]
@@ -225,21 +225,21 @@ func (a *amqpBroker) publish(ename, rkey, data string) error {
 	)
 }
 
-func (a *amqpBroker) newDirectPublisher() (err error) {
+func (a *sAmqpBroker) newDirectPublisher() (err error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.publisherMap[directExchangeName], err = a.newPublisher(amqp091.ExchangeDirect, directExchangeName)
 	return
 }
 
-func (a *amqpBroker) newTopicPublisher() (err error) {
+func (a *sAmqpBroker) newTopicPublisher() (err error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.publisherMap[topicExchangeName], err = a.newPublisher(amqp091.ExchangeTopic, topicExchangeName)
 	return
 }
 
-func (a *amqpBroker) newPublisher(kind, ename string) (*rabbitmq.Publisher, error) {
+func (a *sAmqpBroker) newPublisher(kind, ename string) (*rabbitmq.Publisher, error) {
 	return rabbitmq.NewPublisher(
 		a.conn,
 		rabbitmq.WithPublisherOptionsLogger(logx.GetSubLoggerWithOption(zap.AddCallerSkip(-1))), // 日志
@@ -250,15 +250,15 @@ func (a *amqpBroker) newPublisher(kind, ename string) (*rabbitmq.Publisher, erro
 	)
 }
 
-func (a *amqpBroker) newDirectConsumer(qname string, handle Handle) (*rabbitmq.Consumer, error) {
+func (a *sAmqpBroker) newDirectConsumer(qname string, handle HandleFn) (*rabbitmq.Consumer, error) {
 	return a.newConsumer(amqp091.ExchangeDirect, directExchangeName, qname, qname, handle)
 }
 
-func (a *amqpBroker) newTopicConsumer(rkey, qname string, handle Handle) (*rabbitmq.Consumer, error) {
+func (a *sAmqpBroker) newTopicConsumer(rkey, qname string, handle HandleFn) (*rabbitmq.Consumer, error) {
 	return a.newConsumer(amqp091.ExchangeTopic, topicExchangeName, rkey, qname, handle)
 }
 
-func (a *amqpBroker) newConsumer(kind, ename, rkey, qname string, handle Handle) (*rabbitmq.Consumer, error) {
+func (a *sAmqpBroker) newConsumer(kind, ename, rkey, qname string, handle HandleFn) (*rabbitmq.Consumer, error) {
 	logx.Debugln("Subscribe", ename, "queue", qname)
 	consumer, err := rabbitmq.NewConsumer(
 		a.conn, qname,

@@ -1,8 +1,12 @@
 package models
 
-type StepEnv struct {
-	Base
+type SStepEnv struct {
+	SBase
 	TaskName string `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	StepName string `json:"step_name,omitempty" gorm:"index;not null;comment:步骤名称"`
-	Env
+	SEnv
+}
+
+func (s *SStepEnv) TableName() string {
+	return "t_step_env"
 }

@@ -11,8 +11,8 @@ type sProjectBuild struct {
 	pName string
 }
 
-func (p *sProjectBuild) List() (res models.ProjectBuilds) {
-	p.Model(&models.ProjectBuilds{}).
+func (p *sProjectBuild) List() (res models.SProjectBuilds) {
+	p.Model(&models.SProjectBuilds{}).
 		Where(map[string]interface{}{
 			"project_name": p.pName,
 		}).
@@ -28,8 +28,8 @@ func (p *sProjectBuild) Task(name string) ITask {
 	}
 }
 
-func (p *sProjectBuild) Get(name string) (res *models.ProjectBuild, err error) {
-	res = new(models.ProjectBuild)
+func (p *sProjectBuild) Get(name string) (res *models.SProjectBuild, err error) {
+	res = new(models.SProjectBuild)
 	err = p.Where(map[string]interface{}{
 		"project_name": p.pName,
 		"task_name":    name,
@@ -41,9 +41,9 @@ func (p *sProjectBuild) Insert(names ...string) (err error) {
 	if len(names) == 0 {
 		return
 	}
-	var tasks []models.ProjectBuild
+	var tasks []models.SProjectBuild
 	for _, name := range names {
-		tasks = append(tasks, models.ProjectBuild{
+		tasks = append(tasks, models.SProjectBuild{
 			ProjectName: p.pName,
 			TaskName:    name,
 		})
@@ -55,9 +55,9 @@ func (p *sProjectBuild) Remove(name string) (err error) {
 	return p.Where(map[string]interface{}{
 		"project_name": p.pName,
 		"task_name":    name,
-	}).Delete(&models.ProjectBuild{}).Error
+	}).Delete(&models.SProjectBuild{}).Error
 }
 
 func (p *sProjectBuild) ClearAll() error {
-	return p.Where("project_name = ?", p.pName).Delete(&models.ProjectBuild{}).Error
+	return p.Where("project_name = ?", p.pName).Delete(&models.SProjectBuild{}).Error
 }

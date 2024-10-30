@@ -6,7 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type Resource struct {
+type SResource struct {
 	Kind                string `yaml:"Kind" json:"kind"`
 	Namespace           string `yaml:"Namespace" json:"namespace"`
 	Name                string `yaml:"Name" json:"name"`
@@ -15,7 +15,7 @@ type Resource struct {
 	IgnoreInitContainer *bool  `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
 }
 
-func (r *Resource) Check() error {
+func (r *SResource) Check() error {
 	if r.Namespace == "" {
 		r.Namespace = metav1.NamespaceDefault
 	}
@@ -33,25 +33,25 @@ func (r *Resource) Check() error {
 	return nil
 }
 
-func (r *Resource) GetKind() string {
+func (r *SResource) GetKind() string {
 	return r.Kind
 }
 
-func (r *Resource) GetNamespace() string {
+func (r *SResource) GetNamespace() string {
 	return r.Namespace
 }
 
-func (r *Resource) GetName() string {
+func (r *SResource) GetName() string {
 	return r.Name
 }
 
-func (r *Resource) GetReplicas() int32 {
+func (r *SResource) GetReplicas() int32 {
 	if r.Replicas == nil {
 		return 0
 	}
 	return *r.Replicas
 }
 
-func (r *Resource) GetImageTag() string {
+func (r *SResource) GetImageTag() string {
 	return r.ImageTag
 }

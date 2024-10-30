@@ -17,12 +17,12 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-var App = &Config{
+var App = &SConfig{
 	DBUrl: "sqlite:///tmp/sqlite.db3",
 	MQUrl: "inmemory://localhost",
 }
 
-type Config struct {
+type SConfig struct {
 	Address       string        `mapstructure:"ADDR"`
 	PoolSize      int           `mapstructure:"POOL_SIZE"`
 	ExecTimeOut   time.Duration `mapstructure:"EXEC_TIMEOUT"`
@@ -54,7 +54,7 @@ func Init() error {
 	return App.init()
 }
 
-func (c *Config) init() error {
+func (c *SConfig) init() error {
 	var logfile string
 	if c.LogOutput == "file" {
 		logfile = filepath.Join(c.LogDir(), utils.ServiceName+".log")
@@ -98,14 +98,14 @@ func (c *Config) init() error {
 	return nil
 }
 
-func (c *Config) ScriptDir() string {
+func (c *SConfig) ScriptDir() string {
 	return filepath.Join(c.RootDir, "scripts")
 }
 
-func (c *Config) LogDir() string {
+func (c *SConfig) LogDir() string {
 	return filepath.Join(c.RootDir, "logs")
 }
 
-func (c *Config) WorkSpace() string {
+func (c *SConfig) WorkSpace() string {
 	return filepath.Join(c.RootDir, "workspace")
 }

@@ -19,7 +19,7 @@ import (
 
 var acp = windows.GetACP()
 
-func (c *Cmd) selfScriptSuffix() string {
+func (c *SCmd) selfScriptSuffix() string {
 	switch c.shell {
 	case "cmd", "bat":
 		return ".bat"
@@ -30,7 +30,7 @@ func (c *Cmd) selfScriptSuffix() string {
 	}
 }
 
-func (c *Cmd) beforeExec() []func(cmd *exec.Cmd) {
+func (c *SCmd) beforeExec() []func(cmd *exec.Cmd) {
 	return []func(cmd *exec.Cmd){
 		func(cmd *exec.Cmd) {
 			cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -40,7 +40,7 @@ func (c *Cmd) beforeExec() []func(cmd *exec.Cmd) {
 	}
 }
 
-func (c *Cmd) selfCmd() {
+func (c *SCmd) selfCmd() {
 	switch c.shell {
 	case "cmd", "bat":
 		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
@@ -55,7 +55,7 @@ func (c *Cmd) selfCmd() {
 	}
 }
 
-func (c *Cmd) kill() error {
+func (c *SCmd) kill() error {
 	if c.cmd.Status().PID == 0 {
 		return nil
 	}
@@ -63,14 +63,14 @@ func (c *Cmd) kill() error {
 	return kill.Run()
 }
 
-func (c *Cmd) transform(line string) string {
+func (c *SCmd) transform(line string) string {
 	if c.isGBK(line) || acp == 936 {
 		line = string(c.gbkToUtf8([]byte(line)))
 	}
 	return line
 }
 
-func (c *Cmd) gbkToUtf8(s []byte) []byte {
+func (c *SCmd) gbkToUtf8(s []byte) []byte {
 	defer func() {
 		recover()
 	}()
@@ -82,7 +82,7 @@ func (c *Cmd) gbkToUtf8(s []byte) []byte {
 	return b
 }
 
-func (c *Cmd) utf8ToGb2312(s string) string {
+func (c *SCmd) utf8ToGb2312(s string) string {
 	defer func() {
 		recover()
 	}()
@@ -95,7 +95,7 @@ func (c *Cmd) utf8ToGb2312(s string) string {
 	return string(d)
 }
 
-func (c *Cmd) isGBK(data string) bool {
+func (c *SCmd) isGBK(data string) bool {
 	defer func() {
 		recover()
 	}()

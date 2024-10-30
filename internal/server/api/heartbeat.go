@@ -8,7 +8,7 @@ import (
 
 // heartbeat
 // @Summary		Heartbeat
-// @description	heartbeat
+// @Description	heartbeat
 // @Tags		Default
 // @Accept		application/json
 // @Accept		application/yaml

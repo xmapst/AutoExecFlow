@@ -1,6 +1,6 @@
 package types
 
-type FileRes struct {
+type SFileRes struct {
 	Name    string `json:"name" yaml:"Name"`
 	Path    string `json:"path" yaml:"Path"`
 	Size    int64  `json:"size" yaml:"Size"`
@@ -9,7 +9,7 @@ type FileRes struct {
 	IsDir   bool   `json:"is_dir" yaml:"IsDir"`
 }
 
-type FileListRes struct {
-	Total int        `json:"total" yaml:"Total"`
-	Files []*FileRes `json:"files" yaml:"Files"`
+type SFileListRes struct {
+	Total int         `json:"total" yaml:"Total"`
+	Files []*SFileRes `json:"files" yaml:"Files"`
 }

@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-type Step struct {
-	Base
+type SStep struct {
+	SBase
 	TaskName    string        `json:"task_name,omitempty" gorm:"index;not null;comment:任务名称"`
 	Name        string        `json:"name,omitempty" gorm:"index;not null;comment:名称"`
 	Description string        `json:"description,omitempty" gorm:"comment:描述"`
@@ -13,10 +13,14 @@ type Step struct {
 	Content     string        `json:"content,omitempty" gorm:"comment:内容"`
 	Timeout     time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`
 	Disable     *bool         `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
-	StepUpdate
+	SStepUpdate
 }
 
-type StepUpdate struct {
+func (s *SStep) TableName() string {
+	return "t_step"
+}
+
+type SStepUpdate struct {
 	Message  string     `json:"message,omitempty" gorm:"comment:消息"`
 	State    *State     `json:"state,omitempty" gorm:"index;not null;default:0;comment:状态"`
 	OldState *State     `json:"old_state,omitempty" gorm:"index;not null;default:0;comment:旧状态"`
@@ -25,30 +29,30 @@ type StepUpdate struct {
 	ETime    *time.Time `json:"e_time,omitempty" gorm:"comment:结束时间"`
 }
 
-func (s *StepUpdate) STimeStr() string {
+func (s *SStepUpdate) STimeStr() string {
 	if s.STime == nil {
 		return ""
 	}
 	return s.STime.Format(time.RFC3339)
 }
 
-func (s *StepUpdate) ETimeStr() string {
+func (s *SStepUpdate) ETimeStr() string {
 	if s.ETime == nil {
 		return ""
 	}
 	return s.ETime.Format(time.RFC3339)
 }
 
-type Steps []*Step
+type SSteps []*SStep
 
-func (s Steps) Len() int {
+func (s SSteps) Len() int {
 	return len(s)
 }
 
-func (s Steps) Less(i, j int) bool {
+func (s SSteps) Less(i, j int) bool {
 	return s[i].Name < s[j].Name
 }
 
-func (s Steps) Swap(i, j int) {
+func (s SSteps) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }

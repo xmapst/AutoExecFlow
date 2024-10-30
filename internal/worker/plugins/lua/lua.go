@@ -14,28 +14,28 @@ import (
 )
 
 func init() {
-	plugins.Register(Name, new(Plugin))
+	plugins.Register(Name, new(SPlugin))
 }
 
 const Name = "lua"
 
-type Plugin struct {
+type SPlugin struct {
 	env []string
 }
 
-func (p *Plugin) Name() string {
+func (p *SPlugin) Name() string {
 	return Name
 }
 
-func (p *Plugin) Description() string {
+func (p *SPlugin) Description() string {
 	return "lua plugin provider"
 }
 
-func (p *Plugin) WithEnv([]string) plugins.IPlugin {
+func (p *SPlugin) WithEnv([]string) plugins.IPlugin {
 	return p
 }
 
-func (p *Plugin) Run(ctx context.Context, content string) error {
+func (p *SPlugin) Run(ctx context.Context, content string) error {
 	L := p.newLuaState(nil)
 	defer L.Close()
 
@@ -62,7 +62,7 @@ func (p *Plugin) Run(ctx context.Context, content string) error {
 	return nil
 }
 
-func (p *Plugin) newLuaState(globals map[string]interface{}) *lua.LState {
+func (p *SPlugin) newLuaState(globals map[string]interface{}) *lua.LState {
 	L := lua.NewState(lua.Options{IncludeGoStackTrace: true})
 
 	// 默认通用Global符号
@@ -82,7 +82,7 @@ func (p *Plugin) newLuaState(globals map[string]interface{}) *lua.LState {
 	return L
 }
 
-func (p *Plugin) setPrintf(l *lua.LState, outline *string) {
+func (p *SPlugin) setPrintf(l *lua.LState, outline *string) {
 	printf := func(format string, args ...interface{}) {
 		*outline += fmt.Sprintf(format, args...)
 	}

@@ -18,15 +18,15 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-type task struct {
+type sTask struct {
 	storage   storage.ITask
 	graph     *dag.Graph
 	workspace string
 	scriptDir string
 }
 
-func newTask(taskName string) (*task, error) {
-	t := &task{
+func newTask(taskName string) (*sTask, error) {
+	t := &sTask{
 		storage:   storage.Task(taskName),
 		workspace: filepath.Join(config.App.WorkSpace(), taskName),
 		scriptDir: filepath.Join(config.App.ScriptDir(), taskName),
@@ -40,7 +40,7 @@ func newTask(taskName string) (*task, error) {
 		if t.storage.IsDisable() {
 			state = models.StateStopped
 		}
-		_ = t.storage.Update(&models.TaskUpdate{
+		_ = t.storage.Update(&models.STaskUpdate{
 			Message:  err.Error(),
 			State:    models.Pointer(state),
 			OldState: models.Pointer(models.StatePending),
@@ -52,7 +52,7 @@ func newTask(taskName string) (*task, error) {
 	if t.storage.IsDisable() {
 		logx.Infoln("the task is disabled, no execution required", taskName)
 		for _, sName := range t.storage.StepNameList("") {
-			_ = t.storage.Step(sName).Update(&models.StepUpdate{
+			_ = t.storage.Step(sName).Update(&models.SStepUpdate{
 				Message:  "the task is disabled, no execution required",
 				State:    models.Pointer(models.StateStopped),
 				OldState: models.Pointer(models.StatePending),
@@ -72,7 +72,7 @@ func newTask(taskName string) (*task, error) {
 		// 跳过禁用的步骤
 		if t.storage.Step(sName).IsDisable() {
 			logx.Infoln("the step is disabled, no execution required", sName)
-			_ = t.storage.Step(sName).Update(&models.StepUpdate{
+			_ = t.storage.Step(sName).Update(&models.SStepUpdate{
 				Message:  "the step is disabled, no execution required",
 				State:    models.Pointer(models.StateStopped),
 				OldState: models.Pointer(models.StatePending),
@@ -126,12 +126,12 @@ func newTask(taskName string) (*task, error) {
 	return t, nil
 }
 
-func (t *task) name() string {
+func (t *sTask) name() string {
 	return t.graph.Name()
 }
 
-func (t *task) run() (err error) {
-	if err = t.storage.Update(&models.TaskUpdate{
+func (t *sTask) run() (err error) {
+	if err = t.storage.Update(&models.STaskUpdate{
 		State:    models.Pointer(models.StateRunning),
 		OldState: models.Pointer(models.StatePending),
 		STime:    models.Pointer(time.Now()),
@@ -141,7 +141,7 @@ func (t *task) run() (err error) {
 		return
 	}
 
-	var res = new(models.TaskUpdate)
+	var res = new(models.STaskUpdate)
 	defer func() {
 		recover()
 		// 清理
@@ -196,7 +196,7 @@ func (t *task) run() (err error) {
 	return
 }
 
-func (t *task) initDir() error {
+func (t *sTask) initDir() error {
 	if err := utils.EnsureDirExist(t.workspace); err != nil {
 		logx.Errorln(t.name(), t.workspace, t.scriptDir, err)
 		return err
@@ -208,7 +208,7 @@ func (t *task) initDir() error {
 	return nil
 }
 
-func (t *task) clearDir() {
+func (t *sTask) clearDir() {
 	if err := os.RemoveAll(t.scriptDir); err != nil {
 		logx.Errorln(t.name, err)
 	}

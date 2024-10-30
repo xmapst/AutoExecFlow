@@ -19,7 +19,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/selfupdate"
 )
 
-func (p *Program) selfUpdate() {
+func (p *sProgram) selfUpdate() {
 	_, err := p.cron.AddFunc("@every 30m", func() {
 		p.doUpdate()
 	})
@@ -29,7 +29,7 @@ func (p *Program) selfUpdate() {
 	}
 }
 
-func (p *Program) doUpdate() {
+func (p *sProgram) doUpdate() {
 	if p.sURL == "" {
 		logx.Debugln("automatic updates are not turned on")
 		return
@@ -101,7 +101,7 @@ func (p *Program) doUpdate() {
 	os.Exit(200)
 }
 
-func (p *Program) localSha256sum() {
+func (p *sProgram) localSha256sum() {
 	path, err := osext.Executable()
 	if err != nil {
 		logx.Warnln(err)
@@ -128,7 +128,7 @@ func (p *Program) localSha256sum() {
 	return
 }
 
-func (p *Program) remoteSha256sum(url string) ([]byte, string) {
+func (p *sProgram) remoteSha256sum(url string) ([]byte, string) {
 	resp, err := http.Get(url)
 	if resp != nil {
 		defer func(Body io.ReadCloser) {

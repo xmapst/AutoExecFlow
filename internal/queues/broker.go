@@ -10,13 +10,13 @@ import (
 )
 
 var (
-	broker            Broker
+	broker            IBroker
 	taskRoutingKey    = utils.ServiceName + "Task"
 	eventRoutingKey   = utils.ServiceName + "Event"
 	managerRoutingKey = utils.ServiceName + "Manager"
 )
 
-type Handle func(data string) error
+type HandleFn func(data string) error
 
 const (
 	BROKER_INMEMORY = "inmemory"
@@ -24,14 +24,14 @@ const (
 	BROKER_REDIS    = "redis"
 )
 
-type Broker interface {
+type IBroker interface {
 	PublishEvent(data string) error
 	PublishTask(node string, data string) error
 	PublishManager(node string, data string) error
 
-	SubscribeEvent(ctx context.Context, handler Handle) error
-	SubscribeTask(ctx context.Context, node string, handler Handle) error
-	SubscribeManager(ctx context.Context, node string, handler Handle) error
+	SubscribeEvent(ctx context.Context, handler HandleFn) error
+	SubscribeTask(ctx context.Context, node string, handler HandleFn) error
+	SubscribeManager(ctx context.Context, node string, handler HandleFn) error
 
 	Shutdown(ctx context.Context)
 }
@@ -61,20 +61,20 @@ func PublishTask(name string, data string) error {
 	return broker.PublishTask(name, data)
 }
 
-func SubscribeTask(ctx context.Context, name string, handler Handle) error {
+func SubscribeTask(ctx context.Context, name string, handler HandleFn) error {
 	return broker.SubscribeTask(ctx, name, handler)
 }
 
 func PublishEvent(data string) error {
 	return broker.PublishEvent(data)
 }
-func SubscribeEvent(ctx context.Context, handler Handle) error {
+func SubscribeEvent(ctx context.Context, handler HandleFn) error {
 	return broker.SubscribeEvent(ctx, handler)
 }
 func PublishManager(node string, data string) error {
 	return broker.PublishManager(node, data)
 }
-func SubscribeManager(ctx context.Context, node string, handler Handle) error {
+func SubscribeManager(ctx context.Context, node string, handler HandleFn) error {
 	return broker.SubscribeManager(ctx, node, handler)
 }
 

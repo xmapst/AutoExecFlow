@@ -19,8 +19,8 @@ type sStepLog struct {
 	lock sync.Mutex
 }
 
-func (s *sStepLog) List(latestLine *int64) (res models.StepLogs) {
-	query := s.Model(&models.StepLog{}).
+func (s *sStepLog) List(latestLine *int64) (res models.SStepLogs) {
+	query := s.Model(&models.SStepLog{}).
 		Where(map[string]interface{}{
 			"task_name": s.tName,
 			"step_name": s.sName,
@@ -33,14 +33,14 @@ func (s *sStepLog) List(latestLine *int64) (res models.StepLogs) {
 	return
 }
 
-func (s *sStepLog) Insert(log *models.StepLog) error {
+func (s *sStepLog) Insert(log *models.SStepLog) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	log.TaskName = s.tName
 	log.StepName = s.sName
 	return s.Transaction(func(tx *gorm.DB) error {
 		var count int64
-		if err := s.Model(&models.StepLog{}).
+		if err := s.Model(&models.SStepLog{}).
 			Where(map[string]interface{}{
 				"task_name": s.tName,
 				"step_name": s.sName,
@@ -54,7 +54,7 @@ func (s *sStepLog) Insert(log *models.StepLog) error {
 }
 
 func (s *sStepLog) Write(content string) {
-	if err := s.Insert(&models.StepLog{
+	if err := s.Insert(&models.SStepLog{
 		Timestamp: time.Now().UnixNano(),
 		Content:   content,
 	}); err != nil {
@@ -70,5 +70,5 @@ func (s *sStepLog) RemoveAll() (err error) {
 	return s.Where(map[string]interface{}{
 		"task_name": s.tName,
 		"step_name": s.sName,
-	}).Delete(&models.StepLog{}).Error
+	}).Delete(&models.SStepLog{}).Error
 }

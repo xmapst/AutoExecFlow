@@ -12,7 +12,7 @@ import (
 
 // Manager
 // @Summary		Manager
-// @description	Task management, can terminate, suspend, and resolve
+// @Description	Task management, can terminate, suspend, and resolve
 // @Tags		Task
 // @Accept		application/json
 // @Accept		application/yaml
@@ -21,8 +21,8 @@ import (
 // @Param		task path string true "task name"
 // @Param		action query string false "management action" Enums(paused,kill,pause,resume) default(paused)
 // @Param		duration query string false "how long to pause; if empty, manual continuation is required" default(1m)
-// @Success		200 {object} types.Base[any]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[any]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/task/{task} [put]
 func Manager(c *gin.Context) {
 	taskName := c.Param("task")

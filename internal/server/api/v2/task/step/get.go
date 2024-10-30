@@ -13,7 +13,7 @@ import (
 
 // Detail
 // @Summary		Detail
-// @description	Get step detail
+// @Description	Get step detail
 // @Tags		Step
 // @Accept		application/json
 // @Accept		application/yaml
@@ -21,8 +21,8 @@ import (
 // @Produce		application/yaml
 // @Param		task path string true "task name"
 // @Param		step path string true "step name"
-// @Success		200 {object} types.Base[types.TaskStepRes]
-// @Failure		500 {object} types.Base[any]
+// @Success		200 {object} types.SBase[types.STaskStepRes]
+// @Failure		500 {object} types.SBase[any]
 // @Router		/api/v2/task/{task}/step/{step} [get]
 func Detail(c *gin.Context) {
 	var taskName = c.Param("task")

@@ -13,7 +13,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 )
 
-type Touch struct {
+type STouch struct {
 	storage   storage.IStep
 	workspace string
 
@@ -25,14 +25,14 @@ type Touch struct {
 func New(
 	storage storage.IStep,
 	workspace string,
-) (*Touch, error) {
-	return &Touch{
+) (*STouch, error) {
+	return &STouch{
 		storage:   storage,
 		workspace: workspace,
 	}, nil
 }
 
-func (t *Touch) Run(ctx context.Context) (code int64, err error) {
+func (t *STouch) Run(ctx context.Context) (code int64, err error) {
 	content, err := t.storage.Content()
 	if err != nil {
 		return common.CodeSystemErr, err
@@ -64,6 +64,6 @@ func (t *Touch) Run(ctx context.Context) (code int64, err error) {
 	return common.CodeSuccess, nil
 }
 
-func (t *Touch) Clear() error {
+func (t *STouch) Clear() error {
 	return nil
 }
