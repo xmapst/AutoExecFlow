@@ -1,4 +1,4 @@
-package project
+package build
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
@@ -17,16 +18,23 @@ import (
 
 // List
 // @Summary		列表
-// @Description	获取项目列表, 支持WS长连接
-// @Tags		项目
+// @Description	获取指定流水线构建任务列表, 支持WS长连接
+// @Tags		构建
 // @Accept		application/json
 // @Produce		application/json
+// @Param		pipeline path string true "流水线名称"
 // @Param		page query int false "页码" default(1)
 // @Param		size query int false "分页大小" default(100)
-// @Success		200 {object} types.SBase[types.STaskListDetailRes]
+// @Success		200 {object} types.SBase[[]string]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v1/project [get]
+// @Router		/api/v1/pipeline/{pipeline}/build [get]
 func List(c *gin.Context) {
+	pipelineName := c.Param("pipeline")
+	if pipelineName == "" {
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("pipeline does not exist")))
+		return
+	}
+
 	var req = &types.SPageReq{
 		Page: 1,
 		Size: 10,
@@ -47,7 +55,7 @@ func List(c *gin.Context) {
 	}
 
 	if ws == nil {
-		list := service.ProjectList(req)
+		list := service.Pipeline(pipelineName).BuildList(req)
 		base.Send(c, base.WithData(list))
 		return
 	}
@@ -73,7 +81,7 @@ func List(c *gin.Context) {
 		}
 	}()
 
-	var lastProjectList *types.SProjectListRes // 缓存上一次的推送数据
+	var lastPipelineList []string // 缓存上一次的推送数据
 	for {
 		select {
 		case <-ctx.Done():
@@ -81,9 +89,9 @@ func List(c *gin.Context) {
 		default:
 		}
 
-		currentProjectList := service.ProjectList(req)
+		currentPipelineList := service.Pipeline(pipelineName).BuildList(req)
 		// 如果数据没有变化，只发送心跳
-		if reflect.DeepEqual(lastProjectList, currentProjectList) {
+		if reflect.DeepEqual(lastPipelineList, currentPipelineList) {
 			err := ws.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
 				return
@@ -92,12 +100,12 @@ func List(c *gin.Context) {
 			continue
 		}
 
-		err := ws.WriteJSON(base.WithData(currentProjectList))
+		err := ws.WriteJSON(base.WithData(currentPipelineList))
 		if err != nil {
 			return
 		}
 		// 保存当前数据作为上一次的数据
-		lastProjectList = currentProjectList
+		lastPipelineList = currentPipelineList
 		time.Sleep(300 * time.Millisecond)
 	}
 }

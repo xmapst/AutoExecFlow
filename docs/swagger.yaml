@@ -25,6 +25,19 @@ definitions:
       timestamp:
         type: integer
     type: object
+  types.SBase-array_string:
+    properties:
+      code:
+        $ref: '#/definitions/types.Code'
+      data:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      timestamp:
+        type: integer
+    type: object
   types.SBase-types_SFileListRes:
     properties:
       code:
@@ -47,6 +60,39 @@ definitions:
       timestamp:
         type: integer
     type: object
+  types.SBase-types_SPipelineBuildRes:
+    properties:
+      code:
+        $ref: '#/definitions/types.Code'
+      data:
+        $ref: '#/definitions/types.SPipelineBuildRes'
+      message:
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SPipelineListRes:
+    properties:
+      code:
+        $ref: '#/definitions/types.Code'
+      data:
+        $ref: '#/definitions/types.SPipelineListRes'
+      message:
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SPipelineRes:
+    properties:
+      code:
+        $ref: '#/definitions/types.Code'
+      data:
+        $ref: '#/definitions/types.SPipelineRes'
+      message:
+        type: string
+      timestamp:
+        type: integer
+    type: object
   types.SBase-types_SPoolReq:
     properties:
       code:
@@ -64,17 +110,6 @@ definitions:
         $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SPoolRes'
-      message:
-        type: string
-      timestamp:
-        type: integer
-    type: object
-  types.SBase-types_SProjectRes:
-    properties:
-      code:
-        $ref: '#/definitions/types.Code'
-      data:
-        $ref: '#/definitions/types.SProjectRes'
       message:
         type: string
       timestamp:
@@ -206,14 +241,81 @@ definitions:
   types.SPageRes:
     properties:
       current:
-        description: 当前页
         type: integer
       size:
-        description: 页大小
         type: integer
       total:
-        description: 总页数
         type: integer
+    type: object
+  types.SPipelineBuildReq:
+    properties:
+      params:
+        additionalProperties: {}
+        type: object
+    type: object
+  types.SPipelineBuildRes:
+    properties:
+      params:
+        type: string
+      pipeline:
+        type: string
+      task_name:
+        type: string
+    type: object
+  types.SPipelineCreateReq:
+    properties:
+      content:
+        type: string
+      desc:
+        type: string
+      disable:
+        type: boolean
+      name:
+        type: string
+      type:
+        example: jinja2
+        type: string
+    required:
+    - content
+    - name
+    - type
+    type: object
+  types.SPipelineListRes:
+    properties:
+      page:
+        $ref: '#/definitions/types.SPageRes'
+      pipelines:
+        items:
+          $ref: '#/definitions/types.SPipelineRes'
+        type: array
+    type: object
+  types.SPipelineRes:
+    properties:
+      content:
+        type: string
+      desc:
+        type: string
+      disable:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  types.SPipelineUpdateReq:
+    properties:
+      content:
+        type: string
+      desc:
+        type: string
+      disable:
+        type: boolean
+      type:
+        example: jinja2
+        type: string
+    required:
+    - content
+    - type
     type: object
   types.SPoolReq:
     properties:
@@ -232,50 +334,6 @@ definitions:
         type: integer
       waiting:
         type: integer
-    type: object
-  types.SProjectCreateReq:
-    properties:
-      content:
-        type: string
-      description:
-        type: string
-      disable:
-        type: boolean
-      name:
-        type: string
-      type:
-        type: string
-    required:
-    - content
-    - name
-    - type
-    type: object
-  types.SProjectRes:
-    properties:
-      content:
-        type: string
-      description:
-        type: string
-      disable:
-        type: boolean
-      name:
-        type: string
-      type:
-        type: string
-    type: object
-  types.SProjectUpdateReq:
-    properties:
-      content:
-        type: string
-      description:
-        type: string
-      disable:
-        type: boolean
-      type:
-        type: string
-    required:
-    - content
-    - type
     type: object
   types.SStepLogRes:
     properties:
@@ -492,6 +550,293 @@ paths:
       summary: 事件
       tags:
       - 事件
+  /api/v1/pipeline:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有流水线列表, 支持WS长连接
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 100
+        description: 分页大小
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SPipelineListRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 列表
+      tags:
+      - 流水线
+    post:
+      consumes:
+      - application/json
+      description: 创建流水线
+      parameters:
+      - description: 流水线内容
+        in: body
+        name: content
+        required: true
+        schema:
+          $ref: '#/definitions/types.SPipelineCreateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 创建
+      tags:
+      - 流水线
+  /api/v1/pipeline/{pipeline}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定流水线
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 删除
+      tags:
+      - 流水线
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线详情
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SPipelineRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 详情
+      tags:
+      - 流水线
+    post:
+      consumes:
+      - application/json
+      description: 更新指定流水线
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      - description: 更新内容
+        in: body
+        name: content
+        required: true
+        schema:
+          $ref: '#/definitions/types.SPipelineUpdateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 更新
+      tags:
+      - 流水线
+  /api/v1/pipeline/{pipeline}/build:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定流水线构建任务列表, 支持WS长连接
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 100
+        description: 分页大小
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-array_string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 列表
+      tags:
+      - 构建
+    post:
+      consumes:
+      - application/json
+      description: 创建构建任务
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      - description: 构建参数
+        in: body
+        name: build
+        required: true
+        schema:
+          $ref: '#/definitions/types.SPipelineBuildReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_STaskCreateRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 创建
+      tags:
+      - 构建
+  /api/v1/pipeline/{pipeline}/build/{build}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定构建任务
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      - description: 构建名称
+        in: path
+        name: build
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 删除
+      tags:
+      - 构建
+    get:
+      consumes:
+      - application/json
+      description: 获取流水线指定构建任务详情
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      - description: 构建名称
+        in: path
+        name: build
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SPipelineBuildRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 详情
+      tags:
+      - 构建
+    post:
+      consumes:
+      - application/json
+      description: 重新执行指定构建任务
+      parameters:
+      - description: 流水线名称
+        in: path
+        name: pipeline
+        required: true
+        type: string
+      - description: 构建名称
+        in: path
+        name: build
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 重新运行
+      tags:
+      - 构建
   /api/v1/pool:
     get:
       consumes:
@@ -536,175 +881,6 @@ paths:
       summary: 设置
       tags:
       - 工作池
-  /api/v1/project:
-    get:
-      consumes:
-      - application/json
-      description: 获取项目列表, 支持WS长连接
-      parameters:
-      - default: 1
-        description: 页码
-        in: query
-        name: page
-        type: integer
-      - default: 100
-        description: 分页大小
-        in: query
-        name: size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-types_STaskListDetailRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 列表
-      tags:
-      - 项目
-    post:
-      consumes:
-      - application/json
-      description: 创建项目
-      parameters:
-      - description: 项目内容
-        in: body
-        name: content
-        required: true
-        schema:
-          $ref: '#/definitions/types.SProjectCreateReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 创建
-      tags:
-      - 项目
-  /api/v1/project/{project}:
-    delete:
-      consumes:
-      - application/json
-      description: 删除项目
-      parameters:
-      - description: 项目名称
-        in: path
-        name: project
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 删除项目
-      tags:
-      - 项目
-    get:
-      consumes:
-      - application/json
-      description: 获取项目详情
-      parameters:
-      - description: 项目名称
-        in: path
-        name: project
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-types_SProjectRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 详情
-      tags:
-      - 项目
-    post:
-      consumes:
-      - application/json
-      description: 更新项目
-      parameters:
-      - description: 项目名称
-        in: path
-        name: project
-        required: true
-        type: string
-      - description: 更新内容
-        in: body
-        name: content
-        required: true
-        schema:
-          $ref: '#/definitions/types.SProjectUpdateReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 更新
-      tags:
-      - 项目
-  /api/v1/project/{project}/build:
-    get:
-      consumes:
-      - application/json
-      description: 获取构建列表, 支持WS长连接
-      parameters:
-      - description: 项目名称
-        in: path
-        name: project
-        required: true
-        type: string
-      - default: 1
-        description: 页码
-        in: query
-        name: page
-        type: integer
-      - default: 100
-        description: 分页大小
-        in: query
-        name: size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-types_STaskListDetailRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 列表
-      tags:
-      - Build
   /api/v1/pty:
     get:
       consumes:
@@ -721,9 +897,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.SBase-any'
-      summary: 终端
+      summary: PTY
       tags:
-      - 系统
+      - 终端
   /api/v1/task:
     get:
       consumes:

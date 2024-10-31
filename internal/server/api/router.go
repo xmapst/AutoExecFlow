@@ -13,10 +13,10 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/middleware/zap"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/event"
+	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/pipeline"
+	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/pipeline/build"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/pool"
-	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/project"
-	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/project/build"
-	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/sys"
+	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/pty"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/step"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/workspace"
@@ -70,15 +70,19 @@ func New(relativePath string) *gin.Engine {
 		// event
 		api.GET("/v1/event", event.Stream)
 
-		// project
-		api.GET("/v1/project", project.List)
-		api.POST("/v1/project", project.Post)
-		api.PUT("/v1/project/:project", project.Update)
-		api.GET("/v1/project/:project", project.Detail)
-		api.DELETE("/v1/project/:project", project.Delete)
-		api.GET("/v1/project/:project/build", build.List)
-		//api.GET("/v1/project/:project/build/:build", build.Detail)
-		//api.DELETE("/v1/project/:project/build/:build", build.Delete)
+		// pipeline
+		api.GET("/v1/pipeline", pipeline.List)
+		api.POST("/v1/pipeline", pipeline.Post)
+		api.PUT("/v1/pipeline/:pipeline", pipeline.Update)
+		api.GET("/v1/pipeline/:pipeline", pipeline.Detail)
+		api.DELETE("/v1/pipeline/:pipeline", pipeline.Delete)
+
+		// build
+		api.GET("/v1/pipeline/:pipeline/build", build.List)
+		api.POST("/v1/pipeline/:pipeline/build", build.Post)
+		api.GET("/v1/pipeline/:pipeline/build/:build", build.Detail)
+		api.POST("/v1/pipeline/:pipeline/build/:build", build.ReRun)
+		api.DELETE("/v1/pipeline/:pipeline/build/:build", build.Delete)
 
 		// task
 		api.GET("/v1/task", task.List)
@@ -104,7 +108,7 @@ func New(relativePath string) *gin.Engine {
 		api.POST("/v1/pool", pool.Post)
 
 		// pty
-		api.GET("/v1/pty", sys.PtyWs)
+		api.GET("/v1/pty", pty.Websocket)
 	}
 
 	// no method

@@ -61,7 +61,7 @@ func TaskList(req *types.SPageReq) *types.STaskListDetailRes {
 
 		// 获取当前进行到那些步骤
 		steps := st.StepStateList(storage.All)
-		res.Count = len(steps)
+		res.Count = int64(len(steps))
 		var groups = make(map[models.State][]string)
 		for name, state := range steps {
 			groups[state] = append(groups[state], name)
@@ -267,13 +267,17 @@ func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 
 	// 获取当前进行到那些步骤
 	steps := db.StepStateList(storage.All)
-	data.Count = len(steps)
+	data.Count = int64(len(steps))
 	var groups = make(map[models.State][]string)
 	for name, state := range steps {
 		groups[state] = append(groups[state], name)
 	}
 	data.Message = GenerateStateMessage(data.Message, groups)
 	return ConvertState(*task.State), data, nil
+}
+
+func (ts *STaskService) StepCount() (res int64) {
+	return storage.Task(ts.name).StepCount()
 }
 
 func (ts *STaskService) Manager(action string, duration string) error {

@@ -87,8 +87,8 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 		&models.SStepEnv{},
 		&models.SStepDepend{},
 		&models.SStepLog{},
-		&models.SProject{},
-		&models.SProjectBuild{},
+		&models.SPipeline{},
+		&models.SPipelineBuild{},
 	); err != nil {
 		logx.Errorln(err)
 		return nil, err
@@ -183,19 +183,20 @@ func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.STask
 	return
 }
 
-func (d *sDatabase) Project(name string) IProject {
-	return &sProject{
+func (d *sDatabase) Pipeline(name string) IPipeline {
+	return &sPipeline{
 		DB:   d.DB,
 		name: name,
 	}
 }
 
-func (d *sDatabase) ProjectCreate(project *models.SProject) (err error) {
-	return d.Create(project).Error
+func (d *sDatabase) PipelineCreate(pipeline *models.SPipeline) (err error) {
+	return d.Create(pipeline).Error
 }
 
-func (d *sDatabase) ProjectList(page, pageSize int64, str string) (res models.SProjects, total int64) {
-	query := d.Model(&models.SProject{}).
+func (d *sDatabase) PipelineList(page, pageSize int64, str string) (res models.SPipelines, total int64) {
+	query := d.Model(&models.SPipeline{}).
+		Select("name, disable, type").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")

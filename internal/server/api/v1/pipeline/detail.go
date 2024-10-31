@@ -1,4 +1,4 @@
-package project
+package pipeline
 
 import (
 	"github.com/gin-gonic/gin"
@@ -12,21 +12,21 @@ import (
 
 // Detail
 // @Summary 	详情
-// @Description 获取项目详情
-// @Tags 		项目
+// @Description 获取指定流水线详情
+// @Tags 		流水线
 // @Accept		application/json
 // @Produce		application/json
-// @Param		project path string true "项目名称"
-// @Success		200 {object} types.SBase[types.SProjectRes]
+// @Param		pipeline path string true "流水线名称"
+// @Success		200 {object} types.SBase[types.SPipelineRes]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v1/project/{project} [get]
+// @Router		/api/v1/pipeline/{pipeline} [get]
 func Detail(c *gin.Context) {
-	projectName := c.Param("project")
-	if projectName == "" {
-		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("project does not exist")))
+	pipelineName := c.Param("pipeline")
+	if pipelineName == "" {
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("pipeline does not exist")))
 		return
 	}
-	res, err := service.Project(projectName).Detail()
+	res, err := service.Pipeline(pipelineName).Detail()
 	if err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))

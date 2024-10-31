@@ -37,6 +37,6 @@ func Post(c *gin.Context) {
 
 	base.Send(c, base.WithData(&types.STaskCreateRes{
 		Name:  req.Name,
-		Count: len(req.Step),
+		Count: int64(len(req.Step)),
 	}))
 }

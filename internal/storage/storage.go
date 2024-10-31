@@ -44,14 +44,14 @@ func TaskList(page, pageSize int64, str string) (res []*models.STask, total int6
 	return storage.TaskList(page, pageSize, str)
 }
 
-func Project(name string) IProject {
-	return storage.Project(name)
+func Pipeline(name string) IPipeline {
+	return storage.Pipeline(name)
 }
 
-func ProjectCreate(project *models.SProject) (err error) {
-	return storage.ProjectCreate(project)
+func PipelineCreate(pipeline *models.SPipeline) (err error) {
+	return storage.PipelineCreate(pipeline)
 }
 
-func ProjectList(page, pageSize int64, str string) (res []*models.SProject, total int64) {
-	return storage.ProjectList(page, pageSize, str)
+func PipelineList(page, pageSize int64, str string) (res []*models.SPipeline, total int64) {
+	return storage.PipelineList(page, pageSize, str)
 }

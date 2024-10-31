@@ -1,4 +1,4 @@
-package project
+package pipeline
 
 import (
 	"github.com/gin-gonic/gin"
@@ -12,28 +12,28 @@ import (
 
 // Post
 // @Summary 	更新
-// @Description 更新项目
-// @Tags 		项目
+// @Description 更新指定流水线
+// @Tags 		流水线
 // @Accept		application/json
 // @Produce		application/json
-// @Param		project path string true "项目名称"
-// @Param		content body types.SProjectUpdateReq true "更新内容"
+// @Param		pipeline path string true "流水线名称"
+// @Param		content body types.SPipelineUpdateReq true "更新内容"
 // @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v1/project/{project} [post]
+// @Router		/api/v1/pipeline/{pipeline} [post]
 func Update(c *gin.Context) {
-	projectName := c.Param("project")
-	if projectName == "" {
+	pipelineName := c.Param("pipeline")
+	if pipelineName == "" {
 		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("task does not exist")))
 		return
 	}
-	var req = new(types.SProjectUpdateReq)
+	var req = new(types.SPipelineUpdateReq)
 	if err := c.ShouldBind(req); err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
 	}
-	if err := service.Project(projectName).Update(req); err != nil {
+	if err := service.Pipeline(pipelineName).Update(req); err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return

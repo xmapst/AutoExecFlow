@@ -2,7 +2,7 @@ package types
 
 type STaskCreateRes struct {
 	Name  string `json:"name" yaml:"Name"`
-	Count int    `json:"count" yaml:"Count"`
+	Count int64  `json:"count,omitempty" yaml:"Count,omitempty"`
 }
 
 type STaskListDetailRes struct {
@@ -13,7 +13,7 @@ type STaskListDetailRes struct {
 type STasksRes []*STaskRes
 
 type STaskRes struct {
-	Count   int      `json:"count" yaml:"Count"`
+	Count   int64    `json:"count" yaml:"Count"`
 	Desc    string   `json:"desc,omitempty" yaml:"Desc,omitempty"`
 	Name    string   `json:"name" yaml:"Name"`
 	Node    string   `json:"node,omitempty" yaml:"Node,omitempty"`

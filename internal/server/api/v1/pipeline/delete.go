@@ -1,4 +1,4 @@
-package project
+package pipeline
 
 import (
 	"github.com/gin-gonic/gin"
@@ -11,22 +11,22 @@ import (
 )
 
 // Delete
-// @Summary 	删除项目
-// @Description 删除项目
-// @Tags 		项目
+// @Summary 	删除
+// @Description 删除指定流水线
+// @Tags 		流水线
 // @Accept		application/json
 // @Produce		application/json
-// @Param		project path string true "项目名称"
+// @Param		pipeline path string true "流水线名称"
 // @Success		200 {object} types.SBase[any]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v1/project/{project} [delete]
+// @Router		/api/v1/pipeline/{pipeline} [delete]
 func Delete(c *gin.Context) {
-	projectName := c.Param("project")
-	if projectName == "" {
-		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("project does not exist")))
+	pipelineName := c.Param("pipeline")
+	if pipelineName == "" {
+		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("pipeline does not exist")))
 		return
 	}
-	err := service.Project(projectName).Delete()
+	err := service.Pipeline(pipelineName).Delete()
 	if err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))

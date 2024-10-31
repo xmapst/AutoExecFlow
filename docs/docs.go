@@ -51,6 +51,436 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/pipeline": {
+            "get": {
+                "description": "获取所有流水线列表, 支持WS长连接",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流水线"
+                ],
+                "summary": "列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "分页大小",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_SPipelineListRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建流水线",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流水线"
+                ],
+                "summary": "创建",
+                "parameters": [
+                    {
+                        "description": "流水线内容",
+                        "name": "content",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.SPipelineCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipeline/{pipeline}": {
+            "get": {
+                "description": "获取指定流水线详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流水线"
+                ],
+                "summary": "详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_SPipelineRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "更新指定流水线",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流水线"
+                ],
+                "summary": "更新",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新内容",
+                        "name": "content",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.SPipelineUpdateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定流水线",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "流水线"
+                ],
+                "summary": "删除",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipeline/{pipeline}/build": {
+            "get": {
+                "description": "获取指定流水线构建任务列表, 支持WS长连接",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "构建"
+                ],
+                "summary": "列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "分页大小",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-array_string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建构建任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "构建"
+                ],
+                "summary": "创建",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "构建参数",
+                        "name": "build",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.SPipelineBuildReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_STaskCreateRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipeline/{pipeline}/build/{build}": {
+            "get": {
+                "description": "获取流水线指定构建任务详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "构建"
+                ],
+                "summary": "详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "构建名称",
+                        "name": "build",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_SPipelineBuildRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "重新执行指定构建任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "构建"
+                ],
+                "summary": "重新运行",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "构建名称",
+                        "name": "build",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除指定构建任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "构建"
+                ],
+                "summary": "删除",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "流水线名称",
+                        "name": "pipeline",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "构建名称",
+                        "name": "build",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/pool": {
             "get": {
                 "description": "获取工作池信息",
@@ -118,260 +548,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project": {
-            "get": {
-                "description": "获取项目列表, 支持WS长连接",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "项目"
-                ],
-                "summary": "列表",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 100,
-                        "description": "分页大小",
-                        "name": "size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_STaskListDetailRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "创建项目",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "项目"
-                ],
-                "summary": "创建",
-                "parameters": [
-                    {
-                        "description": "项目内容",
-                        "name": "content",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.SProjectCreateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/project/{project}": {
-            "get": {
-                "description": "获取项目详情",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "项目"
-                ],
-                "summary": "详情",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "项目名称",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_SProjectRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "更新项目",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "项目"
-                ],
-                "summary": "更新",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "项目名称",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "更新内容",
-                        "name": "content",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.SProjectUpdateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "删除项目",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "项目"
-                ],
-                "summary": "删除项目",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "项目名称",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/project/{project}/build": {
-            "get": {
-                "description": "获取构建列表, 支持WS长连接",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Build"
-                ],
-                "summary": "列表",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "项目名称",
-                        "name": "project",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "页码",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 100,
-                        "description": "分页大小",
-                        "name": "size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_STaskListDetailRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/pty": {
             "get": {
                 "description": "Websocket的pty终端",
@@ -382,9 +558,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统"
+                    "终端"
                 ],
-                "summary": "终端",
+                "summary": "PTY",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1027,6 +1203,26 @@ const docTemplate = `{
                 }
             }
         },
+        "types.SBase-array_string": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/types.Code"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
         "types.SBase-types_SFileListRes": {
             "type": "object",
             "properties": {
@@ -1061,6 +1257,57 @@ const docTemplate = `{
                 }
             }
         },
+        "types.SBase-types_SPipelineBuildRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/types.Code"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.SPipelineBuildRes"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.SBase-types_SPipelineListRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/types.Code"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.SPipelineListRes"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.SBase-types_SPipelineRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/types.Code"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.SPipelineRes"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
         "types.SBase-types_SPoolReq": {
             "type": "object",
             "properties": {
@@ -1086,23 +1333,6 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/types.SPoolRes"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                }
-            }
-        },
-        "types.SBase-types_SProjectRes": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "$ref": "#/definitions/types.Code"
-                },
-                "data": {
-                    "$ref": "#/definitions/types.SProjectRes"
                 },
                 "message": {
                     "type": "string"
@@ -1306,16 +1536,118 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "current": {
-                    "description": "当前页",
                     "type": "integer"
                 },
                 "size": {
-                    "description": "页大小",
                     "type": "integer"
                 },
                 "total": {
-                    "description": "总页数",
                     "type": "integer"
+                }
+            }
+        },
+        "types.SPipelineBuildReq": {
+            "type": "object",
+            "properties": {
+                "params": {
+                    "type": "object",
+                    "additionalProperties": {}
+                }
+            }
+        },
+        "types.SPipelineBuildRes": {
+            "type": "object",
+            "properties": {
+                "params": {
+                    "type": "string"
+                },
+                "pipeline": {
+                    "type": "string"
+                },
+                "task_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.SPipelineCreateReq": {
+            "type": "object",
+            "required": [
+                "content",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "jinja2"
+                }
+            }
+        },
+        "types.SPipelineListRes": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "$ref": "#/definitions/types.SPageRes"
+                },
+                "pipelines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.SPipelineRes"
+                    }
+                }
+            }
+        },
+        "types.SPipelineRes": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.SPipelineUpdateReq": {
+            "type": "object",
+            "required": [
+                "content",
+                "type"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "disable": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "jinja2"
                 }
             }
         },
@@ -1344,72 +1676,6 @@ const docTemplate = `{
                 },
                 "waiting": {
                     "type": "integer"
-                }
-            }
-        },
-        "types.SProjectCreateReq": {
-            "type": "object",
-            "required": [
-                "content",
-                "name",
-                "type"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "disable": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.SProjectRes": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "disable": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.SProjectUpdateReq": {
-            "type": "object",
-            "required": [
-                "content",
-                "type"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "disable": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "type": "string"
                 }
             }
         },

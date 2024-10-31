@@ -21,12 +21,12 @@ type IStorage interface {
 	// TaskList 获取任务,支持分页, 模糊匹配
 	TaskList(page, pageSize int64, str string) (res models.STasks, total int64)
 
-	// Project 项目接口
-	Project(name string) (project IProject)
-	// ProjectCreate 创建项目
-	ProjectCreate(project *models.SProject) (err error)
-	// ProjectList 获取项目,支持分页, 模糊匹配
-	ProjectList(page, pageSize int64, str string) (res models.SProjects, total int64)
+	// Pipeline 流水线接口
+	Pipeline(name string) (pipeline IPipeline)
+	// PipelineCreate 创建流水线
+	PipelineCreate(pipeline *models.SPipeline) (err error)
+	// PipelineList 获取流水线,支持分页, 模糊匹配
+	PipelineList(page, pageSize int64, str string) (res models.SPipelines, total int64)
 }
 
 type IBase interface {
@@ -124,18 +124,18 @@ type IDepend interface {
 	RemoveAll() (err error)
 }
 
-type IProject interface {
+type IPipeline interface {
 	IBase
 
 	// 执行相关
-	Build() (build IProjectBuild)
+	Build() (build IPipelineBuild)
 	// 任务接口
 	Task(name string) (task ITask)
 
 	// 更新
-	Update(value *models.SProjectUpdate) (err error)
+	Update(value *models.SPipelineUpdate) (err error)
 	// 获取
-	Get() (res *models.SProject, err error)
+	Get() (res *models.SPipeline, err error)
 	// IsDisable 是否禁用
 	IsDisable() (disable bool)
 	// 类型
@@ -144,13 +144,13 @@ type IProject interface {
 	Content() (res string, err error)
 }
 
-type IProjectBuild interface {
+type IPipelineBuild interface {
 	// Get 根据名称获取指定构建
-	Get(name string) (res *models.SProjectBuild, err error)
+	Get(name string) (res *models.SPipelineBuild, err error)
 	// Insert 插入
-	Insert(names ...string) (err error)
+	Insert(build *models.SPipelineBuild) (err error)
 	// List 获取所有
-	List() (res models.SProjectBuilds)
+	List(page, size int64) (res []string)
 	// Remove 删除
 	Remove(name string) (err error)
 	// ClearAll 清理

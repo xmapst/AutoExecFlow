@@ -94,12 +94,9 @@ type STTYSize struct {
 }
 
 type SPageRes struct {
-	// 当前页
 	Current int64 `json:"current" yaml:"Current"`
-	// 页大小
-	Size int64 `json:"size" yaml:"Size"`
-	// 总页数
-	Total int64 `json:"total" yaml:"Total"`
+	Size    int64 `json:"size" yaml:"Size"`
+	Total   int64 `json:"total" yaml:"Total"`
 }
 
 type SPageReq struct {
