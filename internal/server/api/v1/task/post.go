@@ -15,23 +15,13 @@ import (
 // @Tags		任务
 // @Accept		application/json
 // @Produce		application/json
-// @param		name query string false "任务名称"
-// @Param		async query bool false "是否异步执行" default(false)
-// @Param		timeout query string false "执行超时时间"
-// @Param		env query []string false "任务环境变量"
-// @Param		steps body types.SStepsReq true "步骤内容"
+// @Param		task body types.STaskReq true "任务内容"
 // @Success		200 {object} types.SBase[types.STaskCreateRes]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v1/task [post]
+// @Router		/api/v2/task [post]
 func Post(c *gin.Context) {
 	var req = new(types.STaskReq)
-	if err := c.ShouldBindQuery(req); err != nil {
-		logx.Errorln(err)
-		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
-		return
-	}
-
-	if err := c.ShouldBind(&req.Step); err != nil {
+	if err := c.ShouldBind(req); err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
@@ -46,7 +36,6 @@ func Post(c *gin.Context) {
 	c.Header(types.XTaskName, req.Name)
 
 	base.Send(c, base.WithData(&types.STaskCreateRes{
-		ID:    req.Name,
 		Name:  req.Name,
 		Count: len(req.Step),
 	}))

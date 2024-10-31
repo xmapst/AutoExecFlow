@@ -20,8 +20,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/step"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/workspace"
-	taskv2 "github.com/xmapst/AutoExecFlow/internal/server/api/v2/task"
-	stepv2 "github.com/xmapst/AutoExecFlow/internal/server/api/v2/task/step"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
 	"github.com/xmapst/AutoExecFlow/types"
 )
@@ -71,6 +69,7 @@ func New(relativePath string) *gin.Engine {
 	{
 		// event
 		api.GET("/v1/event", event.Stream)
+
 		// project
 		api.GET("/v1/project", project.List)
 		api.POST("/v1/project", project.Post)
@@ -80,34 +79,32 @@ func New(relativePath string) *gin.Engine {
 		api.GET("/v1/project/:project/build", build.List)
 		//api.GET("/v1/project/:project/build/:build", build.Detail)
 		//api.DELETE("/v1/project/:project/build/:build", build.Delete)
+
 		// task
 		api.GET("/v1/task", task.List)
 		api.POST("/v1/task", task.Post)
+		api.GET("/v1/task/:task", task.Detail)
 		api.PUT("/v1/task/:task", task.Manager)
 		api.DELETE("/v1/task/:task", task.Delete)
-		// dump
 		api.GET("/v1/task/:task/dump", task.Dump)
+
 		// workspace
 		api.GET("/v1/task/:task/workspace", workspace.Get)
 		api.DELETE("/v1/task/:task/workspace", workspace.Delete)
 		api.POST("/v1/task/:task/workspace", workspace.Post)
+
 		// step
-		api.GET("/v1/task/:task", step.List)
-		api.GET("/v1/task/:task/step/:step", step.Log)
+		api.GET("/v1/task/:task/step", step.List)
+		api.GET("/v1/task/:task/step/:step", step.Detail)
 		api.PUT("/v1/task/:task/step/:step", step.Manager)
+		api.GET("/v1/task/:task/step/:step/log", step.Log)
+
 		// worker pool
 		api.GET("/v1/pool", pool.Detail)
 		api.POST("/v1/pool", pool.Post)
 
 		// pty
 		api.GET("/v1/pty", sys.PtyWs)
-	}
-	// V2
-	{
-		// task
-		api.POST("/v2/task", taskv2.Post)
-		api.GET("/v2/task/:task", taskv2.Detail)
-		api.GET("/v2/task/:task/step/:step", stepv2.Detail)
 	}
 
 	// no method

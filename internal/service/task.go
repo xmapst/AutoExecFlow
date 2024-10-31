@@ -49,25 +49,15 @@ func TaskList(req *types.SPageReq) *types.STaskListDetailRes {
 	}
 	for _, task := range tasks {
 		res := &types.STaskRes{
-			Name:        task.Name,
-			Description: task.Description,
-			Node:        task.Node,
-			State:       models.StateMap[*task.State],
-			Message:     task.Message,
-			Env:         make(map[string]string),
-			Timeout:     task.Timeout.String(),
-			Disable:     *task.Disable,
-			Time: &types.STimeRes{
+			Name:    task.Name,
+			State:   models.StateMap[*task.State],
+			Message: task.Message,
+			Time: types.STimeRes{
 				Start: task.STimeStr(),
 				End:   task.ETimeStr(),
 			},
 		}
 		st := storage.Task(task.Name)
-		// 获取任务级所有环境变量
-		envs := st.Env().List()
-		for _, env := range envs {
-			res.Env[env.Name] = env.Value
-		}
 
 		// 获取当前进行到那些步骤
 		steps := st.StepStateList(storage.All)
@@ -137,17 +127,19 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 
 func (ts *STaskService) review(task *types.STaskReq) (time.Duration, error) {
 	if task.Step == nil || len(task.Step) == 0 {
-		return 0, errors.New("key: 'Task.Step' Error:Field validation for 'Step' failed on the 'required' tag")
+		return 0, errors.New("steps can not be empty")
 	}
-	if task.Env == nil {
-		task.Env = make(map[string]string)
+
+	// 校验env是否重复
+	var envKeys []string
+	for _, v := range task.Env {
+		envKeys = append(envKeys, v.Name)
 	}
-	// 处理旧环境变量接收方式
-	for k, v := range utils.SliceToStrMap(task.EnvVars) {
-		if _, ok := task.Env[k]; !ok {
-			task.Env[k] = v
-		}
+	dup := utils.CheckDuplicate(envKeys)
+	if dup != nil {
+		return 0, fmt.Errorf("duplicate keys %v", dup)
 	}
+
 	task.Name = reg.ReplaceAllString(task.Name, "")
 	if task.Name == "" {
 		task.Name = ksuid.New().String()
@@ -200,12 +192,12 @@ func (ts *STaskService) uniqStepsName(steps types.SStepsReq) error {
 func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (time.Duration, error) {
 	// save task
 	err := storage.TaskCreate(&models.STask{
-		Name:        task.Name,
-		Description: task.Description,
-		Node:        task.Node,
-		Async:       models.Pointer(task.Async),
-		Timeout:     timeout,
-		Disable:     models.Pointer(task.Disable),
+		Name:    task.Name,
+		Desc:    task.Desc,
+		Node:    task.Node,
+		Async:   models.Pointer(task.Async),
+		Timeout: timeout,
+		Disable: models.Pointer(task.Disable),
 		STaskUpdate: models.STaskUpdate{
 			Message:  "the task is waiting to be scheduled for execution",
 			State:    models.Pointer(models.StatePending),
@@ -213,17 +205,19 @@ func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (t
 		},
 	})
 	if err != nil {
-		return timeout, err
+		return timeout, fmt.Errorf("save task error: %s", err)
 	}
 
 	// save task env
-	for name, value := range task.Env {
-		if err = storage.Task(task.Name).Env().Insert(&models.SEnv{
-			Name:  name,
-			Value: value,
-		}); err != nil {
-			return timeout, err
-		}
+	var envs models.SEnvs
+	for _, env := range task.Env {
+		envs = append(envs, &models.SEnv{
+			Name:  env.Name,
+			Value: env.Value,
+		})
+	}
+	if err = storage.Task(task.Name).Env().Insert(envs...); err != nil {
+		return timeout, fmt.Errorf("save task env error: %s", err)
 	}
 	return timeout, nil
 }
@@ -252,21 +246,23 @@ func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 	}
 
 	data := &types.STaskRes{
-		Name:        task.Name,
-		Description: task.Description,
-		Node:        task.Node,
-		State:       models.StateMap[*task.State],
-		Message:     task.Message,
-		Env:         make(map[string]string),
-		Timeout:     task.Timeout.String(),
-		Disable:     *task.Disable,
-		Time: &types.STimeRes{
+		Name:    task.Name,
+		Desc:    task.Desc,
+		Node:    task.Node,
+		State:   models.StateMap[*task.State],
+		Message: task.Message,
+		Timeout: task.Timeout.String(),
+		Disable: *task.Disable,
+		Time: types.STimeRes{
 			Start: task.STimeStr(),
 			End:   task.ETimeStr(),
 		},
 	}
 	for _, env := range db.Env().List() {
-		data.Env[env.Name] = env.Value
+		data.Env = append(data.Env, &types.SEnv{
+			Name:  env.Name,
+			Value: env.Value,
+		})
 	}
 
 	// 获取当前进行到那些步骤
@@ -298,16 +294,18 @@ func (ts *STaskService) Dump() (*types.STaskReq, error) {
 		return nil, err
 	}
 	res := &types.STaskReq{
-		Name:        task.Name,
-		Description: task.Description,
-		Node:        task.Node,
-		Timeout:     task.Timeout.String(),
-		Env:         make(map[string]string),
-		Async:       *task.Async,
-		Disable:     *task.Disable,
+		Name:    task.Name,
+		Desc:    task.Desc,
+		Node:    task.Node,
+		Timeout: task.Timeout.String(),
+		Async:   *task.Async,
+		Disable: *task.Disable,
 	}
-	for _, v := range storage.Task(ts.name).Env().List() {
-		res.Env[v.Name] = v.Value
+	for _, env := range storage.Task(ts.name).Env().List() {
+		res.Env = append(res.Env, &types.SEnv{
+			Name:  env.Name,
+			Value: env.Value,
+		})
 	}
 	steps := storage.Task(ts.name).StepList(storage.All)
 	for _, step := range steps {
@@ -315,13 +313,15 @@ func (ts *STaskService) Dump() (*types.STaskReq, error) {
 			Name:    step.Name,
 			Type:    step.Type,
 			Content: step.Content,
-			Env:     make(map[string]string),
 			Timeout: step.Timeout.String(),
 			Disable: *step.Disable,
 		}
 		envs := storage.Task(ts.name).Step(step.Name).Env().List()
 		for _, env := range envs {
-			stepRes.Env[env.Name] = env.Value
+			stepRes.Env = append(stepRes.Env, &types.SEnv{
+				Name:  env.Name,
+				Value: env.Value,
+			})
 		}
 		stepRes.Depends = storage.Task(ts.name).Step(step.Name).Depend().List()
 		res.Step = append(res.Step, stepRes)
@@ -348,21 +348,12 @@ func (ts *STaskService) Steps() (code types.Code, data types.SStepsRes, err erro
 			State:   models.StateMap[*step.State],
 			Code:    *step.Code,
 			Message: step.Message,
-			Timeout: step.Timeout.String(),
-			Disable: *step.Disable,
-			Env:     make(map[string]string),
-			Type:    step.Type,
-			Content: step.Content,
-			Time: &types.STimeRes{
+			Time: types.STimeRes{
 				Start: step.STimeStr(),
 				End:   step.ETimeStr(),
 			},
 		}
 		res.Depends = db.Step(step.Name).Depend().List()
-		envs := db.Step(step.Name).Env().List()
-		for _, env := range envs {
-			res.Env[env.Name] = env.Value
-		}
 		data = append(data, res)
 	}
 	task.Message = GenerateStateMessage(task.Message, groups)

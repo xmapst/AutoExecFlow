@@ -1,66 +1,37 @@
 package types
 
 type STaskCreateRes struct {
-	// 任务名称
-	Name string `json:"name" yaml:"Name"`
-	// 步骤数量
-	Count int `json:"count" yaml:"Count"`
-	// Deprecated, use Name
-	ID string `json:"id" yaml:"ID" swaggerignore:"true"`
+	Name  string `json:"name" yaml:"Name"`
+	Count int    `json:"count" yaml:"Count"`
 }
 
 type STaskListDetailRes struct {
-	// 分页
-	Page SPageRes `json:"page" yaml:"Page"`
-	// 任务列表
+	Page  SPageRes  `json:"page" yaml:"Page"`
 	Tasks STasksRes `json:"tasks" yaml:"Tasks"`
 }
 
 type STasksRes []*STaskRes
 
 type STaskRes struct {
-	// 任务名称
-	Name string `json:"name" yaml:"Name"`
-	// 任务描述
-	Description string `json:"description,omitempty" yaml:"Description,omitempty"`
-	// 节点名称
-	Node string `json:"node,omitempty" yaml:"Node,omitempty"`
-	// 任务状态
-	State string `json:"state" yaml:"State"`
-	// 任务信息
-	Message string `json:"msg" yaml:"Message"`
-	// 步骤数量
-	Count int `json:"count" yaml:"Count"`
-	// 任务环境变量
-	Env map[string]string `json:"env,omitempty" yaml:"Env,omitempty"`
-	// 任务超时时间
-	Timeout string `json:"timeout,omitempty" yaml:"Timeout,omitempty"`
-	// 是否禁用
-	Disable bool `json:"disable" yaml:"Disable"`
-	// 时间
-	Time *STimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
+	Count   int      `json:"count" yaml:"Count"`
+	Desc    string   `json:"desc,omitempty" yaml:"Desc,omitempty"`
+	Name    string   `json:"name" yaml:"Name"`
+	Node    string   `json:"node,omitempty" yaml:"Node,omitempty"`
+	State   string   `json:"state" yaml:"State"`
+	Message string   `json:"message" yaml:"Message"`
+	Env     SEnvs    `json:"env,omitempty" yaml:"Env,omitempty"`
+	Timeout string   `json:"timeout,omitempty" yaml:"Timeout,omitempty"`
+	Disable bool     `json:"disable,omitempty" yaml:"Disable,omitempty"`
+	Time    STimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
 }
 
 type STaskReq struct {
-	// 任务名称
-	Name string `json:"name,omitempty" query:"name"  form:"name" yaml:"Name,omitempty" example:"task_name"`
-	// 任务描述
-	Description string `json:"description,omitempty" query:"description" yaml:"Description,omitempty"`
-	// Node 执行节点
-	Node string `json:"node,omitempty" query:"node" form:"node" yaml:"Node,omitempty" example:""`
-	// 是否异步执行
-	Async bool `json:"async,omitempty" query:"async" form:"async" yaml:"Async,omitempty" example:"false"`
-	// 是否禁用
-	Disable bool `json:"disable,omitempty" query:"disable" form:"disable" yaml:"Disable,omitempty" example:"false"`
-	// 任务超时时间
-	Timeout string `json:"timeout,omitempty" query:"timeout" form:"timeout,omitempty" yaml:"Timeout,omitempty" example:"24h"`
-	// 任务环境变量
-	Env map[string]string `json:"env,omitempty" query:"env" form:"env" yaml:"Env,omitempty" example:"key:value,key1:value1"`
-	// 任务步骤
-	Step SStepsReq `json:"step,omitempty" form:"step" yaml:"Step,omitempty"`
-
-	// Deprecated, use Env
-	EnvVars []string `json:"env_vars,omitempty" query:"env_vars" form:"env_vars" yaml:"EnvVars,omitempty" example:"" swaggerignore:"true"`
+	Name    string    `json:"name,omitempty" form:"name" yaml:"Name,omitempty"`
+	Desc    string    `json:"desc,omitempty" yaml:"Desc,omitempty"`
+	Node    string    `json:"node,omitempty" form:"node" yaml:"Node,omitempty"`
+	Async   bool      `json:"async,omitempty" form:"async" yaml:"Async,omitempty"`
+	Disable bool      `json:"disable,omitempty" form:"disable" yaml:"Disable,omitempty"`
+	Timeout string    `json:"timeout,omitempty" form:"timeout,omitempty" yaml:"Timeout,omitempty"`
+	Env     SEnvs     `json:"env,omitempty" form:"env" yaml:"Env,omitempty"`
+	Step    SStepsReq `json:"step,omitempty" form:"step" yaml:"Step,omitempty" binding:"required"`
 }
-
-type SStepsReq []*SStepReq

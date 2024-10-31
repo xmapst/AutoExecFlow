@@ -21,7 +21,7 @@ import (
 // @Param		step path string true "步骤名称"
 // @Success		200 {object} types.SBase[types.SStepRes]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v2/task/{task}/step/{step} [get]
+// @Router		/api/v1/task/{task}/step/{step} [get]
 func Detail(c *gin.Context) {
 	var taskName = c.Param("task")
 	if taskName == "" {

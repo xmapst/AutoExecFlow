@@ -59,7 +59,7 @@ func (c *SConfig) init() error {
 	if c.LogOutput == "file" {
 		logfile = filepath.Join(c.LogDir(), utils.ServiceName+".log")
 	}
-	logx.SetupLogger(logfile, zap.AddStacktrace(zapcore.ErrorLevel))
+	logx.SetupLogger(logfile, zap.AddStacktrace(zapcore.FatalLevel))
 	level, err := zapcore.ParseLevel(c.LogLevel)
 	if err != nil {
 		return fmt.Errorf("invalid log level: %v", err)

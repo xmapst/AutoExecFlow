@@ -3,6 +3,7 @@ package storage
 import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
@@ -12,38 +13,58 @@ type sTaskEnv struct {
 	tName string
 }
 
-func (t *sTaskEnv) List() (res models.SEnvs) {
-	t.Model(&models.STaskEnv{}).
+func (e *sTaskEnv) List() (res models.SEnvs) {
+	e.Model(&models.STaskEnv{}).
 		Where(map[string]interface{}{
-			"task_name": t.tName,
+			"task_name": e.tName,
 		}).
 		Order("id ASC").
 		Find(&res)
 	return
 }
 
-func (t *sTaskEnv) Insert(envs ...*models.SEnv) (err error) {
+func (e *sTaskEnv) Insert(envs ...*models.SEnv) (err error) {
 	if len(envs) == 0 {
 		return
 	}
 	var _envs []models.STaskEnv
 	for _, env := range envs {
 		_envs = append(_envs, models.STaskEnv{
-			TaskName: t.tName,
+			TaskName: e.tName,
 			SEnv:     *env,
 		})
 	}
-	return t.Create(&_envs).Error
+	err = e.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "task_name"},
+			{Name: "name"},
+		},
+		DoUpdates: clause.AssignmentColumns([]string{"value"}),
+	}).Create(_envs).Error
+	if err != nil {
+		return err
+	}
+	return
 }
 
-func (t *sTaskEnv) Get(name string) (res string, err error) {
+func (e *sTaskEnv) Update(env *models.SEnv) (err error) {
+	return e.Model(&models.STaskEnv{}).
+		Omit("name").
+		Where(map[string]interface{}{
+			"task_name": e.tName,
+			"name":      env.Name,
+		}).
+		Updates(env).Error
+}
+
+func (e *sTaskEnv) Get(name string) (res string, err error) {
 	if name == "" {
 		return "", errors.New("name is empty")
 	}
-	err = t.Model(&models.STaskEnv{}).
+	err = e.Model(&models.STaskEnv{}).
 		Select("value").
 		Where(map[string]interface{}{
-			"task_name": t.tName,
+			"task_name": e.tName,
 			"name":      name,
 		}).
 		Scan(&res).
@@ -51,18 +72,18 @@ func (t *sTaskEnv) Get(name string) (res string, err error) {
 	return
 }
 
-func (t *sTaskEnv) Remove(name string) (err error) {
+func (e *sTaskEnv) Remove(name string) (err error) {
 	if name == "" {
 		return errors.New("name is empty")
 	}
-	return t.Where(map[string]interface{}{
-		"task_name": t.tName,
+	return e.Where(map[string]interface{}{
+		"task_name": e.tName,
 		"name":      name,
 	}).Delete(&models.STaskEnv{}).Error
 }
 
-func (t *sTaskEnv) RemoveAll() (err error) {
-	return t.Where(map[string]interface{}{
-		"task_name": t.tName,
+func (e *sTaskEnv) RemoveAll() (err error) {
+	return e.Where(map[string]interface{}{
+		"task_name": e.tName,
 	}).Delete(&models.STaskEnv{}).Error
 }

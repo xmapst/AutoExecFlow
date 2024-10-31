@@ -14,7 +14,7 @@ import (
 // @Tags		工作池
 // @Accept		application/json
 // @Produce		application/json
-// @Success		200 {object} types.SBase[types.SPool]
+// @Success		200 {object} types.SBase[types.SPoolRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/pool [get]
 func Detail(c *gin.Context) {

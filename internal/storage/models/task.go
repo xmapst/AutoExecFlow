@@ -6,12 +6,12 @@ import (
 
 type STask struct {
 	SBase
-	Name        string        `json:"name,omitempty" gorm:"size:256;uniqueIndex;not null;comment:名称"`
-	Description string        `json:"description,omitempty" gorm:"comment:描述"`
-	Node        string        `json:"node,omitempty" gorm:"size:256;index;default:null;comment:节点"`
-	Async       *bool         `json:"async,omitempty" gorm:"not null;default:false;comment:异步"`
-	Timeout     time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`
-	Disable     *bool         `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
+	Name    string        `json:"name,omitempty" gorm:"size:256;uniqueIndex;not null;comment:名称"`
+	Desc    string        `json:"desc,omitempty" gorm:"comment:描述"`
+	Node    string        `json:"node,omitempty" gorm:"size:256;index;default:null;comment:节点"`
+	Async   *bool         `json:"async,omitempty" gorm:"not null;default:false;comment:异步"`
+	Timeout time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`
+	Disable *bool         `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
 	STaskUpdate
 }
 

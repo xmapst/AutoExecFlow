@@ -17,7 +17,7 @@ import (
 
 //go:embed static
 var staticFS embed.FS
-var staticCache = make(map[string][]byte)
+var staticCache = sync.Map{}
 
 func staticHandler(relativePath string) gin.HandlerFunc {
 	if relativePath == "/" {
@@ -30,17 +30,17 @@ func staticHandler(relativePath string) gin.HandlerFunc {
 		} else {
 			path = strings.TrimPrefix(path, "/")
 		}
-		content, ok := staticCache[path]
+		val, ok := staticCache.Load(path)
 		if !ok {
 			var err error
-			content, err = staticFileContent(path)
+			val, err = staticFileContent(path)
 			if err != nil {
 				c.AbortWithStatus(http.StatusNotFound)
 				return
 			}
+			staticCache.Store(path, val)
 		}
-		staticCache[path] = content
-
+		content := val.([]byte)
 		c.Header("Content-Length", strconv.Itoa(len(content)))
 		mimeType := mime.TypeByExtension(filepath.Ext(path))
 		if mimeType != "" {

@@ -112,6 +112,7 @@ type ILog interface {
 type IEnv interface {
 	List() (res models.SEnvs)
 	Insert(env ...*models.SEnv) (err error)
+	Update(env *models.SEnv) (err error)
 	Get(name string) (string, error)
 	Remove(name string) (err error)
 	RemoveAll() (err error)

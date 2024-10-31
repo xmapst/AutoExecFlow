@@ -15,6 +15,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-cmd/cmd v1.4.3
 	github.com/go-git/go-git/v5 v5.12.0
+	github.com/go-gorm/caches/v4 v4.0.5
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/json-iterator/go v1.1.12

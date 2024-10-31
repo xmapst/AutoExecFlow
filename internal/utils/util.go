@@ -60,7 +60,22 @@ func PathEscape(s string) string {
 	return PathEscape(s)
 }
 
-// RemoveDuplicate removes duplicate elements from a slice while maintaining the original order.
+func CheckDuplicate[T comparable](slice []T) []T {
+	var dup []T
+	seen := make(map[T]struct{})
+	for _, v := range slice {
+		if _, exists := seen[v]; exists {
+			dup = append(dup, v)
+			continue
+		}
+		seen[v] = struct{}{}
+	}
+	if len(dup) == 0 {
+		return nil
+	}
+	return dup
+}
+
 func RemoveDuplicate[T comparable](slice []T) []T {
 	allKeys := make(map[T]bool)
 	var list []T

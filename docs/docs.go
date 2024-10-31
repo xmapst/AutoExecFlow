@@ -68,7 +68,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SBase-types_SPool"
+                            "$ref": "#/definitions/types.SBase-types_SPoolRes"
                         }
                     },
                     "500": {
@@ -98,7 +98,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SPool"
+                            "$ref": "#/definitions/types.SPoolReq"
                         }
                     }
                 ],
@@ -106,7 +106,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SBase-types_SPool"
+                            "$ref": "#/definitions/types.SBase-types_SPoolReq"
                         }
                     },
                     "500": {
@@ -444,76 +444,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "创建任务",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "任务"
-                ],
-                "summary": "创建",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "任务名称",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "是否异步执行",
-                        "name": "async",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "执行超时时间",
-                        "name": "timeout",
-                        "in": "query"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "任务环境变量",
-                        "name": "env",
-                        "in": "query"
-                    },
-                    {
-                        "description": "步骤内容",
-                        "name": "steps",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/types.SStepReq"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_STaskCreateRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
             }
         },
         "/api/v1/task/{task}": {
@@ -648,7 +578,7 @@ const docTemplate = `{
         },
         "/api/v1/task/{task}/step/{step}": {
             "get": {
-                "description": "指定任务指定步骤的执行输出, 支持WS长连接",
+                "description": "获取步骤详情",
                 "consumes": [
                     "application/json"
                 ],
@@ -658,7 +588,7 @@ const docTemplate = `{
                 "tags": [
                     "步骤"
                 ],
-                "summary": "日志",
+                "summary": "详情",
                 "parameters": [
                     {
                         "type": "string",
@@ -679,7 +609,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SBase-types_SLogsRes"
+                            "$ref": "#/definitions/types.SBase-types_SStepRes"
                         }
                     },
                     "500": {
@@ -743,6 +673,51 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/task/{task}/step/{step}/log": {
+            "get": {
+                "description": "指定任务指定步骤的执行输出, 支持WS长连接",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "步骤"
+                ],
+                "summary": "日志",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "任务名称",
+                        "name": "task",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "步骤名称",
+                        "name": "step",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_SStepLogsRes"
                         }
                     },
                     "500": {
@@ -929,89 +904,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v2/task/{task}": {
-            "get": {
-                "description": "获取任务详情",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "任务"
-                ],
-                "summary": "详情",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "任务名称",
-                        "name": "task",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_STaskRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v2/task/{task}/step/{step}": {
-            "get": {
-                "description": "获取步骤详情",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "步骤"
-                ],
-                "summary": "详情",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "任务名称",
-                        "name": "task",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "步骤名称",
-                        "name": "step",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_SStepRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            }
-        },
         "/healthyz": {
             "get": {
                 "description": "用于检测服务是否正常",
@@ -1124,17 +1016,11 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {},
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1145,19 +1031,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.SFileListRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1168,68 +1048,47 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.SHealthyz"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
                 }
             }
         },
-        "types.SBase-types_SLogsRes": {
+        "types.SBase-types_SPoolReq": {
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.SLogRes"
-                    }
+                    "$ref": "#/definitions/types.SPoolReq"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
                 }
             }
         },
-        "types.SBase-types_SPool": {
+        "types.SBase-types_SPoolRes": {
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
-                    "$ref": "#/definitions/types.SPool"
+                    "$ref": "#/definitions/types.SPoolRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1240,19 +1099,33 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.SProjectRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.SBase-types_SStepLogsRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/types.Code"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.SStepLogRes"
+                    }
+                },
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1263,19 +1136,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.SStepRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1286,12 +1153,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "type": "array",
@@ -1299,9 +1161,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/types.SStepRes"
                     }
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1312,19 +1173,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.STaskCreateRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1335,19 +1190,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.STaskListDetailRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1358,19 +1207,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.STaskRes"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
@@ -1381,22 +1224,30 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.Code"
-                        }
-                    ],
-                    "example": 255
+                    "$ref": "#/definitions/types.Code"
                 },
                 "data": {
                     "$ref": "#/definitions/types.SVersion"
                 },
-                "msg": {
-                    "type": "string",
-                    "example": "message"
+                "message": {
+                    "type": "string"
                 },
                 "timestamp": {
                     "type": "integer"
+                }
+            }
+        },
+        "types.SEnv": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         },
@@ -1451,23 +1302,6 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SLogRes": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "description": "内容",
-                    "type": "string"
-                },
-                "line": {
-                    "description": "行号",
-                    "type": "integer"
-                },
-                "timestamp": {
-                    "description": "时间戳",
-                    "type": "integer"
-                }
-            }
-        },
         "types.SPageRes": {
             "type": "object",
             "properties": {
@@ -1485,18 +1319,25 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SPool": {
+        "types.SPoolReq": {
             "type": "object",
             "required": [
                 "size"
             ],
             "properties": {
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.SPoolRes": {
+            "type": "object",
+            "properties": {
                 "running": {
                     "type": "integer"
                 },
                 "size": {
-                    "type": "integer",
-                    "example": 30
+                    "type": "integer"
                 },
                 "total": {
                     "type": "integer"
@@ -1572,59 +1413,56 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SStepReq": {
+        "types.SStepLogRes": {
             "type": "object",
             "properties": {
                 "content": {
-                    "description": "步骤内容",
-                    "type": "string",
-                    "example": "sleep 10"
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.SStepReq": {
+            "type": "object",
+            "required": [
+                "content",
+                "type"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
                 },
                 "depends": {
-                    "description": "步骤依赖",
                     "type": "array",
                     "items": {
                         "type": "string"
-                    },
-                    "example": [
-                        ""
-                    ]
+                    }
                 },
-                "description": {
-                    "description": "步骤描述",
-                    "type": "string",
-                    "example": "script.ps1"
+                "desc": {
+                    "type": "string"
                 },
                 "disable": {
-                    "description": "是否禁用",
-                    "type": "boolean",
-                    "example": false
+                    "type": "boolean"
                 },
                 "env": {
-                    "description": "步骤环境变量",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "example": {
-                        "key": "value",
-                        "key1": "value1"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.SEnv"
                     }
                 },
                 "name": {
-                    "description": "步骤名称",
-                    "type": "string",
-                    "example": "script.ps1"
+                    "type": "string"
                 },
                 "timeout": {
-                    "description": "步骤超时时间",
-                    "type": "string",
-                    "example": "3m"
+                    "type": "string"
                 },
                 "type": {
-                    "description": "步骤超时时间",
-                    "type": "string",
-                    "example": "powershell"
+                    "type": "string"
                 }
             }
         },
@@ -1632,61 +1470,45 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "步骤退出码",
                     "type": "integer"
                 },
                 "content": {
-                    "description": "步骤内容",
                     "type": "string"
                 },
                 "depends": {
-                    "description": "步骤依赖",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "description": {
-                    "description": "步骤描述",
+                "desc": {
                     "type": "string"
                 },
                 "disable": {
-                    "description": "是否禁用",
                     "type": "boolean"
                 },
                 "env": {
-                    "description": "步骤环境变量",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.SEnv"
                     }
                 },
-                "msg": {
-                    "description": "步骤信息",
+                "message": {
                     "type": "string"
                 },
                 "name": {
-                    "description": "步骤名称",
                     "type": "string"
                 },
                 "state": {
-                    "description": "步骤状态",
                     "type": "string"
                 },
                 "time": {
-                    "description": "时间",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.STimeRes"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.STimeRes"
                 },
                 "timeout": {
-                    "description": "步骤超时时间",
                     "type": "string"
                 },
                 "type": {
-                    "description": "步骤类型",
                     "type": "string"
                 }
             }
@@ -1695,11 +1517,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "count": {
-                    "description": "步骤数量",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "任务名称",
                     "type": "string"
                 }
             }
@@ -1708,15 +1528,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "page": {
-                    "description": "分页",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.SPageRes"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.SPageRes"
                 },
                 "tasks": {
-                    "description": "任务列表",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.STaskRes"
@@ -1726,53 +1540,39 @@ const docTemplate = `{
         },
         "types.STaskReq": {
             "type": "object",
+            "required": [
+                "step"
+            ],
             "properties": {
                 "async": {
-                    "description": "是否异步执行",
-                    "type": "boolean",
-                    "example": false
+                    "type": "boolean"
                 },
-                "description": {
-                    "description": "任务描述",
+                "desc": {
                     "type": "string"
                 },
                 "disable": {
-                    "description": "是否禁用",
-                    "type": "boolean",
-                    "example": false
+                    "type": "boolean"
                 },
                 "env": {
-                    "description": "任务环境变量",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "example": {
-                        "key": "value",
-                        "key1": "value1"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.SEnv"
                     }
                 },
                 "name": {
-                    "description": "任务名称",
-                    "type": "string",
-                    "example": "task_name"
+                    "type": "string"
                 },
                 "node": {
-                    "description": "Node 执行节点",
-                    "type": "string",
-                    "example": ""
+                    "type": "string"
                 },
                 "step": {
-                    "description": "任务步骤",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.SStepReq"
                     }
                 },
                 "timeout": {
-                    "description": "任务超时时间",
-                    "type": "string",
-                    "example": "24h"
+                    "type": "string"
                 }
             }
         },
@@ -1780,50 +1580,36 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "count": {
-                    "description": "步骤数量",
                     "type": "integer"
                 },
-                "description": {
-                    "description": "任务描述",
+                "desc": {
                     "type": "string"
                 },
                 "disable": {
-                    "description": "是否禁用",
                     "type": "boolean"
                 },
                 "env": {
-                    "description": "任务环境变量",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.SEnv"
                     }
                 },
-                "msg": {
-                    "description": "任务信息",
+                "message": {
                     "type": "string"
                 },
                 "name": {
-                    "description": "任务名称",
                     "type": "string"
                 },
                 "node": {
-                    "description": "节点名称",
                     "type": "string"
                 },
                 "state": {
-                    "description": "任务状态",
                     "type": "string"
                 },
                 "time": {
-                    "description": "时间",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.STimeRes"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.STimeRes"
                 },
                 "timeout": {
-                    "description": "任务超时时间",
                     "type": "string"
                 }
             }
@@ -1832,11 +1618,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "end": {
-                    "description": "结束时间",
                     "type": "string"
                 },
                 "start": {
-                    "description": "开始时间",
                     "type": "string"
                 }
             }

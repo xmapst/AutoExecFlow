@@ -18,12 +18,9 @@ definitions:
   types.SBase-any:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data: {}
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -31,13 +28,10 @@ definitions:
   types.SBase-types_SFileListRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SFileListRes'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -45,43 +39,32 @@ definitions:
   types.SBase-types_SHealthyz:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SHealthyz'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
     type: object
-  types.SBase-types_SLogsRes:
+  types.SBase-types_SPoolReq:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
-        items:
-          $ref: '#/definitions/types.SLogRes'
-        type: array
-      msg:
-        example: message
+        $ref: '#/definitions/types.SPoolReq'
+      message:
         type: string
       timestamp:
         type: integer
     type: object
-  types.SBase-types_SPool:
+  types.SBase-types_SPoolRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
-        $ref: '#/definitions/types.SPool'
-      msg:
-        example: message
+        $ref: '#/definitions/types.SPoolRes'
+      message:
         type: string
       timestamp:
         type: integer
@@ -89,13 +72,23 @@ definitions:
   types.SBase-types_SProjectRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SProjectRes'
-      msg:
-        example: message
+      message:
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SStepLogsRes:
+    properties:
+      code:
+        $ref: '#/definitions/types.Code'
+      data:
+        items:
+          $ref: '#/definitions/types.SStepLogRes'
+        type: array
+      message:
         type: string
       timestamp:
         type: integer
@@ -103,13 +96,10 @@ definitions:
   types.SBase-types_SStepRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SStepRes'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -117,15 +107,12 @@ definitions:
   types.SBase-types_SStepsRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         items:
           $ref: '#/definitions/types.SStepRes'
         type: array
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -133,13 +120,10 @@ definitions:
   types.SBase-types_STaskCreateRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.STaskCreateRes'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -147,13 +131,10 @@ definitions:
   types.SBase-types_STaskListDetailRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.STaskListDetailRes'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -161,13 +142,10 @@ definitions:
   types.SBase-types_STaskRes:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.STaskRes'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
@@ -175,16 +153,22 @@ definitions:
   types.SBase-types_SVersion:
     properties:
       code:
-        allOf:
-        - $ref: '#/definitions/types.Code'
-        example: 255
+        $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SVersion'
-      msg:
-        example: message
+      message:
         type: string
       timestamp:
         type: integer
+    type: object
+  types.SEnv:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    required:
+    - name
     type: object
   types.SFileListRes:
     properties:
@@ -219,18 +203,6 @@ definitions:
       state:
         type: string
     type: object
-  types.SLogRes:
-    properties:
-      content:
-        description: 内容
-        type: string
-      line:
-        description: 行号
-        type: integer
-      timestamp:
-        description: 时间戳
-        type: integer
-    type: object
   types.SPageRes:
     properties:
       current:
@@ -243,19 +215,23 @@ definitions:
         description: 总页数
         type: integer
     type: object
-  types.SPool:
+  types.SPoolReq:
+    properties:
+      size:
+        type: integer
+    required:
+    - size
+    type: object
+  types.SPoolRes:
     properties:
       running:
         type: integer
       size:
-        example: 30
         type: integer
       total:
         type: integer
       waiting:
         type: integer
-    required:
-    - size
     type: object
   types.SProjectCreateReq:
     properties:
@@ -301,109 +277,84 @@ definitions:
     - content
     - type
     type: object
+  types.SStepLogRes:
+    properties:
+      content:
+        type: string
+      line:
+        type: integer
+      timestamp:
+        type: integer
+    type: object
   types.SStepReq:
     properties:
       content:
-        description: 步骤内容
-        example: sleep 10
         type: string
       depends:
-        description: 步骤依赖
-        example:
-        - ""
         items:
           type: string
         type: array
-      description:
-        description: 步骤描述
-        example: script.ps1
+      desc:
         type: string
       disable:
-        description: 是否禁用
-        example: false
         type: boolean
       env:
-        additionalProperties:
-          type: string
-        description: 步骤环境变量
-        example:
-          key: value
-          key1: value1
-        type: object
+        items:
+          $ref: '#/definitions/types.SEnv'
+        type: array
       name:
-        description: 步骤名称
-        example: script.ps1
         type: string
       timeout:
-        description: 步骤超时时间
-        example: 3m
         type: string
       type:
-        description: 步骤超时时间
-        example: powershell
         type: string
+    required:
+    - content
+    - type
     type: object
   types.SStepRes:
     properties:
       code:
-        description: 步骤退出码
         type: integer
       content:
-        description: 步骤内容
         type: string
       depends:
-        description: 步骤依赖
         items:
           type: string
         type: array
-      description:
-        description: 步骤描述
+      desc:
         type: string
       disable:
-        description: 是否禁用
         type: boolean
       env:
-        additionalProperties:
-          type: string
-        description: 步骤环境变量
-        type: object
-      msg:
-        description: 步骤信息
+        items:
+          $ref: '#/definitions/types.SEnv'
+        type: array
+      message:
         type: string
       name:
-        description: 步骤名称
         type: string
       state:
-        description: 步骤状态
         type: string
       time:
-        allOf:
-        - $ref: '#/definitions/types.STimeRes'
-        description: 时间
+        $ref: '#/definitions/types.STimeRes'
       timeout:
-        description: 步骤超时时间
         type: string
       type:
-        description: 步骤类型
         type: string
     type: object
   types.STaskCreateRes:
     properties:
       count:
-        description: 步骤数量
         type: integer
       name:
-        description: 任务名称
         type: string
     type: object
   types.STaskListDetailRes:
     properties:
       page:
-        allOf:
-        - $ref: '#/definitions/types.SPageRes'
-        description: 分页
+        $ref: '#/definitions/types.SPageRes'
       tasks:
-        description: 任务列表
         items:
           $ref: '#/definitions/types.STaskRes'
         type: array
@@ -411,85 +362,58 @@ definitions:
   types.STaskReq:
     properties:
       async:
-        description: 是否异步执行
-        example: false
         type: boolean
-      description:
-        description: 任务描述
+      desc:
         type: string
       disable:
-        description: 是否禁用
-        example: false
         type: boolean
       env:
-        additionalProperties:
-          type: string
-        description: 任务环境变量
-        example:
-          key: value
-          key1: value1
-        type: object
+        items:
+          $ref: '#/definitions/types.SEnv'
+        type: array
       name:
-        description: 任务名称
-        example: task_name
         type: string
       node:
-        description: Node 执行节点
-        example: ""
         type: string
       step:
-        description: 任务步骤
         items:
           $ref: '#/definitions/types.SStepReq'
         type: array
       timeout:
-        description: 任务超时时间
-        example: 24h
         type: string
+    required:
+    - step
     type: object
   types.STaskRes:
     properties:
       count:
-        description: 步骤数量
         type: integer
-      description:
-        description: 任务描述
+      desc:
         type: string
       disable:
-        description: 是否禁用
         type: boolean
       env:
-        additionalProperties:
-          type: string
-        description: 任务环境变量
-        type: object
-      msg:
-        description: 任务信息
+        items:
+          $ref: '#/definitions/types.SEnv'
+        type: array
+      message:
         type: string
       name:
-        description: 任务名称
         type: string
       node:
-        description: 节点名称
         type: string
       state:
-        description: 任务状态
         type: string
       time:
-        allOf:
-        - $ref: '#/definitions/types.STimeRes'
-        description: 时间
+        $ref: '#/definitions/types.STimeRes'
       timeout:
-        description: 任务超时时间
         type: string
     type: object
   types.STimeRes:
     properties:
       end:
-        description: 结束时间
         type: string
       start:
-        description: 开始时间
         type: string
     type: object
   types.SVersion:
@@ -579,7 +503,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SBase-types_SPool'
+            $ref: '#/definitions/types.SBase-types_SPoolRes'
         "500":
           description: Internal Server Error
           schema:
@@ -597,14 +521,14 @@ paths:
         name: setting
         required: true
         schema:
-          $ref: '#/definitions/types.SPool'
+          $ref: '#/definitions/types.SPoolReq'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SBase-types_SPool'
+            $ref: '#/definitions/types.SBase-types_SPoolReq'
         "500":
           description: Internal Server Error
           schema:
@@ -830,53 +754,6 @@ paths:
       summary: 列表
       tags:
       - 任务
-    post:
-      consumes:
-      - application/json
-      description: 创建任务
-      parameters:
-      - description: 任务名称
-        in: query
-        name: name
-        type: string
-      - default: false
-        description: 是否异步执行
-        in: query
-        name: async
-        type: boolean
-      - description: 执行超时时间
-        in: query
-        name: timeout
-        type: string
-      - collectionFormat: csv
-        description: 任务环境变量
-        in: query
-        items:
-          type: string
-        name: env
-        type: array
-      - description: 步骤内容
-        in: body
-        name: steps
-        required: true
-        schema:
-          items:
-            $ref: '#/definitions/types.SStepReq'
-          type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-types_STaskCreateRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 创建
-      tags:
-      - 任务
   /api/v1/task/{task}:
     delete:
       consumes:
@@ -969,7 +846,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 指定任务指定步骤的执行输出, 支持WS长连接
+      description: 获取步骤详情
       parameters:
       - description: 任务名称
         in: path
@@ -987,12 +864,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SBase-types_SLogsRes'
+            $ref: '#/definitions/types.SBase-types_SStepRes'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.SBase-any'
-      summary: 日志
+      summary: 详情
       tags:
       - 步骤
     put:
@@ -1037,6 +914,36 @@ paths:
           schema:
             $ref: '#/definitions/types.SBase-any'
       summary: 管理
+      tags:
+      - 步骤
+  /api/v1/task/{task}/step/{step}/log:
+    get:
+      consumes:
+      - application/json
+      description: 指定任务指定步骤的执行输出, 支持WS长连接
+      parameters:
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      - description: 步骤名称
+        in: path
+        name: step
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SStepLogsRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 日志
       tags:
       - 步骤
   /api/v1/task/{task}/workspace:
@@ -1155,61 +1062,6 @@ paths:
       summary: 创建
       tags:
       - 任务
-  /api/v2/task/{task}:
-    get:
-      consumes:
-      - application/json
-      description: 获取任务详情
-      parameters:
-      - description: 任务名称
-        in: path
-        name: task
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-types_STaskRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 详情
-      tags:
-      - 任务
-  /api/v2/task/{task}/step/{step}:
-    get:
-      consumes:
-      - application/json
-      description: 获取步骤详情
-      parameters:
-      - description: 任务名称
-        in: path
-        name: task
-        required: true
-        type: string
-      - description: 步骤名称
-        in: path
-        name: step
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.SBase-types_SStepRes'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/types.SBase-any'
-      summary: 详情
-      tags:
-      - 步骤
   /healthyz:
     get:
       consumes:

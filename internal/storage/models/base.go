@@ -102,6 +102,6 @@ func Paginate(db *gorm.DB, page, pageSize int64) *gorm.DB {
 type SEnvs []*SEnv
 
 type SEnv struct {
-	Name  string `json:"name,omitempty" gorm:"size:256;index;not null;comment:名称"`
+	Name  string `json:"name,omitempty" gorm:"size:256;index:,unique,composite:key;not null;comment:名称"`
 	Value string `json:"value,omitempty" gorm:"size:256;comment:值"`
 }

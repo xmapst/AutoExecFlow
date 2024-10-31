@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
@@ -56,6 +57,13 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	cachesPlugin := &caches.Caches{Conf: &caches.Config{
+		Easer: true,
+	}}
+
+	_ = gdb.Use(cachesPlugin)
+
 	_db, err := gdb.DB()
 	if err != nil {
 		return nil, err
@@ -163,6 +171,7 @@ func (d *sDatabase) TaskCount(state models.State) (res int64) {
 
 func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.STasks, total int64) {
 	query := d.Model(&models.STask{}).
+		Select("name, state, message, s_time, e_time").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")

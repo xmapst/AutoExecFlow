@@ -16,8 +16,8 @@ func Pool() *SPoolService {
 	return &SPoolService{}
 }
 
-func (p *SPoolService) Get() *types.SPool {
-	return &types.SPool{
+func (p *SPoolService) Get() *types.SPoolRes {
+	return &types.SPoolRes{
 		Size:    worker.GetSize(),
 		Total:   storage.TaskCount(models.StateAll),
 		Running: storage.TaskCount(models.StateRunning),
@@ -25,7 +25,7 @@ func (p *SPoolService) Get() *types.SPool {
 	}
 }
 
-func (p *SPoolService) Set(size int) (*types.SPool, error) {
+func (p *SPoolService) Set(size int) (*types.SPoolRes, error) {
 	if size <= 0 {
 		return p.Get(), nil
 	}

@@ -12,9 +12,10 @@ Async: true
 #Disable: false
 # 超时时间, 可选, 默认48小时
 Timeout: 2m
-# 全局环境变量, 可选, key: value形式
+# 全局环境变量, 可选
 Env:
-  Test: "test_env"
+  - Name: Test
+    Value: "test_env"
 # 步骤列表, 不能为空
 Step:
     # 步骤名称, 唯一, 可选[当自定义编排是必须设置], 默认自动生成
@@ -28,9 +29,10 @@ Step:
     # 依赖步骤, 可选[自定义编排时用到]
     Depends:
       - 步骤1
-    # 局部环境变量, 会覆盖同名的全局变量, 可选, key: value形式
+    # 局部环境变量, 会覆盖同名的全局变量
     Env:
-      Test: "test_env"
+      - Name: Test
+        Value: "test_env"
     # 类型
     Type: sh
     # 内容
@@ -41,7 +43,8 @@ Step:
     Description: 这是一段步骤描述
     Timeout: 2m
     Env:
-      Test: "test_env"
+      - Name: Test
+        Value: "test_env"
     Type: sh
     Content: |-
       ping 1.1.1.1
@@ -288,22 +291,35 @@ class WebSocketManager {
 
 
 class TaskModal {
-    constructor(task) {
+    constructor(taskName) {
         this.WebSocketManager = null;
-        this.task = task;
+        this.task = null;
         this.graph = null;
         this.stepModals = [];
-        this.init();
+        this.init(taskName);
     };
 
-    init() {
-        this.WebSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${this.task.name}`, this.updateGraphData, (error) => {
+    init(taskName) {
+        // 获取任务详细
+        fetch(`${baseUrl}${taskUrl}/${taskName}`)
+            .then(response => response.json())
+            .then(res => {
+                this.task = res.data;
+               this.start(taskName);
+            }).catch(error => {
+                console.log('There was a problem with the fetch operation:', error);
+                throw error;
+        })
+    };
+
+    start(taskName) {
+        this.WebSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${taskName}/step`, this.updateGraphData, (error) => {
             alert('WebSocket error: ' + error);
             this.closeModal();
         })
         this.createModal();
         this.addEventListeners();
-    };
+    }
 
     createModal() {
         Utils.removeElementById('task-card');
@@ -329,7 +345,7 @@ class TaskModal {
                      <div id="task-card-right" class="card-body-left">
                          <h5>环境变量:</h5>
                          <div id="${this.task.name + '-env'}">
-                             <pre class="env">${Object.entries(this.task.env).map(([key, value]) => `${key}=${value}`).join('\n')}</pre>
+                             <pre class="env">${this.task.env.map(env => `- Name: ${env.name}\n  Value: ${env.value}`).join('\n')}</pre>
                          </div>
                      </div>
                     ` : ''}
@@ -457,7 +473,7 @@ class TaskModal {
 
         this.graph.on('node:click', evt => {
             const model = evt.item.getModel();
-            this.openStepModal(model.detail);
+            this.openStepModal(model.detail.name);
         });
         this.graph.on('canvas:click', () => {
             this.closeAllStepModals();
@@ -532,8 +548,8 @@ class TaskModal {
         this.stepModals = [];
     }
 
-    openStepModal(step) {
-        const stepModal = new StepModal(this.task.name, step);
+    openStepModal(stepName) {
+        const stepModal = new StepModal(this.task.name, stepName);
         this.stepModals.push(stepModal);
     }
 
@@ -568,25 +584,37 @@ class TaskModal {
 }
 
 class StepModal {
-    constructor(taskName, step) {
-        this.taskName = taskName;
+    constructor(taskName, stepName) {
         this.WebSocketManager = null;
-        this.step = step;
+        this.step = null;
         this.isDragging = false;
         this.offsetX = 0;
         this.offsetY = 0;
-        this.init();
+        this.init(taskName, stepName);
     };
 
-    init() {
+    init(taskName,stepName) {
+        // 获取任务详细
+        fetch(`${baseUrl}${taskUrl}/${taskName}/step/${stepName}`)
+            .then(response => response.json())
+            .then(res => {
+                this.step = res.data;
+                this.start(taskName, stepName);
+            }).catch(error => {
+            console.log('There was a problem with the fetch operation:', error);
+            throw error;
+        })
+    };
+
+    start(taskName, stepName) {
         const existingCard = document.getElementById(this.step.name + "-step-card");
         if (existingCard) {
             existingCard.style.zIndex = ++highestZIndex;
             return;
         }
-        this.WebSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${this.taskName}/step/${this.step.name}`,this.updateStepOutput, ()=> {
+        this.WebSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${taskName}/step/${stepName}/log`,this.updateStepOutput, ()=> {
             const outputElement = document.getElementById('step-output-text');
-            outputElement.innerHTML = `<pre class="step-card-code">${Utils.escapeHTML(this.step.msg)}</pre>`;
+            outputElement.innerHTML = `<pre class="step-card-code">${Utils.escapeHTML(this.step.message)}</pre>`;
         });
         this.createModal();
         this.addEventListeners();
@@ -609,7 +637,7 @@ class StepModal {
                         <div id="${this.step.name + '-step-card-left'}" class="card-body-left">
                             <h5>环境变量:</h5>
                             <div id="${this.step.name + '-env'}">
-                                <pre class="env">${Object.entries(this.step.env).map(([key, value]) => `${key}=${value}`).join('\n')}</pre>
+                                <pre class="env">${this.step.env.map(env => `- Name: ${env.name}\n  Value: ${env.value}`).join('\n')}</pre>
                             </div>
                         </div>
                     ` : ''}
@@ -785,7 +813,7 @@ class TaskAddCard {
             return;
         }
         try {
-            fetch(`${baseUrl}${taskV2Url}`, {
+            fetch(`${baseUrl}${taskUrl}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/yaml',
@@ -797,7 +825,7 @@ class TaskAddCard {
                     if (data.code === 0) {
                         alert("任务添加成功");
                     } else {
-                        alert("任务添加失败: " + Utils.escapeHTML(data.msg));
+                        alert("任务添加失败: " + Utils.escapeHTML(data.message));
                     }
                 });
         } catch (e) {
@@ -867,7 +895,6 @@ class TaskTable {
             const color = Utils.getStatusColor(task.state || 'unknown');
             row.innerHTML = `
                     <td id="${task.name+'-name'}">${task.name}</td>
-                    <td id="${task.name+'-node'}">${task.node}</td>
                     <td id="${task.name+'-count'}">${task.count}</td>
                     <td id="${task.name+'-message'}" class="message" title=""></td>
                     <td id="${task.name+'-start'}">${task.time.start ? task.time.start : '---'}</td>
@@ -887,11 +914,11 @@ class TaskTable {
                 `;
             tableBody.appendChild(row);
             const msgDocument = document.getElementById(task.name + '-message');
-            if (task.msg) {
-                msgDocument.innerText = task.msg;
-                msgDocument.setAttribute('title', task.msg);
+            if (task.message) {
+                msgDocument.innerText = task.message;
+                msgDocument.setAttribute('title', task.message);
             }
-            row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task));
+            row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task.name));
             row.querySelector("#dump-task").addEventListener("click", () => this.dumpTask(task));
             if (row.querySelector("#kill-task") !== null) {
                 row.querySelector("#kill-task").addEventListener("click", () => Utils.taskManager(task.name, 'kill'));
@@ -952,8 +979,8 @@ class TaskTable {
         }
     }
 
-    showTaskCard(task) {
-        new TaskModal(task);
+    showTaskCard(taskName) {
+        new TaskModal(taskName);
     };
 
     dumpTask(task) {
@@ -966,8 +993,8 @@ class TaskTable {
             return response.json();
         }).then(res => {
             if (res.code !== 0) {
-                alert(res.msg);
-                throw new Error(res.msg);
+                alert(res.message);
+                throw new Error(res.message);
             }
             const blob = new Blob([res.data], { type: 'application/yaml' });
             const url = window.URL.createObjectURL(blob);
@@ -1009,7 +1036,6 @@ class Main {
                         <thead>
                             <tr>
                                 <th>名称</th>
-                                <th>节点</th>
                                 <th style="width: 48px;">步骤数</th>
                                 <th>消息</th>
                                 <th style="width: 162px;">开始时间</th>

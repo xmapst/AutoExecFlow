@@ -163,6 +163,7 @@ func (t *sTask) StepStateList(str string) (res map[string]models.State) {
 
 func (t *sTask) StepList(str string) (res models.SSteps) {
 	query := t.Model(&models.SStep{}).
+		Select("name, state, code, message, s_time, e_time").
 		Order("id ASC").
 		Where(map[string]interface{}{
 			"task_name": t.tName,

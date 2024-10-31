@@ -20,7 +20,7 @@ import (
 // @Param		task path string true "任务名称"
 // @Success		200 {object} types.SBase[types.STaskRes]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v2/task/{task} [get]
+// @Router		/api/v1/task/{task} [get]
 func Detail(c *gin.Context) {
 	taskName := c.Param("task")
 	if taskName == "" {

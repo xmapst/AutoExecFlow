@@ -12,36 +12,36 @@ type sStepDepend struct {
 	sName string
 }
 
-func (s *sStepDepend) List() (res []string) {
-	s.Model(&models.SStepDepend{}).
+func (d *sStepDepend) List() (res []string) {
+	d.Model(&models.SStepDepend{}).
 		Select("name").
 		Where(map[string]interface{}{
-			"task_name": s.tName,
-			"step_name": s.sName,
+			"task_name": d.tName,
+			"step_name": d.sName,
 		}).
 		Order("id ASC").
 		Find(&res)
 	return
 }
 
-func (s *sStepDepend) Insert(depends ...string) (err error) {
+func (d *sStepDepend) Insert(depends ...string) (err error) {
 	if len(depends) == 0 {
 		return
 	}
 	var stepDepends []models.SStepDepend
 	for _, depend := range depends {
 		stepDepends = append(stepDepends, models.SStepDepend{
-			TaskName: s.tName,
-			StepName: s.sName,
+			TaskName: d.tName,
+			StepName: d.sName,
 			Name:     depend,
 		})
 	}
-	return s.Create(&stepDepends).Error
+	return d.Create(&stepDepends).Error
 }
 
-func (s *sStepDepend) RemoveAll() (err error) {
-	return s.Where(map[string]interface{}{
-		"task_name": s.tName,
-		"step_name": s.sName,
+func (d *sStepDepend) RemoveAll() (err error) {
+	return d.Where(map[string]interface{}{
+		"task_name": d.tName,
+		"step_name": d.sName,
 	}).Delete(&models.SStepDepend{}).Error
 }

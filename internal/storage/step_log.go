@@ -19,11 +19,11 @@ type sStepLog struct {
 	lock sync.Mutex
 }
 
-func (s *sStepLog) List(latestLine *int64) (res models.SStepLogs) {
-	query := s.Model(&models.SStepLog{}).
+func (l *sStepLog) List(latestLine *int64) (res models.SStepLogs) {
+	query := l.Model(&models.SStepLog{}).
 		Where(map[string]interface{}{
-			"task_name": s.tName,
-			"step_name": s.sName,
+			"task_name": l.tName,
+			"step_name": l.sName,
 		}).Order("line ASC")
 	if latestLine != nil {
 		// 如果 latestLine 不为空，只查询行号大于 latestLine 的日志
@@ -33,17 +33,17 @@ func (s *sStepLog) List(latestLine *int64) (res models.SStepLogs) {
 	return
 }
 
-func (s *sStepLog) Insert(log *models.SStepLog) error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	log.TaskName = s.tName
-	log.StepName = s.sName
-	return s.Transaction(func(tx *gorm.DB) error {
+func (l *sStepLog) Insert(log *models.SStepLog) error {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+	log.TaskName = l.tName
+	log.StepName = l.sName
+	return l.Transaction(func(tx *gorm.DB) error {
 		var count int64
-		if err := s.Model(&models.SStepLog{}).
+		if err := l.Model(&models.SStepLog{}).
 			Where(map[string]interface{}{
-				"task_name": s.tName,
-				"step_name": s.sName,
+				"task_name": l.tName,
+				"step_name": l.sName,
 			}).
 			Count(&count).Error; err != nil {
 			return err
@@ -53,8 +53,8 @@ func (s *sStepLog) Insert(log *models.SStepLog) error {
 	})
 }
 
-func (s *sStepLog) Write(content string) {
-	if err := s.Insert(&models.SStepLog{
+func (l *sStepLog) Write(content string) {
+	if err := l.Insert(&models.SStepLog{
 		Timestamp: time.Now().UnixNano(),
 		Content:   content,
 	}); err != nil {
@@ -62,13 +62,13 @@ func (s *sStepLog) Write(content string) {
 	}
 }
 
-func (s *sStepLog) Writef(format string, args ...interface{}) {
-	s.Write(fmt.Sprintf(format, args...))
+func (l *sStepLog) Writef(format string, args ...interface{}) {
+	l.Write(fmt.Sprintf(format, args...))
 }
 
-func (s *sStepLog) RemoveAll() (err error) {
-	return s.Where(map[string]interface{}{
-		"task_name": s.tName,
-		"step_name": s.sName,
+func (l *sStepLog) RemoveAll() (err error) {
+	return l.Where(map[string]interface{}{
+		"task_name": l.tName,
+		"step_name": l.sName,
 	}).Delete(&models.SStepLog{}).Error
 }
