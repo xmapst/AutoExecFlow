@@ -225,3 +225,8 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
   - 1003: not found
   - 1004: pending
   - 1005: paused
+
+## Swagger API documentation
+[Swagger API documentation](https://github.com/xmapst/AutoExecFlow/blob/main/docs/swagger.yaml)
+
+![](images/swagger.png)
