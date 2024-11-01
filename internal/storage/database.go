@@ -196,7 +196,7 @@ func (d *sDatabase) PipelineCreate(pipeline *models.SPipeline) (err error) {
 
 func (d *sDatabase) PipelineList(page, pageSize int64, str string) (res models.SPipelines, total int64) {
 	query := d.Model(&models.SPipeline{}).
-		Select("name, disable, type").
+		Select("name, disable, tpl_type").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")

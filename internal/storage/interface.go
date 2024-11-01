@@ -139,7 +139,7 @@ type IPipeline interface {
 	// IsDisable 是否禁用
 	IsDisable() (disable bool)
 	// 类型
-	Type() (res string, err error)
+	TplType() (res string, err error)
 	// 内容
 	Content() (res string, err error)
 }

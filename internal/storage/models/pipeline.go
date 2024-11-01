@@ -13,7 +13,7 @@ func (s *SPipeline) TableName() string {
 type SPipelineUpdate struct {
 	Desc    string `json:"desc,omitempty" gorm:"comment:描述"`
 	Disable *bool  `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
-	Type    string `json:"type,omitempty" gorm:"size:256;index;not null;comment:类型"`
+	TplType string `json:"tpl_type,omitempty" gorm:"size:256;index;not null;comment:模板类型"`
 	Content string `json:"content,omitempty" gorm:"type:text;comment:内容"`
 }
 

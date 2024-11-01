@@ -11,7 +11,7 @@ type SPipelineRes struct {
 	Name    string `json:"name" yaml:"Name"`
 	Desc    string `json:"desc,omitempty" yaml:"Desc,omitempty"`
 	Disable bool   `json:"disable,omitempty" yaml:"Disable,omitempty"`
-	Type    string `json:"type,omitempty" yaml:"Type,omitempty"`
+	TplType string `json:"tpl_type" yaml:"TplType"`
 	Content string `json:"content,omitempty" yaml:"Content,omitempty"`
 }
 
@@ -19,14 +19,14 @@ type SPipelineCreateReq struct {
 	Name    string `json:"name" yaml:"Name" binding:"required"`
 	Desc    string `json:"desc,omitempty" yaml:"Desc,omitempty"`
 	Disable *bool  `json:"disable" yaml:"Disable"`
-	Type    string `json:"type" yaml:"Type" binding:"required" example:"jinja2"`
+	TplType string `json:"tpl_type" yaml:"TplType" binding:"required" example:"jinja2"`
 	Content string `json:"content" yaml:"Content" binding:"required"`
 }
 
 type SPipelineUpdateReq struct {
 	Desc    string `json:"desc,omitempty" yaml:"Desc,omitempty"`
 	Disable *bool  `json:"disable" yaml:"Disable"`
-	Type    string `json:"type" yaml:"Type" binding:"required" example:"jinja2"`
+	TplType string `json:"tpl_type" yaml:"TplType" binding:"required" example:"jinja2"`
 	Content string `json:"content" yaml:"Content" binding:"required"`
 }
 

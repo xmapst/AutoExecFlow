@@ -865,7 +865,7 @@ class PipelineAddCard {
                     <label for="name">名称:</label>
                     <input type="text" id="name" name="name" style="width: 200px">
                     <div style="position: absolute; display: contents">
-                        <label for="type">类型:</label>
+                        <label for="type">模板类型:</label>
                         <select id="type" name="type">
                             <option value="jinja2">jinja2</option>
                             <!-- 如果有其他选项，也可以在这里添加 -->
@@ -1693,7 +1693,7 @@ class PipelineTable {
             const row = document.createElement("tr");
             row.innerHTML = `
                     <td id="pipeline-${pipeline.name+'-name'}">${pipeline.name}</td>
-                    <td id="pipeline-${pipeline.name+'-type'}">${pipeline.type}</td>
+                    <td id="pipeline-${pipeline.name+'-tpl_type'}">${pipeline.tpl_type}</td>
                     <td id="pipeline-${pipeline.name+'-disable'}">${pipeline.disable ? pipeline.disable : '---'}</td>
                     <td id="pipeline-${pipeline.name+'-actions'}">
                         <div id="pipeline-dropdown" class="dropdown">
@@ -1865,7 +1865,7 @@ class Main {
                             <thead>
                                 <tr>
                                     <th>名称</th>
-                                    <th>类型</th>
+                                    <th>模板类型</th>
                                     <th>禁用</th>
                                     <th style="width: 48px;">动作</th>
                                 </tr>

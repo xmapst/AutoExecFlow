@@ -84,9 +84,9 @@ func (p *sPipeline) IsDisable() (disable bool) {
 	return
 }
 
-func (p *sPipeline) Type() (res string, err error) {
+func (p *sPipeline) TplType() (res string, err error) {
 	err = p.Model(&models.SPipeline{}).
-		Select("type").
+		Select("tpl_type").
 		Where(map[string]interface{}{
 			"name": p.name,
 		}).

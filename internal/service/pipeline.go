@@ -43,7 +43,7 @@ func PipelineList(req *types.SPageReq) *types.SPipelineListRes {
 		list.Pipelines = append(list.Pipelines, &types.SPipelineRes{
 			Name:    pipeline.Name,
 			Disable: *pipeline.Disable,
-			Type:    pipeline.Type,
+			TplType: pipeline.TplType,
 		})
 	}
 	return list
@@ -62,7 +62,7 @@ func (p *SPipelineService) Detail() (*types.SPipelineRes, error) {
 		Name:    res.Name,
 		Desc:    res.Desc,
 		Disable: *res.Disable,
-		Type:    res.Type,
+		TplType: res.TplType,
 		Content: res.Content,
 	}, nil
 }
@@ -73,7 +73,7 @@ func (p *SPipelineService) Create(req *types.SPipelineCreateReq) error {
 		SPipelineUpdate: models.SPipelineUpdate{
 			Desc:    req.Desc,
 			Disable: req.Disable,
-			Type:    req.Type,
+			TplType: req.TplType,
 			Content: req.Content,
 		},
 	})
@@ -83,7 +83,7 @@ func (p *SPipelineService) Update(req *types.SPipelineUpdateReq) error {
 	return storage.Pipeline(p.name).Update(&models.SPipelineUpdate{
 		Desc:    req.Desc,
 		Disable: req.Disable,
-		Type:    req.Type,
+		TplType: req.TplType,
 		Content: req.Content,
 	})
 }
@@ -151,14 +151,14 @@ func (p *SPipelineService) buildReRun(name string, param map[string]any) error {
 	}
 
 	var content string
-	switch pipeline.Type {
+	switch pipeline.TplType {
 	case "jinja2":
 		content, err = jinja.Parse(pipeline.Content, param)
 		if err != nil {
 			return err
 		}
 	default:
-		return fmt.Errorf("pipeline type %s not support", pipeline.Type)
+		return fmt.Errorf("pipeline type %s not support", pipeline.TplType)
 	}
 
 	var taskReq = new(types.STaskReq)
