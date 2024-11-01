@@ -865,8 +865,8 @@ class PipelineAddCard {
                     <label for="name">名称:</label>
                     <input type="text" id="name" name="name" style="width: 200px">
                     <div style="position: absolute; display: contents">
-                        <label for="type">模板类型:</label>
-                        <select id="type" name="type">
+                        <label for="tpl_type">模板类型:</label>
+                        <select id="tpl_type" name="tpl_type">
                             <option value="jinja2">jinja2</option>
                             <!-- 如果有其他选项，也可以在这里添加 -->
                         </select>
@@ -942,7 +942,7 @@ class PipelineAddCard {
         if (descriptionElement) {
             description = descriptionElement.value.trim();
         }
-        const type = document.getElementById("type").value;
+        const tplType = document.getElementById("tpl_type").value;
         const content = this.editor.getValue().trim();
         if (name === "") {
             alert("名称不能为空！");
@@ -961,7 +961,7 @@ class PipelineAddCard {
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: `Name: ${name}\nDesc: ${description}\nType: ${type}\nContent: |-\n    ${escapedContent}
+                body: `Name: ${name}\nDesc: ${description}\nTplType: ${tplType}\nContent: |-\n    ${escapedContent}
                 `,
             })
                 .then(response => {
@@ -1117,7 +1117,7 @@ class PipelineEditCard {
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: `Desc: ${description}\nType: ${this.pipeline.type}\nContent: |-\n    ${escapedContent}
+                body: `Desc: ${description}\nTplType: ${this.pipeline.tpl_type}\nContent: |-\n    ${escapedContent}
                 `,
             })
                 .then(response => {
