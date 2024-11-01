@@ -25,19 +25,6 @@ definitions:
       timestamp:
         type: integer
     type: object
-  types.SBase-array_string:
-    properties:
-      code:
-        $ref: '#/definitions/types.Code'
-      data:
-        items:
-          type: string
-        type: array
-      message:
-        type: string
-      timestamp:
-        type: integer
-    type: object
   types.SBase-types_SFileListRes:
     properties:
       code:
@@ -55,6 +42,17 @@ definitions:
         $ref: '#/definitions/types.Code'
       data:
         $ref: '#/definitions/types.SHealthyz'
+      message:
+        type: string
+      timestamp:
+        type: integer
+    type: object
+  types.SBase-types_SPipelineBuildListRes:
+    properties:
+      code:
+        $ref: '#/definitions/types.Code'
+      data:
+        $ref: '#/definitions/types.SPipelineBuildListRes'
       message:
         type: string
       timestamp:
@@ -246,6 +244,15 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  types.SPipelineBuildListRes:
+    properties:
+      page:
+        $ref: '#/definitions/types.SPageRes'
+      tasks:
+        items:
+          type: string
+        type: array
     type: object
   types.SPipelineBuildReq:
     properties:
@@ -711,7 +718,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SBase-array_string'
+            $ref: '#/definitions/types.SBase-types_SPipelineBuildListRes'
         "500":
           description: Internal Server Error
           schema:

@@ -5,8 +5,8 @@
 }
 
 body {
-    background-color: #f0f2f5;;
-    color: #2c3e50;
+    background-color: #f8fafc; /* Softer background color */
+    color: #34495e; /* Slightly darker color for text */
     font-family: Arial, sans-serif;
     overflow: hidden;
 }
@@ -18,14 +18,14 @@ body {
 
 ::-webkit-scrollbar-track {
     border-radius: 3px;
-    background: #fff;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+    background: #f0f0f0;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
-    background: #b8b6b6;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    background: #c4c4c4;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
 }
 
 #main {
@@ -34,25 +34,35 @@ body {
     overflow-y: auto;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 15px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
 .header {
+    width: 100%;
     display: flex;
-    justify-content: flex-end;
     margin-bottom: 6px;
 }
 
-#page-size {
-    background-color: #2980b9;
+.menu {
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
+#options {
+    margin-left: auto;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 8px 12px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.page-size {
+    background-color: #78c6e3; /* Softer blue */
     color: #ffffff;
-    padding: 5px 10px;
+    padding: 4px 8px;
     border: none;
     border-radius: 4px;
 }
@@ -64,23 +74,24 @@ body {
 }
 
 button {
-    margin: 5px;
-    padding: 5px 10px;
+    margin: 4px;
+    padding: 4px 8px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
+    color: #ffffff;
 }
 
 a {
-    color: #2c3e50;
+    color: #34495e;
     padding: 12px 16px;
     text-decoration: none;
     display: block;
 }
 
 a:hover {
-    background-color: #d5dae0;
+    background-color: #e2e6ea; /* Softer hover effect */
 }
 
 .button-sure,
@@ -90,19 +101,19 @@ a:hover {
 }
 
 .button-sure {
-    background-color: #2980b9;
+    background-color: #78c6e3;
 }
 
 .button-sure:hover {
-    background-color: #2471a3;
+    background-color: #6aa9d6;
 }
 
 .button-cancel {
-    background-color: #e74c3c;
+    background-color: #e57373; /* Softer red */
 }
 
 .button-cancel:hover {
-    background-color: #c0392b;
+    background-color: #d9534f;
 }
 
 .table-container {
@@ -112,23 +123,23 @@ a:hover {
     margin-bottom: 6px;
 }
 
-#task-table {
+.common-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
 }
 
-#task-table th, #task-table td {
-    padding: 1px;
+.common-table th, .common-table td {
+    padding: 6px;
     text-align: left;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-#task-table th {
-    background-color: #ecf0f1;
+.common-table th {
+    background-color: #f4f6f7; /* Lightened header */
 }
 
-#task-table td.message {
+.common-table td.message {
     max-width: 666px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -141,8 +152,8 @@ a:hover {
     max-height: 4.5em;
 }
 
-#task-table tr:hover {
-    background-color: #f8f9fa;
+.common-table tr:hover {
+    background-color: #f7f9fa;
 }
 
 .pagination {
@@ -159,7 +170,7 @@ a:hover {
 }
 
 .dropbtn {
-    background-color: #2980b9;
+    background-color: #78c6e3;
     color: white;
     white-space: nowrap;
     padding: 5px 10px;
@@ -167,17 +178,17 @@ a:hover {
 
 .dropbtn:hover,
 .dropbtn:focus {
-    background-color: #2471a3;
+    background-color: #6aa9d6;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #ecf0f1;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background-color: #f4f6f7; /* Lightened dropdown */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     z-index: 100;
     border-radius: 4px;
-    min-width: 70px;
+    min-width: 60px;
     top: auto;
     left: 0;
     bottom: 100%;
@@ -204,7 +215,7 @@ tr:nth-child(-n + 3) .dropdown-content {
 }
 
 .card-body {
-    padding: 6px;
+    padding: 8px;
     position: absolute;
     inset: 42px 0 0 0;
     display: flex;
@@ -236,7 +247,7 @@ tr:nth-child(-n + 3) .dropdown-content {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.4); /* Softer overlay */
     z-index: 100;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -253,12 +264,12 @@ tr:nth-child(-n + 3) .dropdown-content {
     font-size: 12px;
 }
 
-.task-card {
+.card-one {
     position: fixed;
     inset: 0 0 0 60%;
     background-color: white;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    padding: 6px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    padding: 8px;
     overflow-y: auto;
     z-index: 500;
     opacity: 0;
@@ -266,7 +277,7 @@ tr:nth-child(-n + 3) .dropdown-content {
     transition: opacity 0.3s, transform 0.3s;
 }
 
-.task-card.show {
+.card-one.show {
     opacity: 1;
     transform: translateY(0);
 }
@@ -278,9 +289,9 @@ tr:nth-child(-n + 3) .dropdown-content {
     width: 42%;
     height: 700px;
     background-color: white;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    padding: 6px;
-    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    border-radius: 10px;
     overflow-y: auto;
 }
 
@@ -292,8 +303,8 @@ tr:nth-child(-n + 3) .dropdown-content {
 
 .step-card-code {
     height: 100%;
-    background-color: black;
-    color: white;
+    background-color: #333333; /* Softer black */
+    color: #ffffff;
     padding: 6px;
     overflow-y: auto;
     white-space: pre-wrap;
@@ -304,7 +315,32 @@ tr:nth-child(-n + 3) .dropdown-content {
     position: fixed;
     inset: 46px 6px 6px 6px;
     color: white;
+    overflow: hidden;
 }
+
+.create-content label {
+    color: black;
+    margin-right: 10px;
+}
+
+.create-content input[type="text"],
+.create-content textarea,
+.create-content select {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ccc; /* 边框颜色 */
+    border-radius: 5px; /* 圆角边框 */
+    font-size: 16px; /* 字体大小 */
+    transition: border-color 0.3s, box-shadow 0.3s; /* 动效 */
+}
+
+.create-content input[type="text"]:focus,
+.create-content textarea:focus, /* 获取焦点时效果 */
+.create-content select:focus {
+    border-color: #007bff; /* 聚焦时边框颜色 */
+    outline: none; /* 去掉默认的焦点轮廓 */
+}
+
 
 #yaml-editor {
     height: 100%;

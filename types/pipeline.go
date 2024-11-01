@@ -16,8 +16,11 @@ type SPipelineRes struct {
 }
 
 type SPipelineCreateReq struct {
-	Name string `json:"name" yaml:"Name" binding:"required"`
-	SPipelineUpdateReq
+	Name    string `json:"name" yaml:"Name" binding:"required"`
+	Desc    string `json:"desc,omitempty" yaml:"Desc,omitempty"`
+	Disable *bool  `json:"disable" yaml:"Disable"`
+	Type    string `json:"type" yaml:"Type" binding:"required" example:"jinja2"`
+	Content string `json:"content" yaml:"Content" binding:"required"`
 }
 
 type SPipelineUpdateReq struct {
@@ -35,4 +38,9 @@ type SPipelineBuildRes struct {
 
 type SPipelineBuildReq struct {
 	Params map[string]any `json:"params,omitempty" yaml:"Params,omitempty"`
+}
+
+type SPipelineBuildListRes struct {
+	Page  SPageRes `json:"page" yaml:"Page"`
+	Tasks []string `json:"tasks" yaml:"Tasks"`
 }

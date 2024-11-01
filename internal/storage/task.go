@@ -32,6 +32,8 @@ func (t *sTask) ClearAll() error {
 			return err
 		}
 	}
+	// 清理build表
+	t.Where("task_name", t.tName).Delete(&models.SPipelineBuild{})
 	return nil
 }
 

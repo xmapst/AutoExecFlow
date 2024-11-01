@@ -73,7 +73,7 @@ func New(relativePath string) *gin.Engine {
 		// pipeline
 		api.GET("/v1/pipeline", pipeline.List)
 		api.POST("/v1/pipeline", pipeline.Post)
-		api.PUT("/v1/pipeline/:pipeline", pipeline.Update)
+		api.POST("/v1/pipeline/:pipeline", pipeline.Update)
 		api.GET("/v1/pipeline/:pipeline", pipeline.Detail)
 		api.DELETE("/v1/pipeline/:pipeline", pipeline.Delete)
 

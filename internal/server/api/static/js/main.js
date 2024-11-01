@@ -1,8 +1,6 @@
 let highestZIndex = 1000;
 require.config({ paths: { 'vs': baseUrl+basePath+'/vs' } });
-const taskTpl = `# 任务名称, 可选, 默认自动生成
-Name: 测试
-# 描述
+const taskTpl = `# 描述
 Description: 这是一段任务描述
 # 允许节点, 可选, 默认为当前节点
 #Node: node-01
@@ -54,7 +52,7 @@ G6.registerNode(
     'custom-node',
     {
         drawShape: function drawShape(cfg, group) {
-            const color = Utils.getStatusColor(cfg.detail.state || 'unknown');
+            const color = Utils.getStatusColor(cfg.step.state || 'unknown');
             const r = 3;
 
             group.addShape('rect', {
@@ -99,19 +97,19 @@ G6.registerNode(
                     y: 6,
                     x: 24,
                     lineHeight: 16,
-                    text: cfg.detail.name,
+                    text: cfg.step.name,
                     fill: '#fff',
                 },
                 name: 'title-text',
             });
-            if (cfg.detail.code !== undefined) {
+            if (cfg.step.code !== undefined) {
                 group.addShape('text', {
                     attrs: {
                         textBaseline: 'top',
                         y: 25,
                         x: 6,
                         lineHeight: 3,
-                        text: "状态码: " + cfg.detail.code,
+                        text: "状态码: " + cfg.step.code,
                         fill: 'rgba(0,0,0, 0.4)',
                     },
                     name: 'title-code',
@@ -123,7 +121,7 @@ G6.registerNode(
                     y: 25,
                     x: 100,
                     lineHeight: 3,
-                    text: "状态: " + cfg.detail.state,
+                    text: "状态: " + cfg.step.state,
                     fill: 'rgba(0,0,0, 0.4)',
                 },
                 name: 'title-state',
@@ -134,7 +132,7 @@ G6.registerNode(
                     y: 40,
                     x: 6,
                     lineHeight: 3,
-                    text: cfg.detail.time.start ? "开始时间: " + cfg.detail.time.start : '开始时间: ---',
+                    text: cfg.step.time.start ? "开始时间: " + cfg.step.time.start : '开始时间: ---',
                     fill: 'rgba(0,0,0, 0.4)',
                 },
                 name: 'title-time-start',
@@ -145,7 +143,7 @@ G6.registerNode(
                     y: 55,
                     x: 6,
                     lineHeight: 3,
-                    text: cfg.detail.time.end ? "结束时间: " + cfg.detail.time.end : '结束时间: ---',
+                    text: cfg.step.time.end ? "结束时间: " + cfg.step.time.end : '结束时间: ---',
                     fill: 'rgba(0,0,0, 0.4)',
                 },
                 name: 'title-time-end',
@@ -164,14 +162,14 @@ class Utils {
 
     static getStatusColor(status) {
         const statusColorMap = {
-            'running': '#00FFFF',
-            'stopped': '#2FC25B',
-            'failed': '#F4664A',
-            'pending': '#F6BD16',
-            'timeout': '#FACC14',
-            'canceled': '#B37FD3',
-            'skipped': '#1890FF',
-            'unknown': '#DCDCDC'
+            'running': '#00BFFF',
+            'stopped': '#32CD32',
+            'failed': '#FF6B6B',
+            'pending': '#FFA500',
+            'timeout': '#FFC107',
+            'canceled': '#9B59B6',
+            'skipped': '#007BFF',
+            'unknown': '#A9A9A9'
         };
         return statusColorMap[status] || 'gray';
     }
@@ -292,7 +290,8 @@ class WebSocketManager {
 
 class TaskModal {
     constructor(taskName) {
-        this.WebSocketManager = null;
+        this.webSocketManager = null;
+        this.taskName = taskName;
         this.task = null;
         this.graph = null;
         this.stepModals = [];
@@ -313,7 +312,7 @@ class TaskModal {
     };
 
     start(taskName) {
-        this.WebSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${taskName}/step`, this.updateGraphData, (error) => {
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${taskName}/step`, this.updateGraphData, (error) => {
             alert('WebSocket error: ' + error);
             this.closeModal();
         })
@@ -323,16 +322,16 @@ class TaskModal {
 
     createModal() {
         Utils.removeElementById('task-card');
-        Utils.removeElementById("modal-overlay");
+        Utils.removeElementById("task-modal-overlay");
 
         const overlay = document.createElement('div');
-        overlay.setAttribute("id", "modal-overlay");
+        overlay.setAttribute("id", "task-modal-overlay");
         overlay.className = 'modal-overlay';
         document.body.appendChild(overlay);
 
         const card = document.createElement('div');
         card.setAttribute("id", "task-card");
-        card.className = 'task-card';
+        card.className = 'card-one';
         card.style.left = "30%";
         card.innerHTML = `
                 <div class="card-header">
@@ -369,10 +368,10 @@ class TaskModal {
         const menu = new G6.Menu({
             itemTypes: ['node'],
             getContent(e) {
-                const task = e.item.getModel().task;
-                const step = e.item.getModel().detail;
+                const code = e.item.getModel().code;
+                const step = e.item.getModel().step;
                 // 判断节点是否找到
-                if (!step || task.state !== 'running' ) {
+                if (!step || code === 0 || code === 1002 || code === 1003 ) {
                     return '无操作可选';
                 }
 
@@ -393,15 +392,15 @@ class TaskModal {
                 return menuContent
             },
             handleMenuClick(target, item) {
-                const task = item.getModel().task;
-                const step = item.getModel().detail;
+                const taskName = item.getModel().taskName;
+                const step = item.getModel().step;
                 // 根据点击的菜单项执行相应的操作
                 if (target.id === 'kill-step') {
-                    Utils.stepManager(task.name, step.name, 'kill')
+                    Utils.stepManager(taskName, step.name, 'kill')
                 } else if (target.id === 'pause-step') {
-                    Utils.stepManager(task.name, step.name, 'pause')
+                    Utils.stepManager(taskName, step.name, 'pause')
                 } else if (target.id === 'resume-step') {
-                    Utils.stepManager(task.name, step.name, 'resume')
+                    Utils.stepManager(taskName, step.name, 'resume')
                 }
             },
         });
@@ -472,8 +471,8 @@ class TaskModal {
         });
 
         this.graph.on('node:click', evt => {
-            const model = evt.item.getModel();
-            this.openStepModal(model.detail.name);
+            const step = evt.item.getModel().step;
+            this.openStepModal(step.name);
         });
         this.graph.on('canvas:click', () => {
             this.closeAllStepModals();
@@ -490,13 +489,15 @@ class TaskModal {
             res.data.forEach(step => {
                 let node = {
                     id: step.name,
-                    detail: step,
-                    task: this.task,
+                    step: step,
+                    code: res.code,
+                    taskName: this.taskName,
                 };
                 const item = this.graph.findById(node.id);
                 if (item) {
-                    item.detail = node.detail;
-                    item.task = this.task;
+                    item.step = node.step;
+                    item.taskName = this.taskName;
+                    item.code = res.code;
                     this.graph.updateItem(node.id, item);
                 } else {
                     this.graph.addItem('node', node);
@@ -525,8 +526,9 @@ class TaskModal {
         res.data.forEach(step => {
             data.nodes.push({
                 id: step.name,
-                detail: step,
-                task: this.task,
+                step: step,
+                code: res.code,
+                taskName: this.taskName,
             });
             if (step.depends) {
                 step.depends.forEach(depend => {
@@ -555,7 +557,7 @@ class TaskModal {
 
     addEventListeners() {
         document.getElementById('close-task-card').addEventListener('click', () => this.closeModal());
-        document.getElementById("modal-overlay").addEventListener("click", () => this.closeModal());
+        document.getElementById("task-modal-overlay").addEventListener("click", () => this.closeModal());
         window.addEventListener('keydown', this.handleEscapeKey.bind(this));
     };
 
@@ -566,18 +568,18 @@ class TaskModal {
     }
 
     closeModal() {
-        if (this.WebSocketManager) {
-            this.WebSocketManager.close();
-            this.WebSocketManager = null;
+        if (this.webSocketManager) {
+            this.webSocketManager.close();
+            this.webSocketManager = null;
         }
         this.closeAllStepModals();
         const card = document.getElementById("task-card");
-        const overlay = document.getElementById("modal-overlay");
+        const overlay = document.getElementById("task-modal-overlay");
         card.classList.remove('show');
         overlay.classList.remove('show');
         setTimeout(() => {
             Utils.removeElementById("task-card");
-            Utils.removeElementById("modal-overlay");
+            Utils.removeElementById("task-modal-overlay");
         }, 300);
         window.removeEventListener('keydown', this.handleEscapeKey.bind(this));
     };
@@ -585,7 +587,7 @@ class TaskModal {
 
 class StepModal {
     constructor(taskName, stepName) {
-        this.WebSocketManager = null;
+        this.webSocketManager = null;
         this.step = null;
         this.isDragging = false;
         this.offsetX = 0;
@@ -612,7 +614,7 @@ class StepModal {
             existingCard.style.zIndex = ++highestZIndex;
             return;
         }
-        this.WebSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${taskName}/step/${stepName}/log`,this.updateStepOutput, ()=> {
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}/${taskName}/step/${stepName}/log`,this.updateStepOutput, ()=> {
             const outputElement = document.getElementById('step-output-text');
             outputElement.innerHTML = `<pre class="step-card-code">${Utils.escapeHTML(this.step.message)}</pre>`;
         });
@@ -688,9 +690,9 @@ class StepModal {
     };
 
     closeModal() {
-        if (this.WebSocketManager) {
-            this.WebSocketManager.close();
-            this.WebSocketManager = null;
+        if (this.webSocketManager) {
+            this.webSocketManager.close();
+            this.webSocketManager = null;
         }
         Utils.removeElementById(this.step.name + "-step-card");
     };
@@ -733,25 +735,154 @@ class TaskAddCard {
 
     show() {
         Utils.removeElementById("add-task-card");
-        Utils.removeElementById("modal-overlay");
+        Utils.removeElementById("task-modal-overlay");
 
         const overlay = document.createElement('div');
-        overlay.setAttribute("id", "modal-overlay");
+        overlay.setAttribute("id", "task-modal-overlay");
         overlay.className = 'modal-overlay';
         document.body.appendChild(overlay);
 
         const card = document.createElement('div');
         card.setAttribute("id", "add-task-card");
-        card.className = 'task-card';
+        card.className = 'card-one';
         card.innerHTML = `
             <div class="card-header">
                 <div class="button" style="position: fixed; top: 6px; right: 12px;">
                     <button id="create-task" class="button-sure">创建</button>
-                    <button id="cancel-modal" class="button-cancel">取消</button>
+                    <button id="cancel-task" class="button-cancel">取消</button>
                 </div>
             </div>
             <div class="create-content">
                 <div id="yaml-editor"></div>
+            </div>
+        `;
+        document.body.appendChild(card);
+
+        setTimeout(() => {
+            overlay.classList.add('show');
+            card.classList.add('show');
+        }, 10);
+
+        this.initializeEditor();
+        this.bindEvents();
+    }
+
+    initializeEditor() {
+        // 初始化 Monaco Editor
+        require(['vs/editor/editor.main'], () => {
+            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
+                value: "# 任务名称, 可选, 默认自动生成\nName: 测试\n"+taskTpl,
+                language: 'yaml',
+                theme: 'vs-dark',
+                autoIndent: true,
+                automaticLayout: true,
+                overviewRulerBorder: false,
+                foldingStrategy: 'indentation',
+                lineNumbers: 'on',
+                minimap: { enabled: false },
+                tabSize: 4,
+                mouseWheelZoom: true,
+                formatOnType: true,
+                formatOnPaste: true,
+                cursorStyle: 'line',
+                fontSize: 12,
+            });
+        });
+    }
+
+    closeModal() {
+        const card = document.getElementById("add-task-card");
+        const overlay = document.getElementById("task-modal-overlay");
+        card.classList.remove('show');
+        overlay.classList.remove('show');
+
+        setTimeout(() => {
+            Utils.removeElementById("add-task-card");
+            Utils.removeElementById("task-modal-overlay");
+        }, 300);
+    }
+
+    bindEvents() {
+        document.getElementById("create-task").addEventListener("click", () => this.createTask());
+        document.getElementById("cancel-task").addEventListener("click", () => this.closeModal());
+        document.getElementById("task-modal-overlay").addEventListener("click", () => this.closeModal());
+    }
+
+    createTask() {
+        const yamlContent = this.editor.getValue().trim();
+        if (yamlContent === "") {
+            alert("请输入YAML内容");
+            return;
+        }
+        try {
+            fetch(`${baseUrl}${taskUrl}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/yaml',
+                },
+                body: yamlContent,
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 0) {
+                        new TaskModal(res.data.name)
+                    } else {
+                        alert("任务添加失败: " + Utils.escapeHTML(res.message));
+                    }
+                });
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+        this.closeModal();
+    }
+}
+
+class PipelineAddCard {
+    constructor() {
+        this.editor = null;
+        this.show();
+    }
+
+    show() {
+        Utils.removeElementById("add-pipeline-card");
+        Utils.removeElementById("add-pipeline-modal-overlay");
+
+        const overlay = document.createElement('div');
+        overlay.setAttribute("id", "add-pipeline-modal-overlay");
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+
+        const card = document.createElement('div');
+        card.setAttribute("id", "add-pipeline-card");
+        card.className = 'card-one';
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="button" style="position: fixed; top: 6px; right: 12px;">
+                    <button id="create-pipeline" class="button-sure">创建</button>
+                    <button id="cancel-create-pipeline" class="button-cancel">取消</button>
+                </div>
+            </div>
+            <div class="create-content">
+                <div style="width: 100%">
+                    <label for="name">名称:</label>
+                    <input type="text" id="name" name="name" style="width: 200px">
+                    <div style="position: absolute; display: contents">
+                        <label for="type">类型:</label>
+                        <select id="type" name="type">
+                            <option value="jinja2">jinja2</option>
+                            <!-- 如果有其他选项，也可以在这里添加 -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="description">描述:</label>
+                    <textarea id="description" name="description" style="width: 100%; height: 100px; resize: none;"></textarea>
+                </div>
+                <div style="position: absolute; margin-bottom: 0;height: 100%; width: 100%">
+                    <label for="name">内容:</label>
+                    <div id="yaml-editor"></div>
+                </div>
             </div>
         `;
         document.body.appendChild(card);
@@ -789,43 +920,63 @@ class TaskAddCard {
     }
 
     closeModal() {
-        const card = document.getElementById("add-task-card");
-        const overlay = document.getElementById("modal-overlay");
+        const card = document.getElementById("add-pipeline-card");
+        const overlay = document.getElementById("add-pipeline-modal-overlay");
         card.classList.remove('show');
         overlay.classList.remove('show');
 
         setTimeout(() => {
-            Utils.removeElementById("add-task-card");
-            Utils.removeElementById("modal-overlay");
+            Utils.removeElementById("add-pipeline-card");
+            Utils.removeElementById("add-pipeline-modal-overlay");
         }, 300);
     }
 
     bindEvents() {
-        document.getElementById("create-task").addEventListener("click", () => this.createTask());
-        document.getElementById("cancel-modal").addEventListener("click", () => this.closeModal());
-        document.getElementById("modal-overlay").addEventListener("click", () => this.closeModal());
+        document.getElementById("create-pipeline").addEventListener("click", () => this.createPipeline());
+        document.getElementById("cancel-create-pipeline").addEventListener("click", () => this.closeModal());
+        document.getElementById("add-pipeline-modal-overlay").addEventListener("click", () => this.closeModal());
     }
 
-    createTask() {
-        const yamlContent = this.editor.getValue();
-        if (yamlContent === "") {
+    createPipeline() {
+        const name = document.getElementById("name").value.trim();
+        let description = "";
+        const descriptionElement = document.getElementById("description");
+        if (descriptionElement) {
+            description = descriptionElement.value.trim();
+        }
+        const type = document.getElementById("type").value;
+        const content = this.editor.getValue().trim();
+        if (name === "") {
+            alert("名称不能为空！");
+            return; // 阻止提交
+        }
+        if (content === "") {
             alert("请输入YAML内容");
             return;
         }
+
+        const escapedContent = content
+            .replace(/\n/g, '\n    '); // 在每行前加空格，保持缩进
         try {
-            fetch(`${baseUrl}${taskUrl}`, {
+            fetch(`${baseUrl}${pipelineUrl}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: yamlContent,
+                body: `Name: ${name}\nDesc: ${description}\nType: ${type}\nContent: |-\n    ${escapedContent}
+                `,
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.code === 0) {
-                        alert("任务添加成功");
+                        alert("流水线添加成功");
                     } else {
-                        alert("任务添加失败: " + Utils.escapeHTML(data.message));
+                        alert("流水线添加失败: " + Utils.escapeHTML(data.message));
                     }
                 });
         } catch (e) {
@@ -833,6 +984,453 @@ class TaskAddCard {
             this.closeModal();
         }
     }
+}
+
+class PipelineEditCard {
+    constructor(pipelineName) {
+        this.pipelineName = pipelineName;
+        this.pipeline = null;
+        this.editor = null;
+        this.getPipelineData().then(r => {
+            this.pipeline = r;
+            this.init();
+        });
+    }
+
+    getPipelineData() {
+        return new Promise((resolve, reject) => {
+            fetch(`${baseUrl}${pipelineUrl}/${this.pipelineName}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 0) {
+                        resolve(res.data);
+                    } else {
+                        reject(new Error(res.message));
+                    }
+                })
+                .catch(error => reject(error));
+        });
+    }
+
+    init() {
+        Utils.removeElementById("edit-pipeline-card");
+        Utils.removeElementById("edit-pipeline-modal-overlay");
+
+        const overlay = document.createElement('div');
+        overlay.setAttribute("id", "edit-pipeline-modal-overlay");
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+
+        const card = document.createElement('div');
+        card.setAttribute("id", "edit-pipeline-card");
+        card.className = 'card-one';
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="button" style="position: fixed; top: 6px; right: 12px;">
+                    <button id="edit-post-pipeline" class="button-sure">提交</button>
+                    <button id="cancel-edit-pipeline" class="button-cancel">取消</button>
+                </div>
+            </div>
+            <div class="create-content">
+                <div>
+                    <label for="name">名称:</label>
+                    <input type="text" id="name" name="name" style="width: 100%" value="${this.pipeline.name}" readonly>
+                </div>
+                
+                <div>
+                    <label for="description">描述:</label>
+                    <textarea id="description" name="description" style="width: 100%; height: 100px; resize: none;">${this.pipeline.desc ? this.pipeline.desc : ''}</textarea>
+                </div>
+                <div style="position: absolute; margin-bottom: 0;height: 100%; width: 100%">
+                    <label for="name">内容:</label>
+                    <div id="yaml-editor"></div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(card);
+
+        setTimeout(() => {
+            overlay.classList.add('show');
+            card.classList.add('show');
+        }, 10);
+
+        this.initializeEditor();
+        this.bindEvents();
+    }
+
+    initializeEditor() {
+        // 初始化 Monaco Editor
+        require(['vs/editor/editor.main'], () => {
+            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
+                value: this.pipeline.content,
+                language: 'yaml',
+                theme: 'vs-dark',
+                autoIndent: true,
+                automaticLayout: true,
+                overviewRulerBorder: false,
+                foldingStrategy: 'indentation',
+                lineNumbers: 'on',
+                minimap: { enabled: false },
+                tabSize: 4,
+                mouseWheelZoom: true,
+                formatOnType: true,
+                formatOnPaste: true,
+                cursorStyle: 'line',
+                fontSize: 12,
+            });
+        });
+    }
+
+    closeModal() {
+        const card = document.getElementById("edit-pipeline-card");
+        const overlay = document.getElementById("edit-pipeline-modal-overlay");
+        card.classList.remove('show');
+        overlay.classList.remove('show');
+
+        setTimeout(() => {
+            Utils.removeElementById("edit-pipeline-card");
+            Utils.removeElementById("edit-pipeline-modal-overlay");
+        }, 300);
+    }
+
+    bindEvents() {
+        document.getElementById("edit-post-pipeline").addEventListener("click", () => this.editPipeline());
+        document.getElementById("cancel-edit-pipeline").addEventListener("click", () => this.closeModal());
+        document.getElementById("edit-pipeline-modal-overlay").addEventListener("click", () => this.closeModal());
+    }
+
+    editPipeline() {
+        let description = "";
+        const descriptionElement = document.getElementById("description");
+        if (descriptionElement) {
+            description = descriptionElement.value.trim();
+        }
+        const content = this.editor.getValue().trim();
+        if (content === "") {
+            alert("请输入YAML内容");
+            return;
+        }
+
+        const escapedContent = content
+            .replace(/\n/g, '\n    '); // 在每行前加空格，保持缩进
+        try {
+            fetch(`${baseUrl}${pipelineUrl}/${this.pipelineName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/yaml',
+                },
+                body: `Desc: ${description}\nType: ${this.pipeline.type}\nContent: |-\n    ${escapedContent}
+                `,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(res => {
+                    if (res.code === 0) {
+                        alert("流水线编辑成功");
+                    } else {
+                        alert("流水线编辑失败: " + Utils.escapeHTML(res.message));
+                    }
+                    this.closeModal();
+                });
+        } catch (e) {
+            alert("Error: " + e.message);
+            this.closeModal();
+        }
+    }
+}
+
+let paramTpl = `Params: \n  Tag: 111`
+
+class RunPipelineModal {
+    constructor(pipelineName) {
+        this.pipelineName = pipelineName;
+        this.init();
+    }
+
+    init() {
+        Utils.removeElementById("run-pipeline-card");
+        Utils.removeElementById("run-pipeline-modal-overlay");
+
+        const overlay = document.createElement('div');
+        overlay.setAttribute("id", "run-pipeline-modal-overlay");
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+
+        const card = document.createElement('div');
+        card.setAttribute("id", "run-pipeline-card");
+        card.className = 'card-one';
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="button" style="position: fixed; top: 6px; right: 12px;">
+                    <button id="run-start-pipeline" class="button-sure">执行</button>
+                    <button id="cancel-run-pipeline" class="button-cancel">取消</button>
+                </div>
+            </div>
+            <div class="create-content">
+                <label for="name">参数:</label>
+                <div id="yaml-editor"></div>
+            </div>
+        `;
+        document.body.appendChild(card);
+
+        setTimeout(() => {
+            overlay.classList.add('show');
+            card.classList.add('show');
+        }, 10);
+
+        this.initializeEditor();
+        this.bindEvents();
+    }
+
+    initializeEditor() {
+        // 初始化 Monaco Editor
+        require(['vs/editor/editor.main'], () => {
+            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
+                value: paramTpl,
+                language: 'yaml',
+                theme: 'vs-dark',
+                autoIndent: true,
+                automaticLayout: true,
+                overviewRulerBorder: false,
+                foldingStrategy: 'indentation',
+                lineNumbers: 'on',
+                minimap: { enabled: false },
+                tabSize: 4,
+                mouseWheelZoom: true,
+                formatOnType: true,
+                formatOnPaste: true,
+                cursorStyle: 'line',
+                fontSize: 12,
+            });
+        });
+    }
+
+    closeModal() {
+        const card = document.getElementById("run-pipeline-card");
+        const overlay = document.getElementById("run-pipeline-modal-overlay");
+        card.classList.remove('show');
+        overlay.classList.remove('show');
+
+        setTimeout(() => {
+            Utils.removeElementById("run-pipeline-card");
+            Utils.removeElementById("run-pipeline-modal-overlay");
+        }, 300);
+    }
+
+    bindEvents() {
+        document.getElementById("run-start-pipeline").addEventListener("click", () => this.runPipeline());
+        document.getElementById("cancel-run-pipeline").addEventListener("click", () => this.closeModal());
+        document.getElementById("run-pipeline-modal-overlay").addEventListener("click", () => this.closeModal());
+    }
+
+    runPipeline() {
+        const content = this.editor.getValue().trim();
+        try {
+            fetch(`${baseUrl}${pipelineUrl}/${this.pipelineName}/build`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/yaml',
+                },
+                body: content
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.code === 0) {
+                        new TaskModal(res.data.name)
+                    } else {
+                        alert("流水线运行失败: " + Utils.escapeHTML(res.message));
+                    }
+                });
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+        this.closeModal();
+    }
+}
+
+class PipelineModal {
+    constructor(pipelineName) {
+        this.pipelineName = pipelineName;
+        this.webSocketManager = null;
+        this.pipeline = null;
+        this.currentPage = 1;
+        this.rowsPerPage = 10;
+        this.totalPage = 0;
+        this.tasks = [];
+        this.init();
+    }
+
+    init() {
+// 获取任务详细
+        fetch(`${baseUrl}${pipelineUrl}/${this.pipelineName}`)
+            .then(response => response.json())
+            .then(res => {
+                this.pipeline = res.data;
+                this.start();
+            }).catch(error => {
+            console.log('There was a problem with the fetch operation:', error);
+            throw error;
+        })
+    }
+
+    start() {
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${pipelineUrl}/${this.pipelineName}/build`, this.updateData.bind(this), (error) => {
+            alert('WebSocket error: ' + error);
+            this.closeModal();
+        })
+        this.createModal();
+        this.addEventListeners();
+    }
+
+    updateData(res) {
+        if (res.data && res.data.tasks) {
+            this.tasks = res.data.tasks;
+            this.totalPage = res.data.page.total;
+            this.currentPage = res.data.page.current;
+            this.rowsPerPage = res.data.page.size;
+            this.renderPipelineTask();
+            this.updatePipelineTaskPagination();
+        }
+
+        // 置空表格, 显示无数据, 页码置为0
+        this.tasks = [];
+        this.totalPage = 1;
+        this.renderPipelineTask();
+        this.updatePipelineTaskPagination();
+    }
+
+    renderPipelineTask() {
+        const taskContainer  = document.getElementById("pipeline-task-body");
+        this.tasks.forEach(task => {
+            const link = document.createElement('a');
+            link.href = "#";
+            link.innerText = task;
+            link.style.display = 'inline';
+            link.style.padding= '3px 6px';
+            link.onclick = this.openTaskCard.bind(this,task);
+            taskContainer.appendChild(link);
+        });
+    }
+
+    openTaskCard(taskName) {
+        new TaskModal(taskName)
+        this.closeModal();
+    }
+
+    createModal() {
+        Utils.removeElementById("pipeline-detail-card");
+        Utils.removeElementById("pipeline-detail-modal-overlay");
+
+        const overlay = document.createElement('div');
+        overlay.setAttribute("id", "pipeline-detail-modal-overlay");
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+
+        const card = document.createElement('div');
+        card.setAttribute("id", "pipeline-detail-card");
+        card.className = 'card-one';
+        card.innerHTML = `
+            <div class="card-header">
+                <h5 style="margin-left: 15px;">名称: ${this.pipelineName}</h5>
+                <span class="card-close" id="close-task-card">&times;</span >
+            </div>
+            <hr>
+            <h5>描述: </h5>
+            <div class="step-card-output" style="height: 66px">
+                <pre class="step-card-code">${this.pipeline.desc ? this.pipeline.desc : ''}</pre>
+            </div>
+            <h5>内容: </h5>
+            <div class="step-card-output">
+                <pre class="step-card-code">${this.pipeline.content}</pre>
+            </div>
+            <h5>任务列表</h5>
+            <div class="card-body" style="position: static">
+                <div id="pipeline-task-body" style="position: absolute; width: 100%"></div>
+                <div id="pipeline-task-pagination" class="pagination" style="position: fixed; bottom: 0; right: 0">
+                    <div style="margin-right: 6px;">
+                        <button id="pipeline-task-prev-page" class="button-sure">上一页</button>
+                        <span id="pipeline-task-page-info">第1页__共1页</span>
+                        <button id="pipeline-task-next-page" class="button-sure">下一页</button>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <p style="margin-right: 6px;">每页行数</p>
+                        <select id="pipeline-task-page-size" class="page-size">
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                            <option value="35">35</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(card);
+
+        setTimeout(() => {
+            overlay.classList.add('show');
+            card.classList.add('show');
+        }, 10);
+    }
+
+    updatePipelineTaskPagination() {
+        document.getElementById("pipeline-task-prev-page").disabled = this.currentPage === 1;
+        document.getElementById("pipeline-task-next-page").disabled = this.currentPage === this.totalPage;
+    }
+
+    fetchPipelines() {
+        const request = {
+            page: this.currentPage,
+            size: this.rowsPerPage,
+        };
+        this.webSocketManager.send(request);
+    }
+
+    addEventListeners() {
+        document.getElementById('close-task-card').addEventListener('click', () => this.closeModal());
+        document.getElementById("pipeline-detail-modal-overlay").addEventListener("click", () => this.closeModal());
+        window.addEventListener('keydown', this.handleEscapeKey.bind(this));
+
+        document.getElementById("pipeline-task-prev-page").addEventListener("click", () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.fetchPipelines();
+            }
+        });
+
+        document.getElementById("pipeline-task-next-page").addEventListener("click", () => {
+            if (this.currentPage < this.totalPage) {
+                this.currentPage++;
+                this.fetchPipelines();
+            }
+        });
+
+        document.getElementById("pipeline-task-page-size").addEventListener("change", (event) => {
+            this.rowsPerPage = parseInt(event.target.value);
+            this.currentPage = 1;
+            this.fetchPipelines();
+        });
+    }
+
+    handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            this.closeModal();
+        }
+    }
+
+    closeModal() {
+        if (this.webSocketManager) {
+            this.webSocketManager.close();
+            this.webSocketManager = null;
+        }
+        Utils.removeElementById("pipeline-detail-card");
+        Utils.removeElementById("pipeline-detail-modal-overlay");
+    };
 }
 
 class TaskTable {
@@ -848,26 +1446,26 @@ class TaskTable {
 
     // 初始化 WebSocket
     init() {
-        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}?page=${this.currentPage}&size=${this.rowsPerPage}`, this.handleWebSocketData);
-        this.setupEventListeners();
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}?page=${this.currentPage}&size=${this.rowsPerPage}`, this.handleWebSocketTaskData);
+        this.setupTaskEventListeners();
     }
 
     // 处理 WebSocket 返回的数据
-    handleWebSocketData = (res) => {
+    handleWebSocketTaskData = (res) => {
         if (res.data && res.data.tasks) {
             this.tasks = res.data.tasks;
             this.totalPage = res.data.page.total;
             this.currentPage = res.data.page.current;
             this.rowsPerPage = res.data.page.size;
-            this.renderTable();
-            this.updatePagination();
+            this.renderTaskTable();
+            this.updateTaskPagination();
             return;
         }
         // 置空表格, 显示无数据, 页码置为0
         this.tasks = [];
         this.totalPage = 1;
-        this.renderTable();
-        this.updatePagination();
+        this.renderTaskTable();
+        this.updateTaskPagination();
     }
 
     // 通过 WebSocket 请求任务数据
@@ -880,7 +1478,7 @@ class TaskTable {
     }
 
     // 动态渲染表格
-    renderTable() {
+    renderTaskTable() {
         const tableBody = document.querySelector("#task-table tbody");
         tableBody.innerHTML = "";
 
@@ -894,26 +1492,30 @@ class TaskTable {
             const row = document.createElement("tr");
             const color = Utils.getStatusColor(task.state || 'unknown');
             row.innerHTML = `
-                    <td id="${task.name+'-name'}">${task.name}</td>
-                    <td id="${task.name+'-count'}">${task.count}</td>
-                    <td id="${task.name+'-message'}" class="message" title=""></td>
-                    <td id="${task.name+'-start'}">${task.time.start ? task.time.start : '---'}</td>
-                    <td id="${task.name+'-end'}">${task.time.end ? task.time.end : '---'}</td>
-                    <td id="${task.name+'-state'}"><div style="background-color: ${color}; border-radius: 6px; padding: 5px 10px;">${task.state}</div></td>
-                    <td id="${task.name+'-actions'}">
-                        <div class="dropdown">
+                    <td id="task-${task.name+'-name'}">${task.name}</td>
+                    <td id="task-${task.name+'-count'}">${task.count}</td>
+                    <td id="task-${task.name+'-message'}" class="message" title=""></td>
+                    <td id="task-${task.name+'-start'}">${task.time.start ? task.time.start : '---'}</td>
+                    <td id="task-${task.name+'-end'}">${task.time.end ? task.time.end : '---'}</td>
+                    <td id="task-${task.name+'-state'}"><div style="background-color: ${color}; border-radius: 6px; padding: 5px 10px;">${task.state}</div></td>
+                    <td id="task-${task.name+'-actions'}">
+                        <div id="task-dropdown" class="dropdown">
                             <button class="dropbtn">Actions</button>
                             <div class="dropdown-content">
-                                <a href="#" id="detail-task">详情</a>
-                                <a href="#" id="dump-task">导出</a>
-                                ${task.state === 'running' ? '<a href="#" id="kill-task">强杀</a>' : ''}
-                                <a href="#" id="delete-task">删除</a>
+                                <a id="detail-task" href="#">详情</a>
+                                <a id="dump-task" href="#">导出</a>
+                                ${task.state === 'running' ? '<a id="kill-task" href="#">强杀</a>' : ''}
+                                <a id="delete-task" href="#">删除</a>
                             </div>
                         </div>
                     </td>
                 `;
             tableBody.appendChild(row);
-            const msgDocument = document.getElementById(task.name + '-message');
+            let msgDocument = document.getElementById(task.name + '-message');
+            if (!msgDocument) {
+                msgDocument = document.createElement('div');
+                msgDocument.id = task.name + '-message';
+            }
             if (task.message) {
                 msgDocument.innerText = task.message;
                 msgDocument.setAttribute('title', task.message);
@@ -928,32 +1530,32 @@ class TaskTable {
             }
         });
 
-        document.getElementById("page-info").textContent = `第${this.currentPage}页__共${this.totalPage}页`;
+        document.getElementById("task-page-info").textContent = `第${this.currentPage}页__共${this.totalPage}页`;
     }
 
     // 更新分页
-    updatePagination() {
-        document.getElementById("prev-page").disabled = this.currentPage === 1;
-        document.getElementById("next-page").disabled = this.currentPage === this.totalPage;
+    updateTaskPagination() {
+        document.getElementById("task-prev-page").disabled = this.currentPage === 1;
+        document.getElementById("task-next-page").disabled = this.currentPage === this.totalPage;
     }
 
     // 设置事件监听器
-    setupEventListeners() {
-        document.getElementById("prev-page").addEventListener("click", () => {
+    setupTaskEventListeners() {
+        document.getElementById("task-prev-page").addEventListener("click", () => {
             if (this.currentPage > 1) {
                 this.currentPage--;
                 this.fetchTasks();
             }
         });
 
-        document.getElementById("next-page").addEventListener("click", () => {
+        document.getElementById("task-next-page").addEventListener("click", () => {
             if (this.currentPage < this.totalPage) {
                 this.currentPage++;
                 this.fetchTasks();
             }
         });
 
-        document.getElementById("page-size").addEventListener("change", (event) => {
+        document.getElementById("task-page-size").addEventListener("change", (event) => {
             this.rowsPerPage = parseInt(event.target.value);
             this.currentPage = 1;
             this.fetchTasks();
@@ -1010,12 +1612,172 @@ class TaskTable {
     };
 }
 
+class PipelineTable {
+    constructor() {
+        this.webSocketManager  = null;
+        this.currentPage = 1;
+        this.rowsPerPage = 10;
+        this.pipelines = [];
+        this.totalPage = 0;
+
+        this.init();
+    }
+
+    // 初始化 WebSocket
+    init() {
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${pipelineUrl}?page=${this.currentPage}&size=${this.rowsPerPage}`, this.handleWebSocketPipelineData);
+        this.setupPipelineEventListeners();
+    }
+
+    // 处理 WebSocket 返回的数据
+    handleWebSocketPipelineData = (res) => {
+        if (res.data && res.data.pipelines) {
+            this.pipelines = res.data.pipelines;
+            this.totalPage = res.data.page.total;
+            this.currentPage = res.data.page.current;
+            this.rowsPerPage = res.data.page.size;
+            this.renderPipelineTable();
+            this.updatePipelinePagination();
+            return;
+        }
+        // 置空表格, 显示无数据, 页码置为0
+        this.pipelines = [];
+        this.totalPage = 1;
+        this.renderPipelineTable();
+        this.updatePipelinePagination();
+    }
+
+    // 通过 WebSocket 请求任务数据
+    fetchPipelines() {
+        const request = {
+            page: this.currentPage,
+            size: this.rowsPerPage,
+        };
+        this.webSocketManager.send(request);
+    }
+
+    // 动态渲染表格
+    renderPipelineTable() {
+        const tableBody = document.querySelector("#pipeline-table tbody");
+        tableBody.innerHTML = "";
+
+        if (!this.pipelines || this.pipelines.length === 0) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td colspan="7"><div style="display:flex;justify-content:center;align-items:center;">暂无数据</div></td>`;
+            tableBody.appendChild(row);
+            return
+        }
+        this.pipelines.forEach(pipeline => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td id="pipeline-${pipeline.name+'-name'}">${pipeline.name}</td>
+                    <td id="pipeline-${pipeline.name+'-type'}">${pipeline.type}</td>
+                    <td id="pipeline-${pipeline.name+'-disable'}">${pipeline.disable ? pipeline.disable : '---'}</td>
+                    <td id="pipeline-${pipeline.name+'-actions'}">
+                        <div id="pipeline-dropdown" class="dropdown">
+                            <button class="dropbtn">Actions</button>
+                            <div class="dropdown-content">
+                                <a id="detail-pipeline" href="#">详情</a>
+                                <a id="edit-pipeline" href="#">编辑</a>
+                                <a id="run-pipeline" href="#">运行</a>
+                                <a id="delete-pipeline" href="#">删除</a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            tableBody.appendChild(row);
+            let msgDocument = document.getElementById(pipeline.name + '-message');
+            if (!msgDocument) {
+                msgDocument = document.createElement('div');
+                msgDocument.id = pipeline.name + '-message';
+            }
+            if (pipeline.message) {
+                msgDocument.innerText = pipeline.message;
+                msgDocument.setAttribute('title', pipeline.message);
+            }
+            row.querySelector("#detail-pipeline").addEventListener("click", () => this.showPipelineCard(pipeline.name));
+            row.querySelector("#run-pipeline").addEventListener("click", () => this.showRunPipeline(pipeline.name));
+            row.querySelector("#edit-pipeline").addEventListener("click", () => this.showEditPipeline(pipeline.name));
+            row.querySelector("#delete-pipeline").addEventListener("click", () => this.deletePipeline(pipeline));
+        });
+
+        document.getElementById("pipeline-page-info").textContent = `第${this.currentPage}页__共${this.totalPage}页`;
+    }
+
+    // 更新分页
+    updatePipelinePagination() {
+        document.getElementById("pipeline-prev-page").disabled = this.currentPage === 1;
+        document.getElementById("pipeline-next-page").disabled = this.currentPage === this.totalPage;
+    }
+
+    // 设置事件监听器
+    setupPipelineEventListeners() {
+        document.getElementById("pipeline-prev-page").addEventListener("click", () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.fetchPipelines();
+            }
+        });
+
+        document.getElementById("pipeline-next-page").addEventListener("click", () => {
+            if (this.currentPage < this.totalPage) {
+                this.currentPage++;
+                this.fetchPipelines();
+            }
+        });
+
+        document.getElementById("pipeline-page-size").addEventListener("change", (event) => {
+            this.rowsPerPage = parseInt(event.target.value);
+            this.currentPage = 1;
+            this.fetchPipelines();
+        });
+    };
+
+    deletePipeline(pipeline) {
+        const confirmed = confirm(`确定要删除流水线 "${pipeline.name}"?`);
+        if (confirmed) {
+            fetch(`${baseUrl}${pipelineUrl}/${pipeline.name}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.log('There was a problem with the fetch operation:', error);
+                    throw error;
+                });
+        }
+    }
+
+    showPipelineCard(pipelineName) {
+        new PipelineModal(pipelineName);
+    };
+
+    showRunPipeline(pipelineName) {
+        new RunPipelineModal(pipelineName);
+    }
+
+    showEditPipeline(pipelineName) {
+        new PipelineEditCard(pipelineName);
+    }
+}
+
 class Main {
     constructor() {
+        window.addEventListener("resize", () => this.resize());
         this.createMainContent();
         new TaskTable();
+        new PipelineTable();
         this.addEventListeners();
         new EventListener();
+    }
+
+    resize() {
+        history.replaceState(null, '', '/#');
+        location.reload();
     }
 
     createMainContent() {
@@ -1027,44 +1789,87 @@ class Main {
         mainDiv.innerHTML = `
             <div id="container" class="container">
                 <div class="header">
-                    <div class="button">
-                        <button id="add-task" class="button-sure">添加</button>
+                    <div id="menu" class="button">
+                        <button id="task-list" class="button-sure">任务</button>
+                        <button id="pipeline-list" class="button-sure">流水线</button>
+                    </div>
+                    <div id="options" class="button">
+                        <p id="title" style="font-size: 15px; margin: auto">任务</p>
+                        <button id="add-task" class="button-sure" style="display: block">添加</button>
+                        <button id="add-pipeline" class="button-sure" style="display: none">添加</button>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table id="task-table">
-                        <thead>
-                            <tr>
-                                <th>名称</th>
-                                <th style="width: 48px;">步骤数</th>
-                                <th>消息</th>
-                                <th style="width: 162px;">开始时间</th>
-                                <th style="width: 162px;">结束时间</th>
-                                <th style="width: 48px;">状态</th>
-                                <th style="width: 48px;">动作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Rows will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination">
-                    <div style="margin-right: 6px;">
-                        <button id="prev-page" class="button-sure">上一页</button>
-                        <span id="page-info">第1页__共1页</span>
-                        <button id="next-page" class="button-sure">下一页</button>
+                <div id="task-table-body" style="display: block">
+                    <div id="task-table-container" class="table-container">
+                        <table id="task-table" class="common-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 160px">名称</th>
+                                    <th style="width: 48px;">步骤数</th>
+                                    <th>消息</th>
+                                    <th style="width: 180px;">开始时间</th>
+                                    <th style="width: 180px;">结束时间</th>
+                                    <th style="width: 48px;">状态</th>
+                                    <th style="width: 48px;">动作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
                     </div>
-                    <div style="display: flex; align-items: center;">
-                        <p style="margin-right: 6px;">每页行数</p>
-                        <select id="page-size">
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                            <option value="20">20</option>
-                            <option value="25">25</option>
-                            <option value="30">30</option>
-                            <option value="35">35</option>
-                        </select>
+                    <div id="task-table-pagination" class="pagination">
+                        <div style="margin-right: 6px;">
+                            <button id="task-prev-page" class="button-sure">上一页</button>
+                            <span id="task-page-info">第1页__共1页</span>
+                            <button id="task-next-page" class="button-sure">下一页</button>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <p style="margin-right: 6px;">每页行数</p>
+                            <select id="task-page-size" class="page-size">
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="25">25</option>
+                                <option value="30">30</option>
+                                <option value="35">35</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="pipeline-table-body" style="display: none">
+                    <div id="pipeline-table-container" class="table-container">
+                        <table id="pipeline-table" class="common-table">
+                            <thead>
+                                <tr>
+                                    <th>名称</th>
+                                    <th>类型</th>
+                                    <th>禁用</th>
+                                    <th style="width: 48px;">动作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pipeline-table-pagination" class="pagination">
+                        <div style="margin-right: 6px;">
+                            <button id="pipeline-prev-page" class="button-sure">上一页</button>
+                            <span id="pipeline-page-info">第1页__共1页</span>
+                            <button id="pipeline-next-page" class="button-sure">下一页</button>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <p style="margin-right: 6px;">每页行数</p>
+                            <select id="pipeline-page-size" class="page-size">
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="25">25</option>
+                                <option value="30">30</option>
+                                <option value="35">35</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1072,12 +1877,29 @@ class Main {
 
         // Append the newly created main div to the body
         document.body.appendChild(mainDiv);
+        mainDiv.querySelector("#task-list").addEventListener("click", () => this.closePipelineTable());
+        mainDiv.querySelector("#pipeline-list").addEventListener("click", () => this.showPipelineTable());
     }
 
     addEventListeners() {
         document.getElementById("add-task").addEventListener("click", () => new TaskAddCard());
+        document.getElementById("add-pipeline").addEventListener("click", () => new PipelineAddCard());
+    }
 
-        window.addEventListener("resize", () => location.reload());
+    closePipelineTable() {
+        document.getElementById("title").innerText = "任务";
+        document.getElementById("task-table-body").style.display = "block";
+        document.getElementById("add-task").style.display = "block";
+        document.getElementById("pipeline-table-body").style.display = "none";
+        document.getElementById("add-pipeline").style.display = "none";
+    }
+
+    showPipelineTable() {
+        document.getElementById("title").innerText = "流水线";
+        document.getElementById("task-table-body").style.display = "none";
+        document.getElementById("add-task").style.display = "none";
+        document.getElementById("pipeline-table-body").style.display = "block";
+        document.getElementById("add-pipeline").style.display = "block";
     }
 }
 

@@ -11,13 +11,14 @@ type sPipelineBuild struct {
 	pName string
 }
 
-func (p *sPipelineBuild) List(page, size int64) (res []string) {
+func (p *sPipelineBuild) List(page, size int64) (res []string, total int64) {
 	query := p.Model(&models.SPipelineBuilds{}).
 		Select("task_name").
 		Where(map[string]interface{}{
 			"pipeline_name": p.pName,
 		}).
-		Order("id DESC")
+		Order("id DESC").
+		Count(&total)
 	if page <= 0 || size <= 0 {
 		query.Find(&res)
 		return

@@ -21,7 +21,8 @@ func (p *sPipeline) ClearAll() error {
 		return err
 	}
 	// clear task
-	for _, taskName := range p.Build().List(-1, -1) {
+	list, _ := p.Build().List(-1, -1)
+	for _, taskName := range list {
 		_ = p.Task(taskName).ClearAll()
 	}
 	// clear build

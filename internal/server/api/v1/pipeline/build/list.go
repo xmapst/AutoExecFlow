@@ -25,7 +25,7 @@ import (
 // @Param		pipeline path string true "流水线名称"
 // @Param		page query int false "页码" default(1)
 // @Param		size query int false "分页大小" default(100)
-// @Success		200 {object} types.SBase[[]string]
+// @Success		200 {object} types.SBase[types.SPipelineBuildListRes]
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/pipeline/{pipeline}/build [get]
 func List(c *gin.Context) {
@@ -81,7 +81,7 @@ func List(c *gin.Context) {
 		}
 	}()
 
-	var lastPipelineList []string // 缓存上一次的推送数据
+	var lastPipelineList *types.SPipelineBuildListRes // 缓存上一次的推送数据
 	for {
 		select {
 		case <-ctx.Done():

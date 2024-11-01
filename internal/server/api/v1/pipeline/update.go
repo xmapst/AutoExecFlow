@@ -38,4 +38,5 @@ func Update(c *gin.Context) {
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
 	}
+	base.Send(c, base.WithCode[any](types.CodeSuccess))
 }

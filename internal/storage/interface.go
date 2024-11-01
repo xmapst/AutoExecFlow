@@ -150,7 +150,7 @@ type IPipelineBuild interface {
 	// Insert 插入
 	Insert(build *models.SPipelineBuild) (err error)
 	// List 获取所有
-	List(page, size int64) (res []string)
+	List(page, size int64) (res []string, total int64)
 	// Remove 删除
 	Remove(name string) (err error)
 	// ClearAll 清理

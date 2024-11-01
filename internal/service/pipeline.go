@@ -88,8 +88,23 @@ func (p *SPipelineService) Update(req *types.SPipelineUpdateReq) error {
 	})
 }
 
-func (p *SPipelineService) BuildList(req *types.SPageReq) []string {
-	return storage.Pipeline(p.name).Build().List(req.Page, req.Size)
+func (p *SPipelineService) BuildList(req *types.SPageReq) *types.SPipelineBuildListRes {
+	tasks, total := storage.Pipeline(p.name).Build().List(req.Page, req.Size)
+	if tasks == nil {
+		return nil
+	}
+	pageTotal := total / req.Size
+	if total%req.Size != 0 {
+		pageTotal += 1
+	}
+	return &types.SPipelineBuildListRes{
+		Page: types.SPageRes{
+			Current: req.Page,
+			Size:    req.Size,
+			Total:   pageTotal,
+		},
+		Tasks: tasks,
+	}
 }
 
 func (p *SPipelineService) BuildDetail(name string) (*types.SPipelineBuildRes, error) {

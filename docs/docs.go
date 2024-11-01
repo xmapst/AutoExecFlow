@@ -293,7 +293,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SBase-array_string"
+                            "$ref": "#/definitions/types.SBase-types_SPipelineBuildListRes"
                         }
                     },
                     "500": {
@@ -1203,26 +1203,6 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SBase-array_string": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "$ref": "#/definitions/types.Code"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                }
-            }
-        },
         "types.SBase-types_SFileListRes": {
             "type": "object",
             "properties": {
@@ -1248,6 +1228,23 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/types.SHealthyz"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.SBase-types_SPipelineBuildListRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/types.Code"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.SPipelineBuildListRes"
                 },
                 "message": {
                     "type": "string"
@@ -1543,6 +1540,20 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "types.SPipelineBuildListRes": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "$ref": "#/definitions/types.SPageRes"
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
