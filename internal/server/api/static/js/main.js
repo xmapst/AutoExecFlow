@@ -1,50 +1,50 @@
 let highestZIndex = 1000;
 require.config({ paths: { 'vs': baseUrl+basePath+'/vs' } });
 const taskTpl = `# 描述
-Description: 这是一段任务描述
+desc: 这是一段任务描述
 # 允许节点, 可选, 默认为当前节点
-#Node: node-01
+#node: node-01
 # 异步执行, 可选, 默认并行,自定义编排时需要设置为true
-Async: true
+async: true
 # 禁用, 可选, 默认false
-#Disable: false
+#disable: false
 # 超时时间, 可选, 默认48小时
-Timeout: 2m
+timeout: 2m
 # 全局环境变量, 可选
-Env:
-  - Name: Test
-    Value: "test_env"
+env:
+  - name: Test
+    value: "test_env"
 # 步骤列表, 不能为空
-Step:
+step:
     # 步骤名称, 唯一, 可选[当自定义编排是必须设置], 默认自动生成
-  - Name: 步骤2
+  - name: 步骤2
     # 描述
-    Description: 这是一段步骤描述
+    desc: 这是一段步骤描述
     # 超时时间, 可选, 默认任务级超时时间
-    Timeout: 2m
+    timeout: 2m
     # 禁用, 可选, 默认false
-    #Disable: false
+    #disable: false
     # 依赖步骤, 可选[自定义编排时用到]
-    Depends:
+    depends:
       - 步骤1
     # 局部环境变量, 会覆盖同名的全局变量
-    Env:
+    env:
       - Name: Test
         Value: "test_env"
     # 类型
-    Type: sh
+    type: sh
     # 内容
-    Content: |-
+    content: |-
       ping 1.1.1.1
-  - Name: 步骤1
+  - name: 步骤1
     # 描述
-    Description: 这是一段步骤描述
-    Timeout: 2m
-    Env:
+    desc: 这是一段步骤描述
+    timeout: 2m
+    env:
       - Name: Test
         Value: "test_env"
-    Type: sh
-    Content: |-
+    type: sh
+    content: |-
       ping 1.1.1.1
 `
 
@@ -342,7 +342,7 @@ class TaskModal {
                      <div id="task-card-right" class="card-body-left">
                          <h5>环境变量:</h5>
                          <div id="${this.task.name + '-env'}">
-                             <pre class="env">${this.task.env.map(env => `- Name: ${env.name}\n  Value: ${env.value}`).join('\n')}</pre>
+                             <pre class="env">${this.task.env.map(env => `- name: ${env.name}\n  value: ${env.value}`).join('\n')}</pre>
                          </div>
                      </div>
                     ` : ''}
@@ -637,7 +637,7 @@ class StepModal {
                         <div id="${this.step.name + '-step-card-left'}" class="card-body-left">
                             <h5>环境变量:</h5>
                             <div id="${this.step.name + '-env'}">
-                                <pre class="env">${this.step.env.map(env => `- Name: ${env.name}\n  Value: ${env.value}`).join('\n')}</pre>
+                                <pre class="env">${this.step.env.map(env => `- name: ${env.name}\n  value: ${env.value}`).join('\n')}</pre>
                             </div>
                         </div>
                     ` : ''}
@@ -769,7 +769,7 @@ class TaskAddCard {
         // 初始化 Monaco Editor
         require(['vs/editor/editor.main'], () => {
             this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: "# 任务名称, 可选, 默认自动生成\nName: 测试\n"+taskTpl,
+                value: "# 任务名称, 可选, 默认自动生成\nname: 测试\n"+taskTpl,
                 language: 'yaml',
                 theme: 'vs-dark',
                 autoIndent: true,
@@ -865,8 +865,8 @@ class PipelineAddCard {
                     <label for="name">名称:</label>
                     <input type="text" id="name" name="name" style="width: 200px">
                     <div style="position: absolute; display: contents">
-                        <label for="tpl_type">模板类型:</label>
-                        <select id="tpl_type" name="tpl_type">
+                        <label for="tplType">模板类型:</label>
+                        <select id="tplType" name="tplType">
                             <option value="jinja2">jinja2</option>
                             <!-- 如果有其他选项，也可以在这里添加 -->
                         </select>
@@ -942,7 +942,7 @@ class PipelineAddCard {
         if (descriptionElement) {
             description = descriptionElement.value.trim();
         }
-        const tplType = document.getElementById("tpl_type").value;
+        const tplType = document.getElementById("tplType").value;
         const content = this.editor.getValue().trim();
         if (name === "") {
             alert("名称不能为空！");
@@ -961,7 +961,7 @@ class PipelineAddCard {
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: `Name: ${name}\nDesc: ${description}\nTplType: ${tplType}\nContent: |-\n    ${escapedContent}
+                body: `name: ${name}\ndesc: ${description}\ntplType: ${tplType}\ncontent: |-\n    ${escapedContent}
                 `,
             })
                 .then(response => {
@@ -1117,7 +1117,7 @@ class PipelineEditCard {
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: `Desc: ${description}\nTplType: ${this.pipeline.tpl_type}\nContent: |-\n    ${escapedContent}
+                body: `desc: ${description}\ntplType: ${this.pipeline.tplType}\ncontent: |-\n    ${escapedContent}
                 `,
             })
                 .then(response => {
@@ -1141,7 +1141,7 @@ class PipelineEditCard {
     }
 }
 
-let paramTpl = `Params: \n  Tag: 111`
+let paramTpl = `params: \n  imageTag: 111`
 
 class RunPipelineModal {
     constructor(pipelineName) {
@@ -1693,7 +1693,7 @@ class PipelineTable {
             const row = document.createElement("tr");
             row.innerHTML = `
                     <td id="pipeline-${pipeline.name+'-name'}">${pipeline.name}</td>
-                    <td id="pipeline-${pipeline.name+'-tpl_type'}">${pipeline.tpl_type}</td>
+                    <td id="pipeline-${pipeline.name+'-tplType'}">${pipeline.tplType}</td>
                     <td id="pipeline-${pipeline.name+'-disable'}">${pipeline.disable ? pipeline.disable : '---'}</td>
                     <td id="pipeline-${pipeline.name+'-actions'}">
                         <div id="pipeline-dropdown" class="dropdown">

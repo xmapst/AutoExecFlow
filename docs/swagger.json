@@ -1487,10 +1487,10 @@
         "types.SFileRes": {
             "type": "object",
             "properties": {
-                "is_dir": {
+                "isDir": {
                     "type": "boolean"
                 },
-                "mod_time": {
+                "modTime": {
                     "type": "integer"
                 },
                 "mode": {
@@ -1567,7 +1567,7 @@
                 "pipeline": {
                     "type": "string"
                 },
-                "task_name": {
+                "taskName": {
                     "type": "string"
                 }
             }
@@ -1577,7 +1577,7 @@
             "required": [
                 "content",
                 "name",
-                "type"
+                "tplType"
             ],
             "properties": {
                 "content": {
@@ -1592,7 +1592,7 @@
                 "name": {
                     "type": "string"
                 },
-                "type": {
+                "tplType": {
                     "type": "string",
                     "example": "jinja2"
                 }
@@ -1627,7 +1627,7 @@
                 "name": {
                     "type": "string"
                 },
-                "type": {
+                "tplType": {
                     "type": "string"
                 }
             }
@@ -1636,7 +1636,7 @@
             "type": "object",
             "required": [
                 "content",
-                "type"
+                "tplType"
             ],
             "properties": {
                 "content": {
@@ -1648,7 +1648,7 @@
                 "disable": {
                     "type": "boolean"
                 },
-                "type": {
+                "tplType": {
                     "type": "string",
                     "example": "jinja2"
                 }
@@ -1897,7 +1897,7 @@
         "types.SVersion": {
             "type": "object",
             "properties": {
-                "build_time": {
+                "buildTime": {
                     "type": "string"
                 },
                 "git": {

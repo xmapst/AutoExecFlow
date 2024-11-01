@@ -214,9 +214,9 @@ definitions:
     type: object
   types.SFileRes:
     properties:
-      is_dir:
+      isDir:
         type: boolean
-      mod_time:
+      modTime:
         type: integer
       mode:
         type: string
@@ -266,7 +266,7 @@ definitions:
         type: string
       pipeline:
         type: string
-      task_name:
+      taskName:
         type: string
     type: object
   types.SPipelineCreateReq:
@@ -279,13 +279,13 @@ definitions:
         type: boolean
       name:
         type: string
-      type:
+      tplType:
         example: jinja2
         type: string
     required:
     - content
     - name
-    - type
+    - tplType
     type: object
   types.SPipelineListRes:
     properties:
@@ -306,7 +306,7 @@ definitions:
         type: boolean
       name:
         type: string
-      type:
+      tplType:
         type: string
     type: object
   types.SPipelineUpdateReq:
@@ -317,12 +317,12 @@ definitions:
         type: string
       disable:
         type: boolean
-      type:
+      tplType:
         example: jinja2
         type: string
     required:
     - content
-    - type
+    - tplType
     type: object
   types.SPoolReq:
     properties:
@@ -483,7 +483,7 @@ definitions:
     type: object
   types.SVersion:
     properties:
-      build_time:
+      buildTime:
         type: string
       git:
         $ref: '#/definitions/types.SVersionGit'

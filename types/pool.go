@@ -1,12 +1,12 @@
 package types
 
 type SPoolReq struct {
-	Size int `json:"size" form:"type" yaml:"Size" binding:"required"`
+	Size int `json:"size" form:"size" yaml:"size" binding:"required"`
 }
 
 type SPoolRes struct {
-	Size    int   `json:"size" yaml:"Size"`
-	Total   int64 `json:"total" yaml:"Total"`
-	Running int64 `json:"running" yaml:"Running"`
-	Waiting int64 `json:"waiting" yaml:"Waiting"`
+	Size    int   `json:"size" yaml:"size"`
+	Total   int64 `json:"total" yaml:"total"`
+	Running int64 `json:"running" yaml:"running"`
+	Waiting int64 `json:"waiting" yaml:"waiting"`
 }

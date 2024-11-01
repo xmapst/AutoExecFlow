@@ -16,10 +16,10 @@ const (
 )
 
 type SBase[T any] struct {
-	Code      Code    `json:"code" yaml:"Code"`
-	Message   Message `json:"message" yaml:"Message" swaggertype:"string"`
-	Timestamp int64   `json:"timestamp" yaml:"Timestamp"`
-	Data      T       `json:"data" yaml:"Data"`
+	Code      Code    `json:"code" yaml:"code"`
+	Message   Message `json:"message" yaml:"message" swaggertype:"string"`
+	Timestamp int64   `json:"timestamp" yaml:"timestamp"`
+	Data      T       `json:"data" yaml:"data"`
 }
 
 type Message []string
@@ -94,25 +94,25 @@ type STTYSize struct {
 }
 
 type SPageRes struct {
-	Current int64 `json:"current" yaml:"Current"`
-	Size    int64 `json:"size" yaml:"Size"`
-	Total   int64 `json:"total" yaml:"Total"`
+	Current int64 `json:"current" yaml:"current"`
+	Size    int64 `json:"size" yaml:"size"`
+	Total   int64 `json:"total" yaml:"total"`
 }
 
 type SPageReq struct {
-	Page   int64  `json:"page" query:"page" yaml:"Page"`
-	Size   int64  `json:"size" query:"size" yaml:"Size"`
-	Prefix string `json:"prefix" query:"prefix" yaml:"Prefix"`
+	Page   int64  `json:"page" query:"page" yaml:"page"`
+	Size   int64  `json:"size" query:"size" yaml:"size"`
+	Prefix string `json:"prefix" query:"prefix" yaml:"prefix"`
 }
 
 type STimeRes struct {
-	Start string `json:"start,omitempty" yaml:"Start,omitempty"`
-	End   string `json:"end,omitempty" yaml:"End,omitempty"`
+	Start string `json:"start,omitempty" yaml:"start,omitempty"`
+	End   string `json:"end,omitempty" yaml:"end,omitempty"`
 }
 
 type SEnvs []*SEnv
 
 type SEnv struct {
-	Name  string `json:"name" yaml:"Name" binding:"required"`
-	Value string `json:"value" yaml:"Value"`
+	Name  string `json:"name" yaml:"name" binding:"required"`
+	Value string `json:"value" yaml:"value"`
 }

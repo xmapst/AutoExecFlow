@@ -1,7 +1,7 @@
 package types
 
 type SHealthyz struct {
-	Server string `json:"server" yaml:"Server"`
-	Client string `json:"client" yaml:"Client"`
-	State  string `json:"state" yaml:"State"`
+	Server string `json:"server" yaml:"server"`
+	Client string `json:"client" yaml:"client"`
+	State  string `json:"state" yaml:"state"`
 }

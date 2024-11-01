@@ -106,16 +106,22 @@ curl -X POST -H "Content-Type:application/json" -d '[
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "env", # Script content
-    "env": { # Environment variable injection
-      "TEST_SITE": "www.google.com"
-    }
+    "env": [ # Environment variable injection
+      {
+        "name": "TEST_SITE",
+        "value" : "www.google.com"
+      }
+    ]
   },
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "curl ${TEST_SITE}", # Script content
-    "env": { # Environment variable injection
-      "TEST_SITE": "www.baidu.com"
-    }
+    "env": [ # Environment variable injection
+      {
+        "name": "TEST_SITE",
+        "value" : "www.baidu.com"
+      }
+    ]
   }
 ]' 'http://localhost:2376/api/v1/task' 
 
@@ -124,16 +130,22 @@ curl -X POST -H "Content-Type:application/json" -d '[
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "env", # Script content
-    "env": { # Environment variable injection
-      "TEST_SITE": "www.google.com"
-    }
+    "env": [ # Environment variable injection
+      {
+        "name": "TEST_SITE",
+        "value" : "www.google.com"
+      }
+    ]
   },
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "curl ${TEST_SITE}", # Script content
-    "env": { # Environment variable injection
-      "TEST_SITE": "www.baidu.com"
-    }
+    "env": [ # Environment variable injection
+      {
+        "name": "TEST_SITE",
+        "value" : "www.baidu.com"
+      }
+    ]
   }
 ]' 'http://localhost:2376/api/v1/task?async=true'
 
@@ -143,17 +155,23 @@ curl -X POST -H "Content-Type:application/json" -d '[
     "name": "step0",
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "env", # Script content
-    "env": { # Environment variable injection
-      "TEST_SITE": "www.google.com"
-    }
+    "env": [ # Environment variable injection
+      {
+        "name": "TEST_SITE",
+        "value" : "www.google.com"
+      }
+    ]
   },
   {
     "name": "step1",
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "curl ${TEST_SITE}", # Script content
-    "env": { # Environment variable injection
-      "TEST_SITE": "www.baidu.com"
-    },
+    "env": [ # Environment variable injection
+      {
+        "name": "TEST_SITE",
+        "value" : "www.baidu.com"
+      }
+    ],
     "depends": [
       "step1"
     ]

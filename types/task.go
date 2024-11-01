@@ -1,37 +1,37 @@
 package types
 
 type STaskCreateRes struct {
-	Name  string `json:"name" yaml:"Name"`
-	Count int64  `json:"count,omitempty" yaml:"Count,omitempty"`
+	Name  string `json:"name" yaml:"name"`
+	Count int64  `json:"count,omitempty" yaml:"count,omitempty"`
 }
 
 type STaskListDetailRes struct {
-	Page  SPageRes  `json:"page" yaml:"Page"`
-	Tasks STasksRes `json:"tasks" yaml:"Tasks"`
+	Page  SPageRes  `json:"page" yaml:"page"`
+	Tasks STasksRes `json:"tasks" yaml:"tasks"`
 }
 
 type STasksRes []*STaskRes
 
 type STaskRes struct {
-	Count   int64    `json:"count" yaml:"Count"`
-	Desc    string   `json:"desc,omitempty" yaml:"Desc,omitempty"`
-	Name    string   `json:"name" yaml:"Name"`
-	Node    string   `json:"node,omitempty" yaml:"Node,omitempty"`
-	State   string   `json:"state" yaml:"State"`
-	Message string   `json:"message" yaml:"Message"`
-	Env     SEnvs    `json:"env,omitempty" yaml:"Env,omitempty"`
-	Timeout string   `json:"timeout,omitempty" yaml:"Timeout,omitempty"`
-	Disable bool     `json:"disable,omitempty" yaml:"Disable,omitempty"`
-	Time    STimeRes `json:"time,omitempty" yaml:"Time,omitempty"`
+	Count   int64    `json:"count" yaml:"count"`
+	Desc    string   `json:"desc,omitempty" yaml:"desc,omitempty"`
+	Name    string   `json:"name" yaml:"name"`
+	Node    string   `json:"node,omitempty" yaml:"node,omitempty"`
+	State   string   `json:"state" yaml:"state"`
+	Message string   `json:"message" yaml:"message"`
+	Env     SEnvs    `json:"env,omitempty" yaml:"env,omitempty"`
+	Timeout string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`
+	Disable bool     `json:"disable,omitempty" yaml:"disable,omitempty"`
+	Time    STimeRes `json:"time,omitempty" yaml:"time,omitempty"`
 }
 
 type STaskReq struct {
-	Name    string    `json:"name,omitempty" form:"name" yaml:"Name,omitempty"`
-	Desc    string    `json:"desc,omitempty" yaml:"Desc,omitempty"`
-	Node    string    `json:"node,omitempty" form:"node" yaml:"Node,omitempty"`
-	Async   bool      `json:"async,omitempty" form:"async" yaml:"Async,omitempty"`
-	Disable bool      `json:"disable,omitempty" form:"disable" yaml:"Disable,omitempty"`
-	Timeout string    `json:"timeout,omitempty" form:"timeout,omitempty" yaml:"Timeout,omitempty"`
-	Env     SEnvs     `json:"env,omitempty" form:"env" yaml:"Env,omitempty"`
-	Step    SStepsReq `json:"step,omitempty" form:"step" yaml:"Step,omitempty" binding:"required"`
+	Name    string    `json:"name,omitempty" form:"name" yaml:"name,omitempty"`
+	Desc    string    `json:"desc,omitempty" form:"desc" yaml:"desc,omitempty"`
+	Node    string    `json:"node,omitempty" form:"node" yaml:"node,omitempty"`
+	Async   bool      `json:"async,omitempty" form:"async" yaml:"async,omitempty"`
+	Disable bool      `json:"disable,omitempty" form:"disable" yaml:"disable,omitempty"`
+	Timeout string    `json:"timeout,omitempty" form:"timeout,omitempty" yaml:"timeout,omitempty"`
+	Env     SEnvs     `json:"env,omitempty" form:"env" yaml:"env,omitempty"`
+	Step    SStepsReq `json:"step,omitempty" form:"step" yaml:"step,omitempty" binding:"required"`
 }

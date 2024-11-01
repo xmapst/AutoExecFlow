@@ -1495,10 +1495,10 @@ const docTemplate = `{
         "types.SFileRes": {
             "type": "object",
             "properties": {
-                "is_dir": {
+                "isDir": {
                     "type": "boolean"
                 },
-                "mod_time": {
+                "modTime": {
                     "type": "integer"
                 },
                 "mode": {
@@ -1575,7 +1575,7 @@ const docTemplate = `{
                 "pipeline": {
                     "type": "string"
                 },
-                "task_name": {
+                "taskName": {
                     "type": "string"
                 }
             }
@@ -1585,7 +1585,7 @@ const docTemplate = `{
             "required": [
                 "content",
                 "name",
-                "type"
+                "tplType"
             ],
             "properties": {
                 "content": {
@@ -1600,7 +1600,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "type": {
+                "tplType": {
                     "type": "string",
                     "example": "jinja2"
                 }
@@ -1635,7 +1635,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "type": {
+                "tplType": {
                     "type": "string"
                 }
             }
@@ -1644,7 +1644,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "content",
-                "type"
+                "tplType"
             ],
             "properties": {
                 "content": {
@@ -1656,7 +1656,7 @@ const docTemplate = `{
                 "disable": {
                     "type": "boolean"
                 },
-                "type": {
+                "tplType": {
                     "type": "string",
                     "example": "jinja2"
                 }
@@ -1905,7 +1905,7 @@ const docTemplate = `{
         "types.SVersion": {
             "type": "object",
             "properties": {
-                "build_time": {
+                "buildTime": {
                     "type": "string"
                 },
                 "git": {

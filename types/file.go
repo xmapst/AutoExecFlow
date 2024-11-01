@@ -1,17 +1,17 @@
 package types
 
 type SFileRes struct {
-	Name    string `json:"name" yaml:"Name"`
-	Path    string `json:"path" yaml:"Path"`
-	Size    int64  `json:"size" yaml:"Size"`
-	Mode    string `json:"mode" yaml:"Mode"`
-	ModTime int64  `json:"mod_time" yaml:"ModTime"`
-	IsDir   bool   `json:"is_dir" yaml:"IsDir"`
+	Name    string `json:"name" yaml:"name"`
+	Path    string `json:"path" yaml:"path"`
+	Size    int64  `json:"size" yaml:"size"`
+	Mode    string `json:"mode" yaml:"mode"`
+	ModTime int64  `json:"modTime" yaml:"modTime"`
+	IsDir   bool   `json:"isDir" yaml:"isDir"`
 }
 
 type SFileListRes struct {
-	Total int       `json:"total" yaml:"Total"`
-	Files SFilesRes `json:"files" yaml:"Files"`
+	Total int       `json:"total" yaml:"total"`
+	Files SFilesRes `json:"files" yaml:"files"`
 }
 
 type SFilesRes []*SFileRes
