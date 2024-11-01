@@ -286,8 +286,6 @@ class WebSocketManager {
     }
 }
 
-
-
 class TaskModal {
     constructor(taskName) {
         this.webSocketManager = null;
@@ -1309,7 +1307,7 @@ class PipelineModal {
             const link = document.createElement('a');
             link.href = "#";
             link.innerText = task;
-            link.style.display = 'inline';
+            link.style.display = 'inline-table';
             link.style.padding= '3px 6px';
             link.onclick = this.openTaskCard.bind(this,task);
             taskContainer.appendChild(link);
@@ -1345,7 +1343,7 @@ class PipelineModal {
             </div>
             <h5>内容: </h5>
             <div class="step-card-output">
-                <pre class="step-card-code">${this.pipeline.content}</pre>
+                <div id="yaml-editor"></div>
             </div>
             <h5>任务列表</h5>
             <div class="card-body" style="position: static">
@@ -1371,11 +1369,35 @@ class PipelineModal {
             </div>
         `;
         document.body.appendChild(card);
-
+        this.initializeEditor(this.pipeline.content);
         setTimeout(() => {
             overlay.classList.add('show');
             card.classList.add('show');
         }, 10);
+    }
+
+    initializeEditor(data) {
+        // 初始化 Monaco Editor
+        require(['vs/editor/editor.main'], () => {
+            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
+                value: data,
+                language: 'yaml',
+                theme: 'vs-dark',
+                readOnly: true,
+                autoIndent: true,
+                automaticLayout: true,
+                overviewRulerBorder: false,
+                foldingStrategy: 'indentation',
+                lineNumbers: 'on',
+                minimap: { enabled: false },
+                tabSize: 4,
+                mouseWheelZoom: true,
+                formatOnType: true,
+                formatOnPaste: true,
+                cursorStyle: 'line',
+                fontSize: 12,
+            });
+        });
     }
 
     updatePipelineTaskPagination() {
@@ -1511,7 +1533,7 @@ class TaskTable {
                     </td>
                 `;
             tableBody.appendChild(row);
-            let msgDocument = document.getElementById(task.name + '-message');
+            let msgDocument = document.getElementById('task-'+task.name + '-message');
             if (!msgDocument) {
                 msgDocument = document.createElement('div');
                 msgDocument.id = task.name + '-message';
