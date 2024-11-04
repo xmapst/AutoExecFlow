@@ -32,11 +32,11 @@ func Detail(c *gin.Context) {
 		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("build does not exist")))
 		return
 	}
-	res, err := service.Pipeline(pipelineName).BuildDetail(buildName)
+	code, res, err := service.Pipeline(pipelineName).BuildDetail(buildName)
 	if err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))
 		return
 	}
-	base.Send(c, base.WithData(res).WithCode(types.CodeSuccess))
+	base.Send(c, base.WithData(res).WithCode(code))
 }

@@ -106,10 +106,10 @@ func (p *SPipelineService) BuildList(req *types.SPageReq) *types.SPipelineBuildL
 	}
 	for _, task := range tasks {
 		res := &types.SPipelineBuildRes{
-			Pipeline: task.PipelineName,
-			TaskName: task.TaskName,
-			State:    models.StateMap[*task.State],
-			Message:  task.Message,
+			PipelineName: task.PipelineName,
+			TaskName:     task.TaskName,
+			State:        models.StateMap[*task.State],
+			Message:      task.Message,
 			Time: types.STimeRes{
 				Start: task.STimeStr(),
 				End:   task.ETimeStr(),
@@ -120,17 +120,17 @@ func (p *SPipelineService) BuildList(req *types.SPageReq) *types.SPipelineBuildL
 	return list
 }
 
-func (p *SPipelineService) BuildDetail(name string) (*types.SPipelineBuildRes, error) {
+func (p *SPipelineService) BuildDetail(name string) (types.Code, *types.SPipelineBuildRes, error) {
 	build, err := storage.Pipeline(p.name).Build().Get(name)
 	if err != nil {
-		return nil, err
+		return types.CodeFailed, nil, err
 	}
-	return &types.SPipelineBuildRes{
-		Pipeline: build.PipelineName,
-		TaskName: build.TaskName,
-		Params:   build.Params,
-		State:    models.StateMap[*build.State],
-		Message:  build.Message,
+	return ConvertState(*build.State), &types.SPipelineBuildRes{
+		PipelineName: build.PipelineName,
+		TaskName:     build.TaskName,
+		Params:       build.Params,
+		State:        models.StateMap[*build.State],
+		Message:      build.Message,
 		Time: types.STimeRes{
 			Start: build.STime.String(),
 			End:   build.ETimeStr(),
@@ -200,7 +200,7 @@ func (p *SPipelineService) buildReRun(name string, param map[string]any) error {
 }
 
 func (p *SPipelineService) BuildReRun(name string) error {
-	build, err := p.BuildDetail(name)
+	build, err := storage.Pipeline(p.name).Build().Get(name)
 	if err != nil {
 		return err
 	}
