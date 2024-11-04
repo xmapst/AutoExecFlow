@@ -146,11 +146,11 @@ type IPipeline interface {
 
 type IPipelineBuild interface {
 	// Get 根据名称获取指定构建
-	Get(name string) (res *models.SPipelineBuild, err error)
+	Get(name string) (res *models.SPipelineBuildRes, err error)
 	// Insert 插入
 	Insert(build *models.SPipelineBuild) (err error)
 	// List 获取所有
-	List(page, size int64) (res []string, total int64)
+	List(page, size int64) (res models.SPipelineBuilds, total int64)
 	// Remove 删除
 	Remove(name string) (err error)
 	// ClearAll 清理

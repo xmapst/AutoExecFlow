@@ -1544,7 +1544,7 @@
                 "tasks": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/types.SPipelineBuildRes"
                     }
                 }
             }
@@ -1561,14 +1561,23 @@
         "types.SPipelineBuildRes": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
                 "params": {
                     "type": "string"
                 },
                 "pipeline": {
                     "type": "string"
                 },
+                "state": {
+                    "type": "string"
+                },
                 "taskName": {
                     "type": "string"
+                },
+                "time": {
+                    "$ref": "#/definitions/types.STimeRes"
                 }
             }
         },

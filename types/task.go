@@ -13,7 +13,7 @@ type STaskListDetailRes struct {
 type STasksRes []*STaskRes
 
 type STaskRes struct {
-	Count   int64    `json:"count" yaml:"count"`
+	Count   int64    `json:"count,omitempty" yaml:"count,omitempty"`
 	Desc    string   `json:"desc,omitempty" yaml:"desc,omitempty"`
 	Name    string   `json:"name" yaml:"name"`
 	Node    string   `json:"node,omitempty" yaml:"node,omitempty"`

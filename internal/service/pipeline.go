@@ -97,14 +97,27 @@ func (p *SPipelineService) BuildList(req *types.SPageReq) *types.SPipelineBuildL
 	if total%req.Size != 0 {
 		pageTotal += 1
 	}
-	return &types.SPipelineBuildListRes{
+	var list = &types.SPipelineBuildListRes{
 		Page: types.SPageRes{
 			Current: req.Page,
 			Size:    req.Size,
 			Total:   pageTotal,
 		},
-		Tasks: tasks,
 	}
+	for _, task := range tasks {
+		res := &types.SPipelineBuildRes{
+			Pipeline: task.PipelineName,
+			TaskName: task.TaskName,
+			State:    models.StateMap[*task.State],
+			Message:  task.Message,
+			Time: types.STimeRes{
+				Start: task.STimeStr(),
+				End:   task.ETimeStr(),
+			},
+		}
+		list.Tasks = append(list.Tasks, res)
+	}
+	return list
 }
 
 func (p *SPipelineService) BuildDetail(name string) (*types.SPipelineBuildRes, error) {
@@ -116,6 +129,12 @@ func (p *SPipelineService) BuildDetail(name string) (*types.SPipelineBuildRes, e
 		Pipeline: build.PipelineName,
 		TaskName: build.TaskName,
 		Params:   build.Params,
+		State:    models.StateMap[*build.State],
+		Message:  build.Message,
+		Time: types.STimeRes{
+			Start: build.STime.String(),
+			End:   build.ETimeStr(),
+		},
 	}, nil
 }
 

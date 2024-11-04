@@ -11,9 +11,10 @@ type sPipelineBuild struct {
 	pName string
 }
 
-func (p *sPipelineBuild) List(page, size int64) (res []string, total int64) {
-	query := p.Model(&models.SPipelineBuilds{}).
-		Select("task_name").
+func (p *sPipelineBuild) List(page, size int64) (res models.SPipelineBuilds, total int64) {
+	query := p.Table("t_pipeline_build p").
+		Select("p.id AS id, p.pipeline_name AS pipeline_name,t.name AS task_name, t.state AS state, t.message AS message, t.s_time AS  s_time, t.e_time AS e_time").
+		Joins("INNER JOIN t_task t ON t.name = p.task_name").
 		Where(map[string]interface{}{
 			"pipeline_name": p.pName,
 		}).
@@ -29,19 +30,14 @@ func (p *sPipelineBuild) List(page, size int64) (res []string, total int64) {
 	return
 }
 
-func (p *sPipelineBuild) Task(name string) ITask {
-	return &sTask{
-		DB:    p.DB,
-		tName: name,
-	}
-}
-
-func (p *sPipelineBuild) Get(name string) (res *models.SPipelineBuild, err error) {
-	res = new(models.SPipelineBuild)
-	err = p.Where(map[string]interface{}{
-		"pipeline_name": p.pName,
-		"task_name":     name,
-	}).First(res).Error
+func (p *sPipelineBuild) Get(name string) (res *models.SPipelineBuildRes, err error) {
+	err = p.Table("t_pipeline_build p").
+		Select("p.id AS id, p.pipeline_name AS pipeline_name,t.name AS task_name, t.state AS state, t.message AS message, t.s_time AS  s_time, t.e_time AS e_time").
+		Joins("INNER JOIN t_task t ON t.name = p.task_name").
+		Where(map[string]interface{}{
+			"pipeline_name": p.pName,
+			"task_name":     name,
+		}).Find(&res).Error
 	return
 }
 

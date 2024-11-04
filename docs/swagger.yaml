@@ -251,7 +251,7 @@ definitions:
         $ref: '#/definitions/types.SPageRes'
       tasks:
         items:
-          type: string
+          $ref: '#/definitions/types.SPipelineBuildRes'
         type: array
     type: object
   types.SPipelineBuildReq:
@@ -262,12 +262,18 @@ definitions:
     type: object
   types.SPipelineBuildRes:
     properties:
+      message:
+        type: string
       params:
         type: string
       pipeline:
         type: string
+      state:
+        type: string
       taskName:
         type: string
+      time:
+        $ref: '#/definitions/types.STimeRes'
     type: object
   types.SPipelineCreateReq:
     properties:

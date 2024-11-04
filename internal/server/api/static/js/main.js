@@ -1306,10 +1306,10 @@ class PipelineModal {
         this.tasks.forEach(task => {
             const link = document.createElement('a');
             link.href = "#";
-            link.innerText = task;
+            link.innerText = task.taskName;
             link.style.display = 'inline-table';
             link.style.padding= '3px 6px';
-            link.onclick = this.openTaskCard.bind(this,task);
+            link.onclick = this.openTaskCard.bind(this, task.taskName);
             taskContainer.appendChild(link);
         });
     }

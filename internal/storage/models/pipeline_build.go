@@ -11,4 +11,10 @@ func (s *SPipelineBuild) TableName() string {
 	return "t_pipeline_build"
 }
 
-type SPipelineBuilds []*SPipelineBuild
+type SPipelineBuilds []*SPipelineBuildRes
+
+type SPipelineBuildRes struct {
+	SPipelineBuild
+	// 链表查询使用
+	STaskUpdate
+}

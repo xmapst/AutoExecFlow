@@ -1552,7 +1552,7 @@ const docTemplate = `{
                 "tasks": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/types.SPipelineBuildRes"
                     }
                 }
             }
@@ -1569,14 +1569,23 @@ const docTemplate = `{
         "types.SPipelineBuildRes": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
                 "params": {
                     "type": "string"
                 },
                 "pipeline": {
                     "type": "string"
                 },
+                "state": {
+                    "type": "string"
+                },
                 "taskName": {
                     "type": "string"
+                },
+                "time": {
+                    "$ref": "#/definitions/types.STimeRes"
                 }
             }
         },

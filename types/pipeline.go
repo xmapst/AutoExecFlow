@@ -31,9 +31,12 @@ type SPipelineUpdateReq struct {
 }
 
 type SPipelineBuildRes struct {
-	Pipeline string `json:"pipeline" yaml:"pipeline"`
-	TaskName string `json:"taskName" yaml:"taskName"`
-	Params   string `json:"params,omitempty" yaml:"params,omitempty"`
+	Pipeline string   `json:"pipeline" yaml:"pipeline"`
+	TaskName string   `json:"taskName" yaml:"taskName"`
+	Params   string   `json:"params,omitempty" yaml:"params,omitempty"`
+	State    string   `json:"state" yaml:"state"`
+	Message  string   `json:"message" yaml:"message"`
+	Time     STimeRes `json:"time" yaml:"time"`
 }
 
 type SPipelineBuildReq struct {
@@ -41,6 +44,8 @@ type SPipelineBuildReq struct {
 }
 
 type SPipelineBuildListRes struct {
-	Page  SPageRes `json:"page" yaml:"page"`
-	Tasks []string `json:"tasks" yaml:"tasks"`
+	Page  SPageRes           `json:"page" yaml:"page"`
+	Tasks SPipelineBuildsRes `json:"tasks" yaml:"tasks"`
 }
+
+type SPipelineBuildsRes []*SPipelineBuildRes
