@@ -92,17 +92,16 @@ make
 ### Create a task
 
 ```shell
-# URL parameter support
-name: "Customize task name"
-timeout: "Task timeout"
-env: "Task global environment variable injection"
-async: "Concurrent execution or custom orchestration"
-
-# example:
-# http://localhost:2376/api/v1/task?name=test&timeout=10m&env=TEST_SITE=www.google.com&async=true
-
 # By default, the execution is in order.
-curl -X POST -H "Content-Type:application/json" -d '[
+curl -X POST -H "Content-Type:application/json" -d '"name": "test",
+"timeout": "10m",
+"env": [
+  {
+    "name": "TEST_SITE",
+    "value" : "www.google.com"
+  }
+],
+"step": [
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "env", # Script content
@@ -126,7 +125,16 @@ curl -X POST -H "Content-Type:application/json" -d '[
 ]' 'http://localhost:2376/api/v1/task' 
 
 # Concurrent Execution
-curl -X POST -H "Content-Type:application/json" -d '[
+curl -X POST -H "Content-Type:application/json" -d '"name": "test",
+"timeout": "10m",
+"env": [
+  {
+    "name": "TEST_SITE",
+    "value" : "www.google.com"
+  }
+],
+"async: true,
+"step": [
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
     "content": "env", # Script content
@@ -147,10 +155,19 @@ curl -X POST -H "Content-Type:application/json" -d '[
       }
     ]
   }
-]' 'http://localhost:2376/api/v1/task?async=true'
+]' 'http://localhost:2376/api/v1/task'
 
 # Customized orchestration execution
-curl -X POST -H "Content-Type:application/json" -d '[
+curl -X POST -H "Content-Type:application/json" -d '"name": "test",
+"timeout": "10m",
+"env": [
+  {
+    "name": "TEST_SITE",
+    "value" : "www.google.com"
+  }
+],
+"async: true,
+"step": [
   {
     "name": "step0",
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
@@ -176,7 +193,7 @@ curl -X POST -H "Content-Type:application/json" -d '[
       "step1"
     ]
   }
-]' 'http://localhost:2376/api/v1/task?async=true'
+]' 'http://localhost:2376/api/v1/task'
 ```
 
 ### Get the task list
@@ -189,6 +206,12 @@ curl -X GET -H "Content-Type:application/json" 'http://localhost:2376/api/v1/tas
 
 ```shell
 curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{task name}
+```
+
+### Get task step list
+
+```shell
+curl -X GET -H "Content-Type:application/json" http://localhost:2376/api/v1/task/{task name}/step
 ```
 
 ### Get the task working directory
