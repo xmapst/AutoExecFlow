@@ -266,7 +266,7 @@ definitions:
         type: string
       params:
         type: string
-      pipeline:
+      pipelineName:
         type: string
       state:
         type: string

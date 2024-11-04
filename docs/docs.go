@@ -1575,7 +1575,7 @@ const docTemplate = `{
                 "params": {
                     "type": "string"
                 },
-                "pipeline": {
+                "pipelineName": {
                     "type": "string"
                 },
                 "state": {
