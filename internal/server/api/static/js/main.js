@@ -215,6 +215,34 @@ class Utils {
             });
         }
     }
+
+    static InitializeEditor(eElementID, data, readOnly = false) {
+        // 返回一个 Promise
+        return new Promise((resolve) => {
+            require(['vs/editor/editor.main'], () => {
+                const editor = monaco.editor.create(document.getElementById(eElementID), {
+                    value: data,
+                    language: 'yaml',
+                    theme: 'vs-dark',
+                    readOnly: readOnly,
+                    autoIndent: true,
+                    automaticLayout: true,
+                    overviewRulerBorder: false,
+                    foldingStrategy: 'indentation',
+                    lineNumbers: 'on',
+                    minimap: { enabled: false },
+                    tabSize: 4,
+                    mouseWheelZoom: true,
+                    formatOnType: true,
+                    formatOnPaste: true,
+                    cursorStyle: 'line',
+                    fontSize: 12,
+                });
+                resolve(editor); // 初始化后返回 editor 实例
+            });
+        });
+    }
+
 }
 
 // 通用的WebSocket管理器
@@ -728,6 +756,7 @@ class StepModal {
 
 class TaskAddCard {
     constructor() {
+        this.editer = null
         this.show();
     }
 
@@ -761,31 +790,8 @@ class TaskAddCard {
             card.classList.add('show');
         }, 10);
 
-        this.initializeEditor();
+        Utils.InitializeEditor('yaml-editor', "# 任务名称, 可选, 默认自动生成\nname: 测试\n"+taskTpl).then(editor => this.editor = editor);
         this.bindEvents();
-    }
-
-    initializeEditor() {
-        // 初始化 Monaco Editor
-        require(['vs/editor/editor.main'], () => {
-            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: "# 任务名称, 可选, 默认自动生成\nname: 测试\n"+taskTpl,
-                language: 'yaml',
-                theme: 'vs-dark',
-                autoIndent: true,
-                automaticLayout: true,
-                overviewRulerBorder: false,
-                foldingStrategy: 'indentation',
-                lineNumbers: 'on',
-                minimap: { enabled: false },
-                tabSize: 4,
-                mouseWheelZoom: true,
-                formatOnType: true,
-                formatOnPaste: true,
-                cursorStyle: 'line',
-                fontSize: 12,
-            });
-        });
     }
 
     closeModal() {
@@ -890,31 +896,8 @@ class PipelineAddCard {
             card.classList.add('show');
         }, 10);
 
-        this.initializeEditor();
+        Utils.InitializeEditor('yaml-editor', taskTpl).then(editor => this.editor = editor);
         this.bindEvents();
-    }
-
-    initializeEditor() {
-        // 初始化 Monaco Editor
-        require(['vs/editor/editor.main'], () => {
-            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: taskTpl,
-                language: 'yaml',
-                theme: 'vs-dark',
-                autoIndent: true,
-                automaticLayout: true,
-                overviewRulerBorder: false,
-                foldingStrategy: 'indentation',
-                lineNumbers: 'on',
-                minimap: { enabled: false },
-                tabSize: 4,
-                mouseWheelZoom: true,
-                formatOnType: true,
-                formatOnPaste: true,
-                cursorStyle: 'line',
-                fontSize: 12,
-            });
-        });
     }
 
     closeModal() {
@@ -955,13 +938,15 @@ class PipelineAddCard {
 
         const escapedContent = content
             .replace(/\n/g, '\n    '); // 在每行前加空格，保持缩进
+        const escapedDescription = description
+            .replace(/\n/g, '\n    '); // 在每行前加空格，保持缩进
         try {
             fetch(`${baseUrl}${pipelineUrl}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: `name: ${name}\ndesc: ${description}\ntplType: ${tplType}\ncontent: |-\n    ${escapedContent}
+                body: `name: ${name}\ndesc: |-\n    ${escapedDescription}\ntplType: ${tplType}\ncontent: |-\n    ${escapedContent}
                 `,
             })
                 .then(response => {
@@ -1052,31 +1037,8 @@ class PipelineEditCard {
             card.classList.add('show');
         }, 10);
 
-        this.initializeEditor();
+        Utils.InitializeEditor('yaml-editor', this.pipeline.content).then(editor => this.editor = editor);
         this.bindEvents();
-    }
-
-    initializeEditor() {
-        // 初始化 Monaco Editor
-        require(['vs/editor/editor.main'], () => {
-            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: this.pipeline.content,
-                language: 'yaml',
-                theme: 'vs-dark',
-                autoIndent: true,
-                automaticLayout: true,
-                overviewRulerBorder: false,
-                foldingStrategy: 'indentation',
-                lineNumbers: 'on',
-                minimap: { enabled: false },
-                tabSize: 4,
-                mouseWheelZoom: true,
-                formatOnType: true,
-                formatOnPaste: true,
-                cursorStyle: 'line',
-                fontSize: 12,
-            });
-        });
     }
 
     closeModal() {
@@ -1111,13 +1073,15 @@ class PipelineEditCard {
 
         const escapedContent = content
             .replace(/\n/g, '\n    '); // 在每行前加空格，保持缩进
+        const escapedDescription = description
+            .replace(/\n/g, '\n    '); // 在每行前加空格，保持缩进
         try {
             fetch(`${baseUrl}${pipelineUrl}/${this.pipelineName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/yaml',
                 },
-                body: `desc: ${description}\ntplType: ${this.pipeline.tplType}\ncontent: |-\n    ${escapedContent}
+                body: `desc: |-\n    ${escapedDescription}\ntplType: ${this.pipeline.tplType}\ncontent: |-\n    ${escapedContent}
                 `,
             })
                 .then(response => {
@@ -1145,6 +1109,7 @@ let paramTpl = `params: \n  imageTag: 111`
 
 class RunPipelineModal {
     constructor(pipelineName) {
+        this.editor = null;
         this.pipelineName = pipelineName;
         this.init();
     }
@@ -1180,31 +1145,8 @@ class RunPipelineModal {
             card.classList.add('show');
         }, 10);
 
-        this.initializeEditor();
+        Utils.InitializeEditor('yaml-editor', paramTpl).then(editor => this.editor = editor);
         this.bindEvents();
-    }
-
-    initializeEditor() {
-        // 初始化 Monaco Editor
-        require(['vs/editor/editor.main'], () => {
-            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: paramTpl,
-                language: 'yaml',
-                theme: 'vs-dark',
-                autoIndent: true,
-                automaticLayout: true,
-                overviewRulerBorder: false,
-                foldingStrategy: 'indentation',
-                lineNumbers: 'on',
-                minimap: { enabled: false },
-                tabSize: 4,
-                mouseWheelZoom: true,
-                formatOnType: true,
-                formatOnPaste: true,
-                cursorStyle: 'line',
-                fontSize: 12,
-            });
-        });
     }
 
     closeModal() {
@@ -1252,6 +1194,7 @@ class RunPipelineModal {
 
 class PipelineModal {
     constructor(pipelineName) {
+        this.editor = null;
         this.pipelineName = pipelineName;
         this.webSocketManager = null;
         this.pipeline = null;
@@ -1369,35 +1312,11 @@ class PipelineModal {
             </div>
         `;
         document.body.appendChild(card);
-        this.initializeEditor(this.pipeline.content);
+        Utils.InitializeEditor('yaml-editor', this.pipeline.content, true).then(editor => this.editor = editor);
         setTimeout(() => {
             overlay.classList.add('show');
             card.classList.add('show');
         }, 10);
-    }
-
-    initializeEditor(data) {
-        // 初始化 Monaco Editor
-        require(['vs/editor/editor.main'], () => {
-            this.editor = monaco.editor.create(document.getElementById('yaml-editor'), {
-                value: data,
-                language: 'yaml',
-                theme: 'vs-dark',
-                readOnly: true,
-                autoIndent: true,
-                automaticLayout: true,
-                overviewRulerBorder: false,
-                foldingStrategy: 'indentation',
-                lineNumbers: 'on',
-                minimap: { enabled: false },
-                tabSize: 4,
-                mouseWheelZoom: true,
-                formatOnType: true,
-                formatOnPaste: true,
-                cursorStyle: 'line',
-                fontSize: 12,
-            });
-        });
     }
 
     updatePipelineTaskPagination() {
