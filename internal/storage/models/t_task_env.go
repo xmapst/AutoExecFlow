@@ -6,6 +6,6 @@ type STaskEnv struct {
 	SEnv
 }
 
-func (s *STaskEnv) TableName() string {
+func (t *STaskEnv) TableName() string {
 	return "t_task_env"
 }

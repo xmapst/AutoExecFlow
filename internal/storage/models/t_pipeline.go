@@ -6,7 +6,7 @@ type SPipeline struct {
 	SPipelineUpdate
 }
 
-func (s *SPipeline) TableName() string {
+func (p *SPipeline) TableName() string {
 	return "t_pipeline"
 }
 

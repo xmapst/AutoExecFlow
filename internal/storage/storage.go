@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/utils/snowflake"
 )
 
 var storage IStorage
@@ -11,12 +12,18 @@ const (
 	TYPE_MYSQL  = "mysql"
 )
 
-func New(nodeName, rawURL string) error {
+func New(dataCenterID, nodeID int64, nodeName, rawURL string) error {
 	db, err := newDB(nodeName, rawURL)
 	if err != nil {
 		return err
 	}
 	storage = db
+	_, err = snowflake.New(dataCenterID, nodeID)
+	if err != nil {
+		return err
+	}
+	models.DataCenterID = dataCenterID
+	models.NodeID = nodeID
 	return nil
 }
 

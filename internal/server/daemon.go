@@ -68,7 +68,10 @@ func (p *sProgram) init() error {
 	}
 
 	// 创建临时内存数据库
-	if err := storage.New(config.App.NodeName, config.App.DBUrl); err != nil {
+	if err := storage.New(
+		config.App.DataCenterID, config.App.NodeID,
+		config.App.NodeName, config.App.DBUrl,
+	); err != nil {
 		logx.Errorln(err)
 		return err
 	}

@@ -54,6 +54,8 @@ func New() *cobra.Command {
 	}
 
 	viper.AutomaticEnv()
+	cmd.Flags().Int64("node_id", 1, "node id")
+	cmd.Flags().Int64("data_center_id", 1, "data center id")
 	cmd.Flags().String("root_dir", utils.DefaultDir, "root directory")
 	cmd.Flags().String("relative_path", "/", "web relative path")
 	cmd.Flags().String("node_name", "AutoExecFlow01", "node name")

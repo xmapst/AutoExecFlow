@@ -7,7 +7,7 @@ type SPipelineBuild struct {
 	Params       string `json:"params,omitempty" gorm:"comment:参数"`
 }
 
-func (s *SPipelineBuild) TableName() string {
+func (p *SPipelineBuild) TableName() string {
 	return "t_pipeline_build"
 }
 

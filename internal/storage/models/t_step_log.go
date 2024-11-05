@@ -9,7 +9,7 @@ type SStepLog struct {
 	Content   string `json:"content,omitempty" gorm:"comment:内容"`
 }
 
-func (s *SStepLog) TableName() string {
+func (l *SStepLog) TableName() string {
 	return "t_step_log"
 }
 

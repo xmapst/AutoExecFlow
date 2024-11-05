@@ -33,7 +33,9 @@ type SConfig struct {
 	SelfUpdateURL string        `mapstructure:"SELF_URL"`
 	LogOutput     string        `mapstructure:"LOG_OUTPUT"`
 	LogLevel      string        `mapstructure:"LOG_LEVEL"`
+	DataCenterID  int64         `mapstructure:"DATA_CENTER_ID"`
 	NodeName      string        `mapstructure:"NODE_NAME"`
+	NodeID        int64         `mapstructure:"NODE_ID"`
 }
 
 func Init() error {

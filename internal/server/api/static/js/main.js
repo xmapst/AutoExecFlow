@@ -762,10 +762,10 @@ class TaskAddCard {
 
     show() {
         Utils.removeElementById("add-task-card");
-        Utils.removeElementById("task-modal-overlay");
+        Utils.removeElementById("task-add-modal-overlay");
 
         const overlay = document.createElement('div');
-        overlay.setAttribute("id", "task-modal-overlay");
+        overlay.setAttribute("id", "task-add-modal-overlay");
         overlay.className = 'modal-overlay';
         document.body.appendChild(overlay);
 
@@ -796,20 +796,20 @@ class TaskAddCard {
 
     closeModal() {
         const card = document.getElementById("add-task-card");
-        const overlay = document.getElementById("task-modal-overlay");
+        const overlay = document.getElementById("task-add-modal-overlay");
         card.classList.remove('show');
         overlay.classList.remove('show');
 
         setTimeout(() => {
             Utils.removeElementById("add-task-card");
-            Utils.removeElementById("task-modal-overlay");
+            Utils.removeElementById("task-add-modal-overlay");
         }, 300);
     }
 
     bindEvents() {
         document.getElementById("create-task").addEventListener("click", () => this.createTask());
         document.getElementById("cancel-task").addEventListener("click", () => this.closeModal());
-        document.getElementById("task-modal-overlay").addEventListener("click", () => this.closeModal());
+        document.getElementById("task-add-modal-overlay").addEventListener("click", () => this.closeModal());
     }
 
     createTask() {
