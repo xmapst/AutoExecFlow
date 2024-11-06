@@ -29,14 +29,14 @@ type STaskUpdate struct {
 
 func (t *STaskUpdate) STimeStr() string {
 	if t.STime == nil {
-		return ""
+		return "1970-01-01T00:00:00"
 	}
 	return t.STime.Format(time.RFC3339)
 }
 
 func (t *STaskUpdate) ETimeStr() string {
 	if t.ETime == nil {
-		return ""
+		return "1970-01-01T00:00:00"
 	}
 	return t.ETime.Format(time.RFC3339)
 }

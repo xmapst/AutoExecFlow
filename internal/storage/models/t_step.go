@@ -31,14 +31,14 @@ type SStepUpdate struct {
 
 func (s *SStepUpdate) STimeStr() string {
 	if s.STime == nil {
-		return ""
+		return "1970-01-01T00:00:00"
 	}
 	return s.STime.Format(time.RFC3339)
 }
 
 func (s *SStepUpdate) ETimeStr() string {
 	if s.ETime == nil {
-		return ""
+		return "1970-01-01T00:00:00"
 	}
 	return s.ETime.Format(time.RFC3339)
 }
