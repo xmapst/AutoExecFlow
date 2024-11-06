@@ -29,8 +29,8 @@ step:
       - 步骤1
     # 局部环境变量, 会覆盖同名的全局变量
     env:
-      - Name: Test
-        Value: "test_env"
+      - name: Test
+        value: "test_env"
     # 类型
     type: sh
     # 内容
@@ -41,8 +41,8 @@ step:
     desc: 这是一段步骤描述
     timeout: 2m
     env:
-      - Name: Test
-        Value: "test_env"
+      - name: Test
+        value: "test_env"
     type: sh
     content: |-
       ping 1.1.1.1
