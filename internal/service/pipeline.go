@@ -148,7 +148,7 @@ func (p *SPipelineService) BuildCreate(req *types.SPipelineBuildReq) (name strin
 		return
 	}
 	name = fmt.Sprintf("PpipeL%s", ksuid.New().String())
-	err = p.buildReRun(name, req.Params)
+	err = p.buildRun(name, req.Params)
 	if err != nil {
 		return
 	}
@@ -162,7 +162,7 @@ func (p *SPipelineService) BuildCreate(req *types.SPipelineBuildReq) (name strin
 	return
 }
 
-func (p *SPipelineService) buildReRun(name string, param map[string]any) error {
+func (p *SPipelineService) buildRun(name string, param map[string]any) error {
 	// 获取流水线
 	pipeline, err := storage.Pipeline(p.name).Get()
 	if err != nil {
@@ -212,5 +212,5 @@ func (p *SPipelineService) BuildReRun(name string) error {
 		}
 	}
 
-	return p.buildReRun(build.TaskName, param)
+	return p.buildRun(build.TaskName, param)
 }

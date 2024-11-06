@@ -12,6 +12,10 @@ type sPipelineBuild struct {
 }
 
 func (p *sPipelineBuild) List(page, size int64) (res models.SPipelineBuilds, total int64) {
+	err := p.Model(&models.SPipelineBuild{}).Where("pipeline_name = ?", p.pName).Count(&total).Error
+	if err != nil {
+		return
+	}
 	query := p.Table("t_pipeline_build p").
 		Select("p.id AS id, p.pipeline_name AS pipeline_name, p.task_name AS task_name, " +
 			"t.state AS state, t.message AS message, t.s_time AS  s_time, t.e_time AS e_time").
@@ -19,8 +23,7 @@ func (p *sPipelineBuild) List(page, size int64) (res models.SPipelineBuilds, tot
 		Where(map[string]interface{}{
 			"pipeline_name": p.pName,
 		}).
-		Order("id DESC").
-		Count(&total)
+		Order("id DESC")
 	if page <= 0 || size <= 0 {
 		query.Find(&res)
 		return

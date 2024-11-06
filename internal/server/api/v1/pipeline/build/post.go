@@ -27,7 +27,9 @@ func Post(c *gin.Context) {
 		base.Send(c, base.WithCode[any](types.CodeNoData).WithError(errors.New("pipeline does not exist")))
 		return
 	}
-	var req = new(types.SPipelineBuildReq)
+	var req = &types.SPipelineBuildReq{
+		Params: make(map[string]any),
+	}
 	if err := c.ShouldBind(req); err != nil {
 		logx.Errorln(err)
 		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(err))

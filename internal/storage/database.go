@@ -116,16 +116,6 @@ func (d *sDatabase) Close() error {
 }
 
 func (d *sDatabase) FixDatabase(nodeName string) (err error) {
-	// 获取所有符合条件的任务名称
-	var tasks []string
-	d.Model(&models.STask{}).
-		Select("name").
-		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
-		Find(&tasks)
-
-	if len(tasks) <= 0 {
-		return
-	}
 	// 开始事务
 	tx := d.Begin()
 	defer func() {
@@ -136,7 +126,7 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 
 	// 更新所有符合条件的任务状态为失败
 	if err = tx.Model(&models.STask{}).
-		Where("name IN (?)", tasks).
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
 		Updates(map[string]interface{}{
 			"node":    nodeName,
 			"state":   models.StateFailed,
@@ -148,7 +138,10 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 
 	// 更新所有符合条件的步骤状态为失败
 	if err = tx.Model(&models.SStep{}).
-		Where("task_name IN (?)", tasks).
+		Where("task_name IN (?)",
+			d.Model(&models.STask{}).Select("name").
+				Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed),
+		).
 		Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
 		Updates(map[string]interface{}{
 			"state":   models.StateFailed,
@@ -187,14 +180,17 @@ func (d *sDatabase) TaskCount(state models.State) (res int64) {
 }
 
 func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.STasks, total int64) {
+	err := d.Model(&models.STask{}).Count(&total).Error
+	if err != nil {
+		return
+	}
 	query := d.Model(&models.STask{}).
 		Select("name, state, message, s_time, e_time").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")
 	}
-	query.Count(&total).
-		Scopes(func(db *gorm.DB) *gorm.DB {
+	query.Scopes(func(db *gorm.DB) *gorm.DB {
 			return models.Paginate(db, page, pageSize)
 		}).Find(&res)
 	return
@@ -212,14 +208,17 @@ func (d *sDatabase) PipelineCreate(pipeline *models.SPipeline) (err error) {
 }
 
 func (d *sDatabase) PipelineList(page, pageSize int64, str string) (res models.SPipelines, total int64) {
+	err := d.Model(&models.SPipeline{}).Count(&total).Error
+	if err != nil {
+		return
+	}
 	query := d.Model(&models.SPipeline{}).
 		Select("name, disable, tpl_type").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")
 	}
-	query.Count(&total).
-		Scopes(func(db *gorm.DB) *gorm.DB {
+	query.Scopes(func(db *gorm.DB) *gorm.DB {
 			return models.Paginate(db, page, pageSize)
 		}).Find(&res)
 	return
