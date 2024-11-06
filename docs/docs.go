@@ -624,7 +624,7 @@ const docTemplate = `{
         },
         "/api/v1/task/{task}": {
             "get": {
-                "description": "获取指定任务的步骤列表, 支持WS长连接",
+                "description": "获取任务详情",
                 "consumes": [
                     "application/json"
                 ],
@@ -632,9 +632,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "步骤"
+                    "任务"
                 ],
-                "summary": "列表",
+                "summary": "详情",
                 "parameters": [
                     {
                         "type": "string",
@@ -648,7 +648,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SBase-types_SStepsRes"
+                            "$ref": "#/definitions/types.SBase-types_STaskRes"
                         }
                     },
                     "500": {
@@ -741,6 +741,44 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.SBase-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/task/{task}/step": {
+            "get": {
+                "description": "获取指定任务的步骤列表, 支持WS长连接",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "步骤"
+                ],
+                "summary": "列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "任务名称",
+                        "name": "task",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_SStepsRes"
                         }
                     },
                     "500": {

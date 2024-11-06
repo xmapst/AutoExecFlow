@@ -971,7 +971,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取指定任务的步骤列表, 支持WS长连接
+      description: 获取任务详情
       parameters:
       - description: 任务名称
         in: path
@@ -984,14 +984,14 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SBase-types_SStepsRes'
+            $ref: '#/definitions/types.SBase-types_STaskRes'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.SBase-any'
-      summary: 列表
+      summary: 详情
       tags:
-      - 步骤
+      - 任务
     put:
       consumes:
       - application/json
@@ -1031,6 +1031,31 @@ paths:
       summary: 管理
       tags:
       - 任务
+  /api/v1/task/{task}/step:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定任务的步骤列表, 支持WS长连接
+      parameters:
+      - description: 任务名称
+        in: path
+        name: task
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SBase-types_SStepsRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.SBase-any'
+      summary: 列表
+      tags:
+      - 步骤
   /api/v1/task/{task}/step/{step}:
     get:
       consumes:
