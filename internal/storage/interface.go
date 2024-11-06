@@ -12,6 +12,9 @@ type IStorage interface {
 	Name() (name string)
 	Close() (err error)
 
+	// fix database
+	FixDatabase(nodeName string) (err error)
+
 	// Task 任务接口
 	Task(name string) (task ITask)
 	// TaskCreate 创建任务

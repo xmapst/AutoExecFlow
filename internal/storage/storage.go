@@ -12,8 +12,8 @@ const (
 	TYPE_MYSQL  = "mysql"
 )
 
-func New(dataCenterID, nodeID int64, nodeName, rawURL string) error {
-	db, err := newDB(nodeName, rawURL)
+func New(dataCenterID, nodeID int64, rawURL string) error {
+	db, err := newDB(rawURL)
 	if err != nil {
 		return err
 	}
@@ -33,6 +33,10 @@ func Name() string {
 
 func Close() error {
 	return storage.Close()
+}
+
+func FixDatabase(nodeName string) (err error) {
+	return storage.FixDatabase(nodeName)
 }
 
 func Task(name string) ITask {

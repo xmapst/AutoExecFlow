@@ -69,14 +69,16 @@ func (p *sProgram) init() error {
 
 	// 创建临时内存数据库
 	if err := storage.New(
-		config.App.DataCenterID, config.App.NodeID,
-		config.App.NodeName, config.App.DBUrl,
+		config.App.DataCenterID,
+		config.App.NodeID,
+		config.App.DBUrl,
 	); err != nil {
 		logx.Errorln(err)
 		return err
 	}
 
-	return nil
+	// 修正当前节点重启前的数据
+	return storage.FixDatabase(config.App.NodeName)
 }
 
 func (p *sProgram) Start(service.Service) error {

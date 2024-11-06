@@ -23,7 +23,7 @@ type sDatabase struct {
 	*gorm.DB
 }
 
-func newDB(nodeName, rawURL string) (*sDatabase, error) {
+func newDB(rawURL string) (*sDatabase, error) {
 	before, after, found := strings.Cut(rawURL, "://")
 	if !found {
 		return nil, errors.New("invalid storage url")
@@ -64,15 +64,6 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 
 	_ = gdb.Use(cachesPlugin)
 
-	_db, err := gdb.DB()
-	if err != nil {
-		return nil, err
-	}
-	//设置空闲连接池中连接的最大数量
-	_db.SetMaxIdleConns(runtime.NumCPU())
-	//设置打开数据库连接的最大数量
-	_db.SetMaxIdleConns(runtime.NumCPU() * 15)
-
 	d := &sDatabase{DB: gdb}
 
 	if before == TYPE_SQLITE {
@@ -92,31 +83,6 @@ func newDB(nodeName, rawURL string) (*sDatabase, error) {
 	); err != nil {
 		logx.Errorln(err)
 		return nil, err
-	}
-
-	// 查找当前节点的所有任务, 包括空的任务名称列表
-	var tasks []string
-	d.Model(&models.STask{}).
-		Select("name").
-		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
-		Find(&tasks)
-
-	// 修正非正常关机时步骤还在运行中或挂起的状态为错误
-	for _, taskName := range tasks {
-		d.Model(&models.STask{}).
-			Where("name = ?", taskName).
-			Updates(map[string]interface{}{
-				"node":    nodeName,
-				"state":   models.StateFailed,
-				"message": "execution failed due to system error",
-			})
-		d.Model(&models.SStep{}).
-			Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
-			Updates(map[string]interface{}{
-				"state":   models.StateFailed,
-				"code":    common.CodeSystemErr,
-				"message": "execution failed due to system error",
-			})
 	}
 
 	return d, nil
@@ -147,6 +113,57 @@ func (d *sDatabase) Close() error {
 		return err
 	}
 	return db.Close()
+}
+
+func (d *sDatabase) FixDatabase(nodeName string) (err error) {
+	// 获取所有符合条件的任务名称
+	var tasks []string
+	d.Model(&models.STask{}).
+		Select("name").
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
+		Find(&tasks)
+
+	if len(tasks) <= 0 {
+		return
+	}
+	// 开始事务
+	tx := d.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 更新所有符合条件的任务状态为失败
+	if err = tx.Model(&models.STask{}).
+		Where("name IN (?)", tasks).
+		Updates(map[string]interface{}{
+			"node":    nodeName,
+			"state":   models.StateFailed,
+			"message": "execution failed due to system error",
+		}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 更新所有符合条件的步骤状态为失败
+	if err = tx.Model(&models.SStep{}).
+		Where("task_name IN (?)", tasks).
+		Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
+		Updates(map[string]interface{}{
+			"state":   models.StateFailed,
+			"code":    common.CodeSystemErr,
+			"message": "execution failed due to system error",
+		}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return err
+	}
+	return
 }
 
 func (d *sDatabase) Task(name string) ITask {

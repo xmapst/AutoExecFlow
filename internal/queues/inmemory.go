@@ -12,7 +12,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
-const defaultQueueSize = 1000
+const defaultQueueSize = 2 << 15
 
 type sMemDirect struct {
 	name    string
