@@ -176,11 +176,15 @@ func (ts *STaskService) reviewStep(async bool, steps types.SStepsReq) error {
 func (ts *STaskService) uniqStepsName(steps types.SStepsReq) error {
 	counts := make(map[string]int)
 	for _, v := range steps {
+		if v.Name == "" {
+			continue
+		}
 		counts[v.Name]++
 	}
 	var errs []error
 	for name, count := range counts {
 		if count > 1 {
+			fmt.Println(name, count)
 			errs = append(errs, fmt.Errorf("%s repeat count %d", name, count))
 		}
 	}
