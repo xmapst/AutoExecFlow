@@ -756,7 +756,7 @@ class StepModal {
 
 class TaskAddCard {
     constructor() {
-        this.editer = null
+        this.editor = null
         this.show();
     }
 
