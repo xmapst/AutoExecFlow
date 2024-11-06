@@ -1199,7 +1199,7 @@ class PipelineModal {
         this.webSocketManager = null;
         this.pipeline = null;
         this.currentPage = 1;
-        this.rowsPerPage = 10;
+        this.rowsPerPage = 15;
         this.totalPage = 0;
         this.tasks = [];
         this.init();
@@ -1378,7 +1378,7 @@ class TaskTable {
     constructor() {
         this.webSocketManager  = null;
         this.currentPage = 1;
-        this.rowsPerPage = 10;
+        this.rowsPerPage = 15;
         this.tasks = [];
         this.totalPage = 0;
 
@@ -1557,7 +1557,7 @@ class PipelineTable {
     constructor() {
         this.webSocketManager  = null;
         this.currentPage = 1;
-        this.rowsPerPage = 10;
+        this.rowsPerPage = 15;
         this.pipelines = [];
         this.totalPage = 0;
 
@@ -1735,83 +1735,80 @@ class Main {
                         <button id="pipeline-list" class="button-sure">流水线</button>
                     </div>
                     <div id="options" class="button">
-                        <p id="title" style="font-size: 15px; margin: auto">任务</p>
                         <button id="add-task" class="button-sure" style="display: block">添加</button>
                         <button id="add-pipeline" class="button-sure" style="display: none">添加</button>
+                        <p id="title" style="font-size: 15px; margin: auto">任务</p>
+                        <p style="margin: auto; font-size: 15px">|</p>
+                        
+                        <div id="task-table-pagination" class="pagination" style="display: flex">
+                            <div style="margin-right: 6px;">
+                                <button id="task-prev-page" class="button-sure">上一页</button>
+                                <span id="task-page-info">第1页__共1页</span>
+                                <button id="task-next-page" class="button-sure">下一页</button>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <p style="margin-right: 6px;">每页行数</p>
+                                <select id="task-page-size" class="page-size">
+                                    <option value="15">15</option>
+                                    <option value="25">25</option>
+                                    <option value="35">35</option>
+                                    <option value="45">45</option>
+                                    <option value="55">55</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="pipeline-table-pagination" class="pagination" style="display: none">
+                            <div style="margin-right: 6px;">
+                                <button id="pipeline-prev-page" class="button-sure">上一页</button>
+                                <span id="pipeline-page-info">第1页__共1页</span>
+                                <button id="pipeline-next-page" class="button-sure">下一页</button>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <p style="margin-right: 6px;">每页行数</p>
+                                <select id="pipeline-page-size" class="page-size">
+                                    <option value="15">15</option>
+                                    <option value="25">25</option>
+                                    <option value="35">35</option>
+                                    <option value="45">45</option>
+                                    <option value="55">55</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="task-table-body" style="display: block">
-                    <div id="task-table-container" class="table-container">
-                        <table id="task-table" class="common-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 160px">名称</th>
-                                    <th style="width: 48px;">步骤数</th>
-                                    <th>消息</th>
-                                    <th style="width: 180px;">开始时间</th>
-                                    <th style="width: 180px;">结束时间</th>
-                                    <th style="width: 48px;">状态</th>
-                                    <th style="width: 48px;">动作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Rows will be dynamically inserted here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="task-table-pagination" class="pagination">
-                        <div style="margin-right: 6px;">
-                            <button id="task-prev-page" class="button-sure">上一页</button>
-                            <span id="task-page-info">第1页__共1页</span>
-                            <button id="task-next-page" class="button-sure">下一页</button>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <p style="margin-right: 6px;">每页行数</p>
-                            <select id="task-page-size" class="page-size">
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="25">25</option>
-                                <option value="30">30</option>
-                                <option value="35">35</option>
-                            </select>
-                        </div>
-                    </div>
+                <div id="task-table-container" class="table-container" style="display: block">
+                    <table id="task-table" class="common-table">
+                        <thead style="z-index: 1; position: sticky; top: 0">
+                            <tr>
+                                <th style="width: 160px">名称</th>
+                                <th style="width: 48px;">步骤数</th>
+                                <th>消息</th>
+                                <th style="width: 180px;">开始时间</th>
+                                <th style="width: 180px;">结束时间</th>
+                                <th style="width: 48px;">状态</th>
+                                <th style="width: 48px;">动作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
                 </div>
-                <div id="pipeline-table-body" style="display: none">
-                    <div id="pipeline-table-container" class="table-container">
-                        <table id="pipeline-table" class="common-table">
-                            <thead>
-                                <tr>
-                                    <th>名称</th>
-                                    <th>模板类型</th>
-                                    <th>禁用</th>
-                                    <th style="width: 48px;">动作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Rows will be dynamically inserted here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="pipeline-table-pagination" class="pagination">
-                        <div style="margin-right: 6px;">
-                            <button id="pipeline-prev-page" class="button-sure">上一页</button>
-                            <span id="pipeline-page-info">第1页__共1页</span>
-                            <button id="pipeline-next-page" class="button-sure">下一页</button>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <p style="margin-right: 6px;">每页行数</p>
-                            <select id="pipeline-page-size" class="page-size">
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="25">25</option>
-                                <option value="30">30</option>
-                                <option value="35">35</option>
-                            </select>
-                        </div>
-                    </div>
+                <div id="pipeline-table-container" class="table-container" style="display: none">
+                    <table id="pipeline-table" class="common-table">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>模板类型</th>
+                                <th>禁用</th>
+                                <th style="width: 48px;">动作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
@@ -1829,18 +1826,22 @@ class Main {
 
     closePipelineTable() {
         document.getElementById("title").innerText = "任务";
-        document.getElementById("task-table-body").style.display = "block";
+        document.getElementById("task-table-container").style.display = "block";
         document.getElementById("add-task").style.display = "block";
-        document.getElementById("pipeline-table-body").style.display = "none";
+        document.getElementById("task-table-pagination").style.display = "flex";
+        document.getElementById("pipeline-table-container").style.display = "none";
         document.getElementById("add-pipeline").style.display = "none";
+        document.getElementById("pipeline-table-pagination").style.display = "none";
     }
 
     showPipelineTable() {
         document.getElementById("title").innerText = "流水线";
-        document.getElementById("task-table-body").style.display = "none";
+        document.getElementById("task-table-container").style.display = "none";
         document.getElementById("add-task").style.display = "none";
-        document.getElementById("pipeline-table-body").style.display = "block";
+        document.getElementById("task-table-pagination").style.display = "none";
+        document.getElementById("pipeline-table-container").style.display = "block";
         document.getElementById("add-pipeline").style.display = "block";
+        document.getElementById("pipeline-table-pagination").style.display = "flex";
     }
 }
 

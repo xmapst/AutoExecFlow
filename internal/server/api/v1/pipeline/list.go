@@ -29,7 +29,7 @@ import (
 func List(c *gin.Context) {
 	var req = &types.SPageReq{
 		Page: 1,
-		Size: 10,
+		Size: 15,
 	}
 	if err := c.ShouldBindQuery(req); err != nil {
 		base.Send(c, base.WithError[any](err))

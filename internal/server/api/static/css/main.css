@@ -51,6 +51,11 @@ body {
 }
 
 .container {
+    position: fixed;
+    bottom: 0;
+    top: 0;
+    left: 3%;
+    right: 3%;
     max-width: 1200px;
     margin: 50px auto;
     padding: 8px 12px;
@@ -118,8 +123,10 @@ a:hover {
 
 .table-container {
     width: 100%;
+    height: calc(100% - 38px);
     min-height: 360px;
     overflow-x: auto;
+    overflow-y: auto;
     margin-bottom: 6px;
 }
 
@@ -157,9 +164,6 @@ a:hover {
 }
 
 .pagination {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
     font-size: 12px;
 }
 
