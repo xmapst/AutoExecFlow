@@ -191,8 +191,8 @@ func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.STask
 		query.Where("name LIKE ?", str+"%")
 	}
 	query.Scopes(func(db *gorm.DB) *gorm.DB {
-			return models.Paginate(db, page, pageSize)
-		}).Find(&res)
+		return models.Paginate(db, page, pageSize)
+	}).Find(&res)
 	return
 }
 
@@ -219,7 +219,7 @@ func (d *sDatabase) PipelineList(page, pageSize int64, str string) (res models.S
 		query.Where("name LIKE ?", str+"%")
 	}
 	query.Scopes(func(db *gorm.DB) *gorm.DB {
-			return models.Paginate(db, page, pageSize)
-		}).Find(&res)
+		return models.Paginate(db, page, pageSize)
+	}).Find(&res)
 	return
 }
