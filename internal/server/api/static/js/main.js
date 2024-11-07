@@ -1308,12 +1308,16 @@ class PipelineModal {
                                 <option value="15">15</option>
                                 <option value="25">25</option>
                                 <option value="35">35</option>
-                                <option value="35">45</option>
-                                <option value="35">55</option>
+                                <option value="45">45</option>
+                                <option value="55">55</option>
+                                <option value="65">65</option>
+                                <option value="75">65</option>
+                                <option value="85">85</option>
+                                <option value="95">95</option>
                             </select>
                         </div>
                     </div>
-                    <div id="pipeline-task-list" style="margin-top: 30px; width: 100%"></div>
+                    <div id="pipeline-task-list" style="margin-top: 30px; width: 100%;height: calc(100% - 30px);overflow-y: auto"></div>
                 </div>
             </div>
         `;
@@ -1773,6 +1777,10 @@ class Main {
                                     <option value="35">35</option>
                                     <option value="45">45</option>
                                     <option value="55">55</option>
+                                    <option value="65">65</option>
+                                    <option value="75">75</option>
+                                    <option value="85">85</option>
+                                    <option value="95">95</option>
                                 </select>
                             </div>
                         </div>
@@ -1791,6 +1799,10 @@ class Main {
                                     <option value="35">35</option>
                                     <option value="45">45</option>
                                     <option value="55">55</option>
+                                    <option value="65">65</option>
+                                    <option value="75">75</option>
+                                    <option value="85">85</option>
+                                    <option value="95">95</option>
                                 </select>
                             </div>
                         </div>
