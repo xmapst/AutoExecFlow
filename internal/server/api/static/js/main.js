@@ -1235,6 +1235,7 @@ class PipelineModal {
             this.rowsPerPage = res.data.page.size;
             this.renderPipelineTask();
             this.updatePipelineTaskPagination();
+            return;
         }
 
         // 置空表格, 显示无数据, 页码置为0
@@ -1245,7 +1246,8 @@ class PipelineModal {
     }
 
     renderPipelineTask() {
-        const taskContainer  = document.getElementById("pipeline-task-body");
+        const taskContainer  = document.getElementById("pipeline-task-list");
+        taskContainer.innerHTML = '';
         this.tasks.forEach(task => {
             const link = document.createElement('a');
             link.href = "#";
@@ -1275,48 +1277,65 @@ class PipelineModal {
         card.setAttribute("id", "pipeline-detail-card");
         card.className = 'card-one';
         card.innerHTML = `
-            <div class="card-header">
-                <h5 style="margin-left: 15px;">名称: ${this.pipelineName}</h5>
+            <div class="card-header" style="justify-content: end">
+                <button id="pipeline-view-detail-bt" class="button-sure">详情</button>
+                <button id="pipeline-view-list-bt" class="button-sure">任务列表</button>
                 <span class="card-close" id="close-task-card">&times;</span >
             </div>
             <hr>
-            <h5>描述: </h5>
-            <div class="step-card-output" style="height: 66px">
-                <pre class="step-card-code">${this.pipeline.desc ? this.pipeline.desc : ''}</pre>
+            <div id="pipeline-view-detail">
+                <h5>名称: ${this.pipelineName}</h5>
+                <h5>描述: </h5>
+                <div class="step-card-output" style="height: 66px">
+                    <pre class="step-card-code">${this.pipeline.desc ? this.pipeline.desc : ''}</pre>
+                </div>
+                <h5>内容: </h5>
+                <div class="step-card-output" style="position: absolute;top: 162px; bottom: 6px; right: 8px; left: 8px;height: auto;">
+                    <div id="yaml-editor"></div>
+                </div>
             </div>
-            <h5>内容: </h5>
-            <div class="step-card-output">
-                <div id="yaml-editor"></div>
-            </div>
-            <h5>任务列表</h5>
-            <div class="card-body" style="position: static">
-                <div id="pipeline-task-body" style="position: absolute; width: 100%"></div>
-                <div id="pipeline-task-pagination" class="pagination" style="position: fixed; bottom: 0; right: 0">
-                    <div style="margin-right: 6px;">
-                        <button id="pipeline-task-prev-page" class="button-sure">上一页</button>
-                        <span id="pipeline-task-page-info">第1页__共1页</span>
-                        <button id="pipeline-task-next-page" class="button-sure">下一页</button>
+            <div id="pipeline-view-list" style="display: none">
+                <div class="card-body">
+                    <div id="pipeline-task-pagination" class="pagination" style="position: fixed; right: 6px;display: flex">
+                        <div style="margin-right: 6px;">
+                            <button id="pipeline-task-prev-page" class="button-sure">上一页</button>
+                            <span id="pipeline-task-page-info">第1页__共1页</span>
+                            <button id="pipeline-task-next-page" class="button-sure">下一页</button>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <p style="margin-right: 6px;">每页行数</p>
+                            <select id="pipeline-task-page-size" class="page-size">
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="35">35</option>
+                                <option value="35">45</option>
+                                <option value="35">55</option>
+                            </select>
+                        </div>
                     </div>
-                    <div style="display: flex; align-items: center;">
-                        <p style="margin-right: 6px;">每页行数</p>
-                        <select id="pipeline-task-page-size" class="page-size">
-                            <option value="10">10</option>
-                            <option value="15">15</option>
-                            <option value="20">20</option>
-                            <option value="25">25</option>
-                            <option value="30">30</option>
-                            <option value="35">35</option>
-                        </select>
-                    </div>
+                    <div id="pipeline-task-list" style="margin-top: 30px; width: 100%"></div>
                 </div>
             </div>
         `;
         document.body.appendChild(card);
+        card.querySelector("#pipeline-view-detail-bt").addEventListener("click", () => this.closePipelineViewList())
+        card.querySelector("#pipeline-view-list-bt").addEventListener("click", () => this.showPipelineViewList())
+
         Utils.InitializeEditor('yaml-editor', this.pipeline.content, true).then(editor => this.editor = editor);
         setTimeout(() => {
             overlay.classList.add('show');
             card.classList.add('show');
         }, 10);
+    }
+
+    closePipelineViewList() {
+        document.getElementById("pipeline-view-list").style.display = "none";
+        document.getElementById("pipeline-view-detail").style.display = "block";
+    }
+
+    showPipelineViewList() {
+        document.getElementById("pipeline-view-detail").style.display = "none";
+        document.getElementById("pipeline-view-list").style.display = "block";
     }
 
     updatePipelineTaskPagination() {
