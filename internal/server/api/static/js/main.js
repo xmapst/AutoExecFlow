@@ -1406,7 +1406,7 @@ class TaskTable {
 
     // 初始化 WebSocket
     init() {
-        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}?page=${this.currentPage}&size=${this.rowsPerPage}`, this.handleWebSocketTaskData);
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${taskUrl}`, this.handleWebSocketTaskData);
         this.setupTaskEventListeners();
     }
 
@@ -1585,7 +1585,7 @@ class PipelineTable {
 
     // 初始化 WebSocket
     init() {
-        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${pipelineUrl}?page=${this.currentPage}&size=${this.rowsPerPage}`, this.handleWebSocketPipelineData);
+        this.webSocketManager = new WebSocketManager(`${wsBaseUrl}${pipelineUrl}`, this.handleWebSocketPipelineData);
         this.setupPipelineEventListeners();
     }
 
