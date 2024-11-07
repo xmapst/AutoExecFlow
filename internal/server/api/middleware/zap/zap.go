@@ -15,19 +15,24 @@ import (
 )
 
 func Logger(c *gin.Context) {
-	start := time.Now().UTC()
-	path := c.Request.URL.String()
+	start := time.Now()
 	c.Next()
-	end := time.Now().UTC()
-	latency := end.Sub(start)
+	latency := time.Since(start)
+
+	status := c.Writer.Status()
+	clientIP := c.ClientIP()
+	method := c.Request.Method
+	proto := c.Request.Proto
+	path := c.Request.URL.String()
+	userAgent := c.Request.UserAgent()
 
 	if len(c.Errors) > 0 {
-		for _, e := range c.Errors.Errors() {
-			logx.Errorln(c.ClientIP(), c.Request.Method, c.Request.Proto, c.Writer.Status(), path, latency, e)
+		for _, err := range c.Errors.Errors() {
+			logx.Errorln(clientIP, method, proto, status, path, latency, err)
 		}
 		c.AbortWithStatus(http.StatusInternalServerError)
 	} else {
-		logx.Infoln(c.ClientIP(), c.Request.Method, c.Request.Proto, c.Writer.Status(), path, latency, c.Request.UserAgent())
+		logx.Infoln(clientIP, method, proto, status, path, latency, userAgent)
 	}
 }
 
@@ -41,19 +46,17 @@ func Recovery(c *gin.Context) {
 }
 
 func handlePanic(c *gin.Context, err interface{}) {
-	// 检查是否是连接中断
 	if isBrokenPipeError(err) {
 		httpRequest, _ := httputil.DumpRequest(c.Request, false)
-		logx.Errorln(c.Request.URL.Path, httpRequest, err)
-		_ = c.Error(err.(error)) // nolint: errcheck
-		c.Abort()
+		logx.Errorln("Broken pipe:", c.Request.URL.Path, string(httpRequest), err)
+		c.Abort() // Avoid returning InternalServerError for broken pipes
 		return
 	}
 
-	// 正常的 panic 处理逻辑
+	// Log panic details and return 500
 	httpRequest, _ := httputil.DumpRequest(c.Request, false)
 	logx.Errorln("[Recovery from panic]",
-		time.Now().UTC().Format(time.RFC3339),
+		time.Now().Format(time.RFC3339),
 		string(httpRequest),
 		string(debug.Stack()),
 		err,
@@ -62,11 +65,15 @@ func handlePanic(c *gin.Context, err interface{}) {
 }
 
 func isBrokenPipeError(err interface{}) bool {
-	if ne, ok := err.(*net.OpError); ok {
-		if se, ok := ne.Err.(*os.SyscallError); ok {
-			errMsg := strings.ToLower(se.Error())
-			return strings.Contains(errMsg, "broken pipe") || strings.Contains(errMsg, "connection reset by peer")
-		}
+	ne, ok := err.(*net.OpError)
+	if !ok {
+		return false
 	}
-	return false
+	se, ok := ne.Err.(*os.SyscallError)
+	if !ok {
+		return false
+	}
+
+	errMsg := strings.ToLower(se.Error())
+	return strings.Contains(errMsg, "broken pipe") || strings.Contains(errMsg, "connection reset by peer")
 }

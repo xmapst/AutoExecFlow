@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"fmt"
-	"runtime"
 	"strings"
 	"time"
 
@@ -92,15 +90,25 @@ func (d *sDatabase) initSqlite() {
 	// 开启外键约束
 	d.Exec("PRAGMA foreign_keys=ON;")
 	// 写同步
-	d.Exec("PRAGMA synchronous=FULL;")
-	// sqlite线程数
-	d.Exec(fmt.Sprintf("PRAGMA sqlite_threadsafe=%d;", runtime.NumCPU()*15))
+	d.Exec("PRAGMA synchronous=NORMAL;")
 	// 启用 WAL 模式
 	d.Exec("PRAGMA journal_mode=WAL;")
+	// 控制WAL文件大小 100MB
 	d.Exec("PRAGMA journal_size_limit=104857600;")
-	d.Exec("PRAGMA busy_timeout=999999;")
+	// 设置等待超时，减少锁等待时间 5秒
+	d.Exec("PRAGMA busy_timeout=5000;")
+	// 设置共享缓存
 	d.Exec("PRAGMA cache=shared;")
-	d.Exec("PRAGMA mode=rwc;")
+	// 设置缓存大小 约32MB缓存
+	d.Exec("PRAGMA cache_size=-8000;")
+	// 设置内存映射大小 128MB
+	d.Exec("PRAGMA mmap_size=134217728;")
+	// 将临时表放入内存
+	d.Exec("PRAGMA temp_store=MEMORY;")
+	// 设置锁模式为NORMAL，支持高并发访问
+	d.Exec("PRAGMA locking_mode=NORMAL;")
+	// 开启缓存溢出管理，适用于高并发写入
+	d.Exec("PRAGMA cache_spill=ON;")
 }
 
 func (d *sDatabase) Name() string {
