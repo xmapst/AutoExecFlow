@@ -493,7 +493,7 @@ const docTemplate = `{
                 "tags": [
                     "工作池"
                 ],
-                "summary": "详情",
+                "summary": "详情, 支持SSE订阅",
                 "responses": {
                     "200": {
                         "description": "OK",
