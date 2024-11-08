@@ -14,7 +14,7 @@ import (
 
 // Stream
 // @Summary 	事件
-// @Description 订阅系统事件, SSE
+// @Description 订阅系统事件, 仅支持SSE订阅
 // @Tags 		事件
 // @Accept		application/json
 // @Produce		application/json
@@ -22,6 +22,11 @@ import (
 // @Failure		500 {object} types.SBase[any]
 // @Router		/api/v1/event [get]
 func Stream(c *gin.Context) {
+	// 判断是否为SSE连接
+	if c.GetHeader("Accept") != base.EventStreamMimeType {
+		base.Send(c, base.WithCode[any](types.CodeFailed).WithError(io.EOF))
+		return
+	}
 	ctx, cancel := context.WithCancel(c)
 	defer cancel()
 	var event = make(chan string, 65534)
@@ -43,7 +48,7 @@ func Stream(c *gin.Context) {
 		case <-ticker.C:
 			c.SSEvent("heartbeat", "keepalive")
 			return true
-		case <-c.Writer.CloseNotify():
+		case <-c.Done():
 			return false
 		}
 	})

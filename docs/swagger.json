@@ -16,7 +16,7 @@
     "paths": {
         "/api/v1/event": {
             "get": {
-                "description": "订阅系统事件, SSE",
+                "description": "订阅系统事件, 仅支持SSE订阅",
                 "consumes": [
                     "application/json"
                 ],
@@ -128,7 +128,7 @@
         },
         "/api/v1/pipeline/{pipeline}": {
             "get": {
-                "description": "获取指定流水线详情",
+                "description": "获取指定流水线详情, 支持SSE订阅",
                 "consumes": [
                     "application/json"
                 ],
@@ -344,7 +344,7 @@
         },
         "/api/v1/pipeline/{pipeline}/build/{build}": {
             "get": {
-                "description": "获取流水线指定构建任务详情",
+                "description": "获取流水线指定构建任务详情, 支持SSE订阅",
                 "consumes": [
                     "application/json"
                 ],
@@ -616,7 +616,7 @@
         },
         "/api/v1/task/{task}": {
             "get": {
-                "description": "获取任务详情",
+                "description": "获取任务详情, 支持SSE订阅",
                 "consumes": [
                     "application/json"
                 ],
@@ -784,7 +784,7 @@
         },
         "/api/v1/task/{task}/step/{step}": {
             "get": {
-                "description": "获取步骤详情",
+                "description": "获取步骤详情, 支持SSE订阅",
                 "consumes": [
                     "application/json"
                 ],

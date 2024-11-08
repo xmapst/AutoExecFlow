@@ -11,6 +11,8 @@ import (
 	"github.com/xmapst/AutoExecFlow/types"
 )
 
+const EventStreamMimeType = "text/event-stream"
+
 type IBase[T any] interface {
 	WithCode(code types.Code) IBase[T]
 	WithError(err error) IBase[T]

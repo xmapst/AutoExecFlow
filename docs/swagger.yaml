@@ -548,7 +548,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 订阅系统事件, SSE
+      description: 订阅系统事件, 仅支持SSE订阅
       produces:
       - application/json
       responses:
@@ -646,7 +646,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取指定流水线详情
+      description: 获取指定流水线详情, 支持SSE订阅
       parameters:
       - description: 流水线名称
         in: path
@@ -795,7 +795,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取流水线指定构建任务详情
+      description: 获取流水线指定构建任务详情, 支持SSE订阅
       parameters:
       - description: 流水线名称
         in: path
@@ -971,7 +971,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取任务详情
+      description: 获取任务详情, 支持SSE订阅
       parameters:
       - description: 任务名称
         in: path
@@ -1060,7 +1060,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取步骤详情
+      description: 获取步骤详情, 支持SSE订阅
       parameters:
       - description: 任务名称
         in: path
