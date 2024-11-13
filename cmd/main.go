@@ -25,7 +25,7 @@ func main() {
 		},
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Version: info.Version,
+		Version:       info.Version,
 	}
 
 	cmd.SetVersionTemplate("{{.Version}}\n")
