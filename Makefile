@@ -8,7 +8,7 @@ all: binary copy-binary
 .PHONY: dev
 dev:
 	@go mod tidy
-	@CGO_ENABLED=1 go build -ldflags "-s -w -linkmode external -extldflags '-static -fno-PIC'" -tags "osusergo,netgo,sqlite_stat4,sqlite_foreign_keys,sqlite_fts5,sqlite_introspect,sqlite_json,sqlite_math_functions,sqlite_secure_delete_fast" -o bin/AutoExecFlow cmd/main.go
+	@CGO_ENABLED=1 go build -trimpath -ldflags "-s -w -linkmode external -extldflags '-static -fno-PIC'" -tags "osusergo,netgo,sqlite_stat4,sqlite_foreign_keys,sqlite_fts5,sqlite_introspect,sqlite_json,sqlite_math_functions,sqlite_secure_delete_fast" -o bin/AutoExecFlow cmd/main.go
 
 swag:
 	@swag init --exclude pkg --parseDependencyLevel 3 --dir internal/server/api -g router.go

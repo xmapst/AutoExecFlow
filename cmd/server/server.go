@@ -26,6 +26,8 @@ func New() *cobra.Command {
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := config.Init(); err != nil {
 				return err

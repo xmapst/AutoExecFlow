@@ -9,6 +9,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/cmd/server"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 const longText = `An API for cross-platform custom orchestration of execution steps without any third-party dependencies. 
@@ -22,6 +23,8 @@ func main() {
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		Version: info.Version,
 	}
 
@@ -42,6 +45,6 @@ func main() {
 		})
 
 	if err := cmd.Execute(); err != nil {
-		os.Exit(128)
+		logx.Fatalln(err)
 	}
 }
