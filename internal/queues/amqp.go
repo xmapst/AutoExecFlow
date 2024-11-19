@@ -269,6 +269,7 @@ func (a *sAmqpBroker) newConsumer(kind, ename, rkey, qname string, handle Handle
 		rabbitmq.WithConsumerOptionsExchangeDeclare,                                            // 声明交换机
 		rabbitmq.WithConsumerOptionsExchangeDurable,                                            // 交换机持久化
 		rabbitmq.WithConsumerOptionsQueueDurable,                                               // 队列持久化
+		rabbitmq.WithConsumerOptionsQueueQuorum,                                                // 使用仲裁队列
 	)
 	if err != nil {
 		return nil, err
