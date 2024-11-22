@@ -194,7 +194,7 @@ func (d *sDatabase) TaskList(page, pageSize int64, str string) (res models.STask
 		return
 	}
 	query := d.Model(&models.STask{}).
-		Select("name, state, message, s_time, e_time").
+		Select("id, name, state, message, s_time, e_time").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")
@@ -222,7 +222,7 @@ func (d *sDatabase) PipelineList(page, pageSize int64, str string) (res models.S
 		return
 	}
 	query := d.Model(&models.SPipeline{}).
-		Select("name, disable, tpl_type").
+		Select("id, name, disable, tpl_type").
 		Order("id DESC")
 	if str != "" {
 		query.Where("name LIKE ?", str+"%")

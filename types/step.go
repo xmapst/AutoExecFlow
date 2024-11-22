@@ -2,13 +2,13 @@ package types
 
 type SStepRes struct {
 	Name    string   `json:"name" yaml:"name"`
-	Desc    string   `json:"desc,omitempty" yaml:"desc,omitempty"`
-	Code    int64    `json:"code" yaml:"code"`
 	State   string   `json:"state" yaml:"state"`
-	Message string   `json:"message" yaml:"message"`
+	Code    int64    `json:"code" yaml:"code"`
+	Desc    string   `json:"desc,omitempty" yaml:"desc,omitempty"`
 	Timeout string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 	Disable bool     `json:"disable,omitempty" yaml:"disable,omitempty"`
 	Depends []string `json:"depends,omitempty" yaml:"depends,omitempty"`
+	Message string   `json:"message" yaml:"message"`
 	Env     SEnvs    `json:"env,omitempty" yaml:"env,omitempty"`
 	Type    string   `json:"type,omitempty" yaml:"type,omitempty"`
 	Content string   `json:"content,omitempty" yaml:"content,omitempty"`

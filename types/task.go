@@ -13,15 +13,15 @@ type STaskListDetailRes struct {
 type STasksRes []*STaskRes
 
 type STaskRes struct {
+	Name    string   `json:"name" yaml:"name"`
+	State   string   `json:"state" yaml:"state"`
 	Count   int64    `json:"count,omitempty" yaml:"count,omitempty"`
 	Desc    string   `json:"desc,omitempty" yaml:"desc,omitempty"`
-	Name    string   `json:"name" yaml:"name"`
 	Node    string   `json:"node,omitempty" yaml:"node,omitempty"`
-	State   string   `json:"state" yaml:"state"`
-	Message string   `json:"message" yaml:"message"`
-	Env     SEnvs    `json:"env,omitempty" yaml:"env,omitempty"`
 	Timeout string   `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 	Disable bool     `json:"disable,omitempty" yaml:"disable,omitempty"`
+	Message string   `json:"message" yaml:"message"`
+	Env     SEnvs    `json:"env,omitempty" yaml:"env,omitempty"`
 	Time    STimeRes `json:"time,omitempty" yaml:"time,omitempty"`
 }
 
