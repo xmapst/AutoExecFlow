@@ -50,6 +50,7 @@ func newDB(rawURL string) (*sDatabase, error) {
 			LogLevel:                  logger.Error,
 		}),
 		TranslateError: true,
+		PrepareStmt:    true,
 	}
 	gdb, err := gorm.Open(dialector, config)
 	if err != nil {
