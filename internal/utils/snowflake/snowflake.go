@@ -8,10 +8,10 @@ import (
 
 const (
 	Epoch           = 1730390400 // 元时间 2024-11-01 00:00:00
-	timestampBits   = 31
-	dataCenterBits  = 5
-	nodeBits        = 7
-	sequenceBits    = 10
+	timestampBits   = 31         // 时间戳占用位数
+	dataCenterBits  = 5          // 机房 ID 占用位数
+	nodeBits        = 7          // 节点 ID 占用位数
+	sequenceBits    = 10         // 递增序列占用位数
 	maxDataCenterID = (1 << dataCenterBits) - 1
 	maxNodeID       = (1 << nodeBits) - 1
 	maxSequence     = (1 << sequenceBits) - 1
@@ -23,16 +23,10 @@ const (
 
 // IDGenerator 共享内存和锁的结构
 type IDGenerator struct {
-	dataCenterID  int64
-	nodeID        int64
-	lastTimestamp int64
-	sequence      int64
-	lock          sync.Mutex
-}
-
-// 获取当前的秒级时间戳
-func (g *IDGenerator) getTimestamp() int64 {
-	return time.Now().Unix() - Epoch
+	node      uint64
+	timestamp uint64
+	sequence  uint64
+	lock      sync.Mutex
 }
 
 // NextID 获取新的 ID
@@ -40,31 +34,24 @@ func (g *IDGenerator) NextID() int64 {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	timestamp := g.getTimestamp()
-
-	// 判断是否在同一秒内生成，若是则递增序列号
-	if g.lastTimestamp == timestamp {
-		g.sequence = (g.sequence + 1) & maxSequence
-		// 如果序列号达到最大值，则等待下一秒
-		if g.sequence == 0 {
-			for timestamp <= g.lastTimestamp {
-				timestamp = g.getTimestamp()
-			}
+	// 检查序列是否溢出
+	if g.sequence > maxSequence {
+		// 等待时间前进
+		for g.timestamp > uint64(time.Now().Unix())-Epoch {
+			time.Sleep(100 * time.Millisecond)
 		}
-	} else {
-		// 时间戳变更，序列号归零
+		// 时间递增
+		g.timestamp++
+		// 序列重置
 		g.sequence = 0
+	} else {
+		g.sequence++
 	}
 
-	g.lastTimestamp = timestamp
-
 	// 通过移位运算拼接生成最终的 ID
-	id := (timestamp << timestampShift) |
-		(g.dataCenterID << dataCenterShift) |
-		(g.nodeID << nodeShift) |
-		g.sequence
+	id := (g.timestamp << timestampShift) | g.node | g.sequence
 
-	return id & maxID
+	return int64(id & maxID)
 }
 
 // New 初始化雪花 ID 生成器
@@ -76,9 +63,8 @@ func New(dataCenterID, nodeID int64) (*IDGenerator, error) {
 		return nil, fmt.Errorf("%d NodeID out of range", nodeID)
 	}
 	return &IDGenerator{
-		dataCenterID:  dataCenterID,
-		nodeID:        nodeID,
-		lastTimestamp: -1,
-		sequence:      0,
+		node:      uint64((dataCenterID << dataCenterShift) | (nodeID << nodeShift)),
+		timestamp: uint64(time.Now().Unix() - Epoch),
+		sequence:  0,
 	}, nil
 }
