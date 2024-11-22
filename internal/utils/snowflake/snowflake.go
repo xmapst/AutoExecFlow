@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	Epoch           = 0  // 开始时间戳, 秒级别
-	timestampBits   = 34 // 时间戳占用位数
-	dataCenterBits  = 5  // 机房 ID 占用位数
-	nodeBits        = 7  // 节点 ID 占用位数
-	sequenceBits    = 17 // 递增序列占用位数
+	Epoch           = 1730390400 // 元时间 2024-11-01 00:00:00
+	timestampBits   = 31         // 时间戳占用位数, 秒级
+	dataCenterBits  = 5          // 机房 ID 占用位数
+	nodeBits        = 5          // 节点 ID 占用位数
+	sequenceBits    = 22         // 递增序列占用位数
 	maxDataCenterID = (1 << dataCenterBits) - 1
 	maxNodeID       = (1 << nodeBits) - 1
 	maxSequence     = (1 << sequenceBits) - 1
@@ -53,7 +53,7 @@ func (g *IDGenerator) NextID() int64 {
 }
 
 func (g *IDGenerator) currentEpoch() uint64 {
-	return uint64(time.Now().UnixNano()) - Epoch
+	return uint64(time.Now().Unix()) - Epoch
 }
 
 // New 初始化雪花 ID 生成器
