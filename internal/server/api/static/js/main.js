@@ -1257,6 +1257,7 @@ class PipelineModal {
             link.onclick = this.openTaskCard.bind(this, task.taskName);
             taskContainer.appendChild(link);
         });
+        document.getElementById("pipeline-task-page-info").textContent = `第${this.currentPage}页__共${this.totalPage}页`;
     }
 
     openTaskCard(taskName) {
@@ -1277,7 +1278,7 @@ class PipelineModal {
         card.setAttribute("id", "pipeline-detail-card");
         card.className = 'card-one';
         card.innerHTML = `
-            <div class="card-header" style="justify-content: end">
+            <div class="card-header">
                 <button id="pipeline-view-detail-bt" class="button-sure">详情</button>
                 <button id="pipeline-view-list-bt" class="button-sure">任务列表</button>
                 <span class="card-close" id="close-task-card">&times;</span >
@@ -1311,7 +1312,7 @@ class PipelineModal {
                                 <option value="45">45</option>
                                 <option value="55">55</option>
                                 <option value="65">65</option>
-                                <option value="75">65</option>
+                                <option value="75">75</option>
                                 <option value="85">85</option>
                                 <option value="95">95</option>
                             </select>
