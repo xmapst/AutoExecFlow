@@ -57,11 +57,16 @@ func newDB(rawURL string) (*sDatabase, error) {
 		return nil, err
 	}
 
-	cachesPlugin := &caches.Caches{Conf: &caches.Config{
-		Easer: true,
-	}}
+	sqlDB, err := gdb.DB()
+	if err != nil {
+		return nil, err
+	}
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
 
-	_ = gdb.Use(cachesPlugin)
+	_ = gdb.Use(&caches.Caches{Conf: &caches.Config{
+		Easer: true,
+	}})
 
 	d := &sDatabase{DB: gdb}
 
