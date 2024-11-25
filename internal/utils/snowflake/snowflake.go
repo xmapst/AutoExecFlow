@@ -104,12 +104,12 @@ func (f ID) Time() int64 {
 
 func (f ID) DataCenter() int64 {
 	shifted := int64(f) >> dataCenterShift
-	 return shifted & maxDataCenterID
+	return shifted & maxDataCenterID
 }
 
 func (f ID) Node() int64 {
 	shifted := int64(f) >> nodeShift
-    return shifted & maxNodeID
+	return shifted & maxNodeID
 }
 
 func (f ID) Sequence() int64 {
