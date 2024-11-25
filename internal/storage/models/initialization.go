@@ -15,7 +15,7 @@ var (
 func getNextID(name string) (int64, error) {
 	gen, ok := idGenerator.Load(name)
 	if ok {
-		return gen.(*snowflake.IDGenerator).NextID(), nil
+		return gen.(*snowflake.IDGenerator).NextID().Int64(), nil
 	}
 	var err error
 	gen, err = snowflake.New(DataCenterID, NodeID)
@@ -23,5 +23,5 @@ func getNextID(name string) (int64, error) {
 		return 0, err
 	}
 	idGenerator.Store(name, gen)
-	return gen.(*snowflake.IDGenerator).NextID(), nil
+	return gen.(*snowflake.IDGenerator).NextID().Int64(), nil
 }
