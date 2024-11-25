@@ -20,7 +20,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/json-iterator/go v1.1.12
 	github.com/kardianos/service v1.2.2
-	github.com/nikolalohinski/gonja/v2 v2.3.1
+	github.com/nikolalohinski/gonja/v2 v2.3.2
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/pkg/errors v0.9.1
