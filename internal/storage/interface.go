@@ -3,6 +3,8 @@ package storage
 import (
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 )
 
@@ -11,6 +13,7 @@ const All = ""
 type IStorage interface {
 	Name() (name string)
 	Close() (err error)
+	GetDB() (db *gorm.DB)
 
 	// fix database
 	FixDatabase(nodeName string) (err error)

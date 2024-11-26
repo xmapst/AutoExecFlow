@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"gorm.io/gorm"
+
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils/snowflake"
 )
@@ -33,6 +35,10 @@ func Name() string {
 
 func Close() error {
 	return storage.Close()
+}
+
+func GetDB() *gorm.DB {
+	return storage.GetDB()
 }
 
 func FixDatabase(nodeName string) (err error) {

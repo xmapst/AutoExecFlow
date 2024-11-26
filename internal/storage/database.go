@@ -129,6 +129,10 @@ func (d *sDatabase) Close() error {
 	return db.Close()
 }
 
+func (d *sDatabase) GetDB() *gorm.DB {
+	return d.DB
+}
+
 func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 	// 开始事务
 	tx := d.Begin()
