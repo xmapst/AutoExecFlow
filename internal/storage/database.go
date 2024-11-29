@@ -36,7 +36,6 @@ func newDB(rawURL string) (*sDatabase, error) {
 		return nil, errors.New("unsupported storage type")
 	}
 	config := &gorm.Config{
-		SkipDefaultTransaction: true,
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable:       true,
 			NoLowerCase:         false,
