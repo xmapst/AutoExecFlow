@@ -35,7 +35,7 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
 	github.com/traefik/yaegi v0.16.1
-	github.com/xmapst/go-rabbitmq v0.14.2-6
+	github.com/xmapst/go-rabbitmq v0.14.2-7
 	github.com/yargevad/filepathx v1.0.0
 	github.com/yuin/gopher-lua v1.1.1
 	go.starlark.net v0.0.0-20240925182052-1207426daebd
