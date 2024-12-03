@@ -3,11 +3,15 @@ package x19sing
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
+	"strings"
 )
 
 const (
 	// KeyLength is the fixed length of the key
-	KeyLength = 32
+	KeyLength   = 32
+	// GoldenRatio is a constant used in the encryption/decryption process
+	GoldenRatio = 2654435769
 )
 
 type Cipher struct {
@@ -23,7 +27,7 @@ func New(key string) (*Cipher, error) {
 	}
 	c := &Cipher{key: []byte(key)}
 	// Step 1: Pad the key
-	c.paddedKey = c.padKey()
+	c.paddedKey = c.padRight(c.key)
 
 	// Step 2: Convert the padded key to int64 array
 	c.keyInt64 = c.bytesToInt64Arr(c.paddedKey)
@@ -32,9 +36,6 @@ func New(key string) (*Cipher, error) {
 
 // Decrypt decrypts the given encrypted data string.
 func (c *Cipher) Decrypt(encryptedData string) (string, error) {
-	if len(encryptedData) < 64 {
-		return "", errors.New("encrypted data must be at least 64 characters long")
-	}
 	if len(encryptedData)%16 != 0 {
 		return "", errors.New("encrypted data length must be a multiple of 16")
 	}
@@ -45,7 +46,7 @@ func (c *Cipher) Decrypt(encryptedData string) (string, error) {
 	decryptedDataInt64 := c.decrypt(encryptedDataInt64)
 
 	// Step 3: Convert the decrypted data back to a string
-	decryptedData := c.int64ArrayToString(decryptedDataInt64)
+	decryptedData := c.deInt64ArrayToStr(decryptedDataInt64)
 	return decryptedData, nil
 }
 
@@ -55,7 +56,7 @@ func (c *Cipher) Encrypt(plainData string) (string, error) {
 		return "", errors.New("plain data cannot be empty")
 	}
 	// Step 1: Pad the input data to the correct length
-	paddedData := c.padData([]byte(plainData))
+	paddedData := c.padRight([]byte(plainData))
 
 	// Step 2: Convert the padded data into an int64 array
 	dataInt64 := c.bytesToInt64Arr(paddedData)
@@ -64,18 +65,18 @@ func (c *Cipher) Encrypt(plainData string) (string, error) {
 	encryptedDataInt64 := c.encrypt(dataInt64)
 
 	// Step 4: Convert the encrypted data back into a string
-	encryptedData := c.int64ArrayToString(encryptedDataInt64)
+	encryptedData := c.enInt64ArrayToStr(encryptedDataInt64)
 	return encryptedData, nil
 }
 
-// decryptData performs the decryption process on the data using the provided key.
+// decrypt performs the decryption process on the data using the provided key.
 func (c *Cipher) decrypt(data []int64) []int64 {
 	num := len(data)
 	if num < 1 {
 		return data
 	}
 	num2, num3, num4 := data[num-1], data[0], int64(6+52/num)
-	for num5 := num4 * 2654435769; num5 != 0; num5 -= 2654435769 {
+	for num5 := num4 * GoldenRatio; num5 != 0; num5 -= GoldenRatio {
 		num6 := num5 >> 2 & 3
 		var num7 int64
 		for num7 = int64(num - 1); num7 > 0; num7-- {
@@ -98,7 +99,7 @@ func (c *Cipher) encrypt(data []int64) []int64 {
 	}
 	num2, num3, num4, num5 := data[num-1], data[0], int64(0), int64(6+52/num)
 	for ; num5 > 0; num5-- {
-		num4 += int64(2654435769)
+		num4 += int64(GoldenRatio)
 		num7 := (num4 >> 2) & 3
 		var num8 int64
 		for num8 = 0; num8 < int64(num-1); num8++ {
@@ -148,54 +149,51 @@ func (c *Cipher) stringToInt64Array(hexStr string) []int64 {
 	return array
 }
 
-// int64ArrayToString converts an array of int64 values back to a hex string.
-func (c *Cipher) int64ArrayToString(data []int64) string {
-	var result []byte
-	for _, v := range data {
-		b := make([]byte, 8)
-		binary.LittleEndian.PutUint64(b, uint64(v))
-		result = append(result, b...)
-	}
-	return string(c.trimTrailingZeros(result))
-}
-
-// padKey ensures the key has a length of 32 bytes.
-func (c *Cipher) padKey() []byte {
-	if len(c.key) > KeyLength {
-		return c.key
-	}
-	paddedKey := make([]byte, (len(c.key)+KeyLength-1)/KeyLength*KeyLength)
-	copy(paddedKey, c.key)
-	return paddedKey
-}
-
-// padData ensures the plain text data has a length that is a multiple of 8 bytes.
-func (c *Cipher) padData(data []byte) []byte {
-	if len(data)%8 == 0 {
-		return data
-	}
-	paddedData := make([]byte, (len(data)+7)/8*8)
-	copy(paddedData, data)
-	return paddedData
-}
-
 // bytesToInt64Arr converts a byte slice to an array of int64 values.
 func (c *Cipher) bytesToInt64Arr(b []byte) []int64 {
-	numElements := (len(b) + 7) / 8
-	arr := make([]int64, numElements)
-	for i := 0; i < numElements-1; i++ {
+	num := (len(b) + 7) / 8
+	arr := make([]int64, num)
+	for i := 0; i < num-1; i++ {
 		arr[i] = int64(binary.LittleEndian.Uint64(b[i*8:]))
 	}
 	lastBytes := make([]byte, 8)
-	copy(lastBytes, b[(numElements-1)*8:])
-	arr[numElements-1] = int64(binary.LittleEndian.Uint64(lastBytes))
+	copy(lastBytes, b[(num-1)*8:])
+	arr[num-1] = int64(binary.LittleEndian.Uint64(lastBytes))
 	return arr
 }
 
-// trimTrailingZeros removes trailing zero bytes from a byte slice.
-func (c *Cipher) trimTrailingZeros(data []byte) []byte {
-	for len(data) > 0 && data[len(data)-1] == 0 {
-		data = data[:len(data)-1]
+// enInt64ArrayToStr converts an array of int64 values back to a hex string.
+func (c *Cipher) enInt64ArrayToStr(data []int64) string {
+	var stringBuilder strings.Builder
+	for _, v := range data {
+		stringBuilder.WriteString(fmt.Sprintf("%016x", uint64(v)))
 	}
-	return data
+	return stringBuilder.String()
+}
+
+func (c *Cipher) deInt64ArrayToStr(fdf []int64) string {
+	list := make([]byte, 0, len(fdf)*8)
+	for _, v := range fdf {
+		b := make([]byte, 8)
+		binary.LittleEndian.PutUint64(b, uint64(v))
+		list = append(list, b...)
+	}
+	for len(list) > 0 && list[len(list)-1] == 0 {
+		list = list[:len(list)-1]
+	}
+	return string(list)
+}
+
+func (c *Cipher) padRight(bodyIn []byte) []byte {
+	if len(bodyIn) > KeyLength {
+		return bodyIn
+	}
+	body := make([]byte, func(s int) int {
+		if s%KeyLength != 0 {
+			return s + KeyLength - s%KeyLength
+		}
+		return s
+	}(len(bodyIn)))
+	copy(body, bodyIn)
+	return body
 }
