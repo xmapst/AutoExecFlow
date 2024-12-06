@@ -30,18 +30,10 @@ func LVYAMLEncoder(L *lua.LState, encoder *yaml.Encoder) lua.LValue {
 func yamlEncoderEncode(L *lua.LState) int {
 	encoder := CheckYAMLEncoder(L, 1)
 	arg := L.CheckAny(2)
-	L.Pop(L.GetTop())
-	var value interface{}
-	err := L.GPCall(func(L *lua.LState) int {
-		visited := make(map[*lua.LTable]bool)
-		value = toYAML(L, visited, arg)
-		return 0
-	}, lua.LNil)
-	if err != nil {
-		L.Push(lua.LString(err.Error()))
-		return 1
-	}
-	if err = encoder.Encode(value); err != nil {
+	if err := encoder.Encode(marshalValue{
+		LValue: arg,
+		visited: make(map[*lua.LTable]bool),
+	}); err != nil {
 		L.Push(lua.LString(err.Error()))
 		return 1
 	}

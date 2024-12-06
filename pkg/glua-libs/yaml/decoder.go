@@ -3,6 +3,7 @@ package yaml
 import (
 	lua "github.com/yuin/gopher-lua"
 	"gopkg.in/yaml.v3"
+	luar "layeh.com/gopher-luar"
 
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/io"
 )
@@ -36,7 +37,7 @@ func yamlDecoderDecode(L *lua.LState) int {
 		L.Push(lua.LString(err.Error()))
 		return 2
 	}
-	L.Push(fromYAML(L, value))
+	L.Push(luar.New(L, value))
 	return 1
 }
 
