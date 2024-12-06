@@ -31,7 +31,7 @@ func yamlEncoderEncode(L *lua.LState) int {
 	encoder := CheckYAMLEncoder(L, 1)
 	arg := L.CheckAny(2)
 	if err := encoder.Encode(marshalValue{
-		LValue: arg,
+		LValue:  arg,
 		visited: make(map[*lua.LTable]bool),
 	}); err != nil {
 		L.Push(lua.LString(err.Error()))

@@ -29,7 +29,7 @@ func Decode(L *lua.LState) int {
 func Encode(L *lua.LState) int {
 	arg := L.CheckAny(1)
 	data, err := yaml.Marshal(marshalValue{
-		LValue: arg,
+		LValue:  arg,
 		visited: make(map[*lua.LTable]bool),
 	})
 	if err != nil {
