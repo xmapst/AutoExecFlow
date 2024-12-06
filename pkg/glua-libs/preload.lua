@@ -4,7 +4,6 @@ function TestRequireModule(t)
         "base64",
         "cert_util",
         "chef",
-        "cloudwatch",
         "cmd",
         "crypto",
         "db",
