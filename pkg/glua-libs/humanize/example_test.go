@@ -1,0 +1,71 @@
+package humanize
+
+import (
+	"log"
+
+	lua "github.com/yuin/gopher-lua"
+
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
+)
+
+// humanize.ibytes(number)
+func ExampleIBytes() {
+	state := lua.NewState()
+	Preload(state)
+	source := `
+local humanize = require("humanize")
+print(humanize.ibytes(1395864371))
+`
+	if err := state.DoString(source); err != nil {
+		log.Fatal(err.Error())
+	}
+	// Output:
+	// 1.3 GiB
+}
+
+// humanize.parse_bytes(string)
+func ExampleParseBytes() {
+	state := lua.NewState()
+	Preload(state)
+	source := `
+local humanize = require("humanize")
+print(humanize.parse_bytes("1.3GiB"))
+`
+	if err := state.DoString(source); err != nil {
+		log.Fatal(err.Error())
+	}
+	// Output:
+	// 1395864371
+}
+
+// humanize.time(number)
+func ExampleTime() {
+	state := lua.NewState()
+	Preload(state)
+	time.Preload(state)
+	source := `
+local humanize = require("humanize")
+local time = require("time")
+print(humanize.time(time.unix() - 61))
+`
+	if err := state.DoString(source); err != nil {
+		log.Fatal(err.Error())
+	}
+	// Output:
+	// 1 minute ago
+}
+
+// humanize.si(input, unit)
+func ExampleSI() {
+	state := lua.NewState()
+	Preload(state)
+	source := `
+local humanize = require("humanize")
+print(humanize.si(0.212121, "m"))
+`
+	if err := state.DoString(source); err != nil {
+		log.Fatal(err.Error())
+	}
+	// Output:
+	// 212.121 mm
+}

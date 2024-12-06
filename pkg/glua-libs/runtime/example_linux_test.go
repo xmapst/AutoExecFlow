@@ -1,0 +1,29 @@
+// build +linux +amd64
+
+package runtime
+
+import (
+	"log"
+
+	lua "github.com/yuin/gopher-lua"
+
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/inspect"
+)
+
+// runtime.goos(), runtime.goarch()
+func Example_package() {
+	state := lua.NewState()
+	Preload(state)
+	inspect.Preload(state)
+	source := `
+    local runtime = require("runtime")
+    print(runtime.goos())
+    print(runtime.goarch())
+`
+	if err := state.DoString(source); err != nil {
+		log.Fatal(err.Error())
+	}
+	// Output:
+	// linux
+	// amd64
+}

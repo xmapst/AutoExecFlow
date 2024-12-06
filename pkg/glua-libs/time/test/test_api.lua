@@ -1,0 +1,38 @@
+local time = require("time")
+
+function Test_time(t)
+    t:Run("time.unix", function(t)
+        local lua_before = os.clock()
+        local before = time.unix()
+        t:Logf("lua_before=%f, before=%f", lua_before, before)
+        time.sleep(2)
+        local after = time.unix()
+        local lua_after = os.clock()
+        t:Logf("lua_after=%f, after=%f", lua_after, after)
+        assert(after - before >= 1, "time.unix()")
+        assert(lua_after - lua_before >= 2, "time.sleep()")
+    end)
+
+    t:Run("parse ok", function(t)
+        local parse, err = time.parse("Dec  2 03:33:05 2018", "Jan  2 15:04:05 2006")
+        assert(not err, err)
+        assert(parse == 1543721585, "time.parse(): 1")
+    end)
+
+    t:Run("parse with timezone", function(t)
+        local parse, err = time.parse("Dec  2 03:33:05 2018", "Jan  2 15:04:05 2006", "Asia/Shanghai")
+        assert(not err, err)
+        assert(parse == 1543721585 - 8 * 3600, "time.parse(): 3")
+    end)
+
+    t:Run("parse with error", function(t)
+        local _, err = time.parse("Dec  32 03:33:05 2018", "Jan  2 15:04:05 2006")
+        assert(err, "time.parse(): must be error")
+    end)
+
+    t:Run("format", function(t)
+        local result, err = time.format(1543721585, "Jan  2 15:04:05 2006", "Europe/Moscow")
+        assert(not err, err)
+        assert(result == "Dec  2 06:33:05 2018", "time.format() was " .. result)
+    end)
+end

@@ -29,6 +29,7 @@ builds:
       - -X "github.com/xmapst/AutoExecFlow/pkg/info.GitCommit={{.FullCommit}}"
       - -X "github.com/xmapst/AutoExecFlow/pkg/info.BuildTime={{.Date}}"
     tags:
+      - sqlite
       - osusergo
       - netgo
       - sqlite_stat4

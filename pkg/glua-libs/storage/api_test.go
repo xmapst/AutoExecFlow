@@ -1,0 +1,22 @@
+package storage
+
+import (
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/inspect"
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/tests"
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
+)
+
+func TestApi(t *testing.T) {
+	preload := tests.SeveralPreloadFuncs(
+		inspect.Preload,
+		time.Preload,
+		Preload,
+	)
+	assert.NoError(t, os.MkdirAll("./test/db/badger/", 0755), "mkdir")
+	assert.NotZero(t, tests.RunLuaTestFile(t, preload, "./test/test_api.lua"))
+}
