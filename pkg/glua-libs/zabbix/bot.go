@@ -19,8 +19,8 @@ import (
 )
 
 type luaBot struct {
-	client  luahttp.LuaHTTPClient
-	baseURL string
+	client   luahttp.LuaHTTPClient
+	baseURL  string
 	apiURL   string
 	loginURL string
 	chatURL  string

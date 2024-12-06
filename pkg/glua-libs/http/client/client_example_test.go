@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +10,7 @@ import (
 )
 
 // http_client_ud:do_request(request)
-func ExampleDoRequest() {
+func Test_DoRequest(t *testing.T) {
 	state := lua.NewState()
 	http.Preload(state)
 	source := `
@@ -28,7 +29,7 @@ func ExampleDoRequest() {
 }
 
 // http:query_escape(string)
-func ExampleQueryEscape() {
+func Test_QueryEscape(t *testing.T) {
 	state := lua.NewState()
 	http.Preload(state)
 	source := `
@@ -44,7 +45,7 @@ func ExampleQueryEscape() {
 }
 
 // http:query_escape(string)
-func ExampleQueryUnescape() {
+func Test_QueryUnescape(t *testing.T) {
 	state := lua.NewState()
 	http.Preload(state)
 	source := `

@@ -11,7 +11,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
 )
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		inspect.Preload,
 		time.Preload,

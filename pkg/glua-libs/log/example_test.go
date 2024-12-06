@@ -1,13 +1,13 @@
 package log
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // print(args..)
-func Example_Print() {
+func Test_Print(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -16,14 +16,14 @@ func Example_Print() {
     info:print("1 ", 2)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// [INFO] 1 2
 }
 
 // printf(string, args..)
-func Example_Printf() {
+func Test_Printf(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -32,14 +32,14 @@ func Example_Printf() {
     info:printf("%s %d\n", "1", 2)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// [INFO] 1 2
 }
 
 // println(string, args..)
-func Example_Println() {
+func Test_Println(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -48,14 +48,14 @@ func Example_Println() {
     info:println("1", 2)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// [INFO] 1 2
 }
 
 // set_flags(config={})
-func Example_SetFlags() {
+func Test_SetFlags(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -66,7 +66,7 @@ func Example_SetFlags() {
     logger:println("1", 2)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// [prefix] <string>:6: 1 2

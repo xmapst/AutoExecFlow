@@ -3,10 +3,10 @@ package http
 import (
 	"crypto/tls"
 	"crypto/x509"
-	ioutil2 "io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -24,7 +24,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/ioutil"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/json"
 	lualog "github.com/xmapst/AutoExecFlow/pkg/glua-libs/log"
-	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/prometheus/client"
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/promclient"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/regexp"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/runtime"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/storage"
@@ -75,7 +75,7 @@ func (s *luaServer) serve(L *lua.LState) {
 		if ctx != nil {
 			select {
 			case <-ctx.Done():
-				s.Listener.Close()
+				_ = s.Listener.Close()
 			}
 		}
 	}(s)
@@ -127,7 +127,7 @@ func New(L *lua.LState) int {
 				if _, ok := clientCAs.(lua.LString); !ok {
 					L.ArgError(1, "client_cas_pem_file must be a string")
 				}
-				data, err := ioutil2.ReadFile(clientCAs.String())
+				data, err := os.ReadFile(clientCAs.String())
 				if err != nil {
 					L.RaiseError("error reading %s: %v", clientCAs, err)
 				}
@@ -205,7 +205,7 @@ func newHandlerState(data *serveData) *lua.LState {
 	httpclient.Preload(state)
 	lualog.Preload(state)
 	httputil.Preload(state)
-	prometheus_client.Preload(state)
+	promclient.Preload(state)
 
 	httpServerResponseWriterUD := state.NewTypeMetatable(`http_server_response_writer_ud`)
 	state.SetGlobal(`http_server_response_writer_ud`, httpServerResponseWriterUD)
@@ -242,7 +242,6 @@ func HandleFile(L *lua.LState) int {
 
 		}
 	}
-	return 0
 }
 
 // HandleString lua http_server_ud:handle_string(body)
@@ -263,7 +262,6 @@ func HandleString(L *lua.LState) int {
 			}(data, body)
 		}
 	}
-	return 0
 }
 
 // HandleFunction lua http_server_ud:handle_function(func(response, request))

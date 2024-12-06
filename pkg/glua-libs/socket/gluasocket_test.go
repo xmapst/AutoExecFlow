@@ -11,7 +11,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/socket"
 )
 
-func TestExcept(t *testing.T) {
+func Test_Except(t *testing.T) {
 	doTest("excepttest.lua", t)
 }
 
@@ -43,7 +43,7 @@ func TestExcept(t *testing.T) {
 //	doTest("testmesg.lua", t)
 //}
 
-func TestSocketGetAddrInfo(t *testing.T) {
+func Test_SocketGetAddrInfo(t *testing.T) {
 	doTest("test_getaddrinfo.lua", t)
 }
 
@@ -51,7 +51,7 @@ func TestSocketGetAddrInfo(t *testing.T) {
 //	doTest("test_socket_error.lua", t)
 //}
 
-func TestUrl(t *testing.T) {
+func Test_Url(t *testing.T) {
 	doTest("urltest.lua", t)
 }
 
@@ -67,7 +67,7 @@ func doTest(testScript string, t *testing.T) {
 	socket.Preload(luaState)
 
 	// Change working directory to where scripts are, so that nested scripts are found
-	_=os.Chdir("testdata/luasocket-test")
+	_ = os.Chdir("testdata/luasocket-test")
 
 	// Run Lua test script
 	fmt.Printf("Running test %s\n", testScript)

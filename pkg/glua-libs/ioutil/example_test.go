@@ -1,13 +1,13 @@
 package ioutil
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // ioutil.read_file(filepath)
-func ExampleReadFile() {
+func Test_ReadFile(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -22,14 +22,14 @@ func ExampleReadFile() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// content of test file
 }
 
 // ioutil.write_file(filepath)
-func ExampleWriteFile() {
+func Test_WriteFile(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -38,7 +38,7 @@ func ExampleWriteFile() {
     if err then error(err) end
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	//

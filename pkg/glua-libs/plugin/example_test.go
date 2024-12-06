@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"log"
+	"testing"
 
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // plugin.do_string(), plugin_ud:run(), plugin_ud:stop()
-func Example_package() {
+func Test_package(t *testing.T) {
 	state := lua.NewState()
 	defer state.Close()
 	Preload(state)
@@ -52,14 +52,14 @@ func Example_package() {
     assert(not print_plugin:is_running(), "still running")
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 1
 	// 2
 }
 
-func Example_using_like_goroutine() {
+func Test_using_like_goroutine(t *testing.T) {
 	state := lua.NewState()
 	defer state.Close()
 
@@ -81,7 +81,7 @@ func Example_using_like_goroutine() {
 	assert(not err, err)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	// Output:
 	// Hello World

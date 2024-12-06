@@ -24,7 +24,7 @@ func httpRouterGet(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.WriteString(w, "OK")
 }
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/get", httpRouterGet)
 	server := runHttps(":1443", mux)

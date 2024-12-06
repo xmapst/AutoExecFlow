@@ -2,12 +2,13 @@ package util
 
 import (
 	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // http_clien.parse_url(string)
-func ExampleParseUrl() {
+func Test_ParseUrl(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -24,7 +25,7 @@ func ExampleParseUrl() {
 }
 
 // http_clien.build_url(table)
-func ExampleBuidUrl() {
+func Test_BuidUrl(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `

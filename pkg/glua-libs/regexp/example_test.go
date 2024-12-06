@@ -1,7 +1,7 @@
 package regexp
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // regexp_ud:match(string)
-func ExampleMatch() {
+func Test_Match(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -20,14 +20,14 @@ func ExampleMatch() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true
 }
 
 // regexp_ud:find_all_string_submatch(string)
-func ExampleFindAllStringSubmatch() {
+func Test_FindAllStringSubmatch(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -40,7 +40,7 @@ func ExampleFindAllStringSubmatch() {
     print(inspect(result, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// { { "string: 'hello world'", "hello", "world" } }

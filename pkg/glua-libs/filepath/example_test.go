@@ -3,7 +3,7 @@
 package filepath
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -11,7 +11,7 @@ import (
 )
 
 // filepath.ext(string)
-func ExampleExt() {
+func Test_Ext(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -20,14 +20,14 @@ func ExampleExt() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// .name
 }
 
 // filepath.basename(string)
-func ExampleBasename() {
+func Test_Basename(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -36,14 +36,14 @@ func ExampleBasename() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// file.name
 }
 
 // filepath.basename(string)
-func ExampleDir() {
+func Test_Dir(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -52,14 +52,14 @@ func ExampleDir() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// /var/tmp
 }
 
 // filepath.basename(string)
-func ExampleJoin() {
+func Test_Join(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -68,14 +68,14 @@ func ExampleJoin() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// var/tmp/file.name
 }
 
 // filepath.glob(string)
-func ExampleGlob() {
+func Test_Glob(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -86,7 +86,7 @@ func ExampleGlob() {
     print(inspect(result, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// { "test/test_api.lua" }

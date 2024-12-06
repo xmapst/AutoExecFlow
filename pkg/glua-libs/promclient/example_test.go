@@ -1,19 +1,19 @@
-package prometheus_client_test
+package promclient_test
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/http"
-	prometheus "github.com/xmapst/AutoExecFlow/pkg/glua-libs/prometheus/client"
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/promclient"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
 )
 
 // prometheus:start(string)
-func ExampleStart() {
+func Test_Start(t *testing.T) {
 	state := lua.NewState()
-	prometheus.Preload(state)
+	promclient.Preload(state)
 	time.Preload(state)
 	http.Preload(state)
 
@@ -37,7 +37,7 @@ func ExampleStart() {
 	print(result.code)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 404

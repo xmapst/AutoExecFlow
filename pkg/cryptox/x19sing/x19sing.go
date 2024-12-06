@@ -9,7 +9,7 @@ import (
 
 const (
 	// KeyLength is the fixed length of the key
-	KeyLength   = 32
+	KeyLength = 32
 	// GoldenRatio is a constant used in the encryption/decryption process
 	GoldenRatio = 2654435769
 )

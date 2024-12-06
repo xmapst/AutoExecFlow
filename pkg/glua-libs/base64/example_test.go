@@ -1,12 +1,12 @@
 package base64
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
-func ExampleEncodeToString() {
+func Test_EncodeToString(t *testing.T) {
 	state := lua.NewState()
 	defer state.Close()
 	Preload(state)
@@ -26,7 +26,7 @@ func ExampleEncodeToString() {
 
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// Zm9vAWJhcg
@@ -35,7 +35,7 @@ func ExampleEncodeToString() {
 	// dGhpcyBpcyBhIDx0YWc-IGFuZCBzaG91bGQgYmUgZW5jb2RlZA==
 }
 
-func ExampleDecodeString() {
+func Test_DecodeString(t *testing.T) {
 	state := lua.NewState()
 	defer state.Close()
 	Preload(state)
@@ -59,7 +59,7 @@ func ExampleDecodeString() {
 
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// foobar

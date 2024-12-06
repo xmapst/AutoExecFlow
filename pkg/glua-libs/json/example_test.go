@@ -1,7 +1,7 @@
 package json
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // json.decode(string)
-func ExampleDecode() {
+func Test_Decode(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -25,14 +25,14 @@ func ExampleDecode() {
     print(inspect(result, {process = remove_all_metatables, newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// {a = {b = 1}}
 }
 
 // json.encode(obj)
-func ExampleEncode() {
+func Test_Encode(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -47,7 +47,7 @@ func ExampleEncode() {
 	print(inspect( json.encode( {} ) ))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// '{"a":{"b":1}}'

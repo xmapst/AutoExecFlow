@@ -1,7 +1,7 @@
 package yaml
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // yaml.decode(string)
-func Example() {
+func Test_Yaml(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -25,13 +25,13 @@ a:
     print(inspect(result, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// {a = {b = 1}}
 }
 
-func ExampleEncode() {
+func Test_Encode(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -42,7 +42,7 @@ func ExampleEncode() {
     print(encoded)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// a:

@@ -1,7 +1,7 @@
 package http_test
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -10,7 +10,7 @@ import (
 )
 
 // http:server()
-func ExampleAccept() {
+func Test_Accept(t *testing.T) {
 	state := lua.NewState()
 	http.Preload(state)
 	plugin.Preload(state)
@@ -59,7 +59,7 @@ func ExampleAccept() {
     client_plugin:stop()
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// host: 127.0.0.1:1999

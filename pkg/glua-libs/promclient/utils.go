@@ -1,4 +1,4 @@
-package prometheus_client
+package promclient
 
 import (
 	"sort"

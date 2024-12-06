@@ -11,7 +11,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/inspect"
 )
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		Preload,
 		inspect.Preload,

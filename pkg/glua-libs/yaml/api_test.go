@@ -9,7 +9,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/tests"
 )
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		Preload,
 		strings.Preload,

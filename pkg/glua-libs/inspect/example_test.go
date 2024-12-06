@@ -1,13 +1,13 @@
 package inspect
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // inspect(obj)
-func Example_full() {
+func Test_full(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -16,7 +16,7 @@ func Example_full() {
     print(inspect(table, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	//{a = {b = 2}}

@@ -11,7 +11,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/zabbix"
 )
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		zabbix.Preload,
 		http.Preload,

@@ -1,17 +1,23 @@
 package tcp
 
 import (
-	"log"
+	"testing"
 	"time"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // tcp.open(), tcp_client_ud:write(), tcp_client_ud:read()
-func Example_full() {
+func Test_full(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
-	go runPingPongServer(":12346")
+	go func() {
+		_, err := runPingPongServer(":12346")
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}()
 	time.Sleep(time.Second)
 	source := `
         local tcp = require("tcp")
@@ -38,7 +44,7 @@ func Example_full() {
         conn:close()
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// pong

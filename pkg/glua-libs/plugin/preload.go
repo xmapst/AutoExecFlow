@@ -20,7 +20,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/log"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/pb"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/pprof"
-	prometheus "github.com/xmapst/AutoExecFlow/pkg/glua-libs/prometheus/client"
+	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/promclient"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/redis"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/regexp"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/runtime"
@@ -59,7 +59,7 @@ func PreloadAll(L *lua.LState) {
 	log.Preload(L)
 	pb.Preload(L)
 	pprof.Preload(L)
-	prometheus.Preload(L)
+	promclient.Preload(L)
 	regexp.Preload(L)
 	runtime.Preload(L)
 	shellescape.Preload(L)

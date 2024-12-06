@@ -11,17 +11,17 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/strings"
 )
 
-func TestSuite(t *testing.T) {
+func Test_Suite(t *testing.T) {
 	preload := strings.Preload
 	assert.NotZero(t, RunLuaTestFile(t, preload, "testdata/test_suite.lua"))
 }
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	preload := goos.Preload
 	assert.NotZero(t, RunLuaTestFile(t, preload, "testdata/test_api.lua"))
 }
 
-func TestAssertions(t *testing.T) {
+func Test_Assertions(t *testing.T) {
 	t.Run("passing", func(t *testing.T) {
 		preload := inspect.Preload
 		assert.NotZero(t, RunLuaTestFile(t, preload, "testdata/test_assertions_passing.lua"))

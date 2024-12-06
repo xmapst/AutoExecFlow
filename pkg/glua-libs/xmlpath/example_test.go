@@ -1,13 +1,13 @@
 package xmlpath
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // xmlpath.compile, xmlpath.load, xmlpath_node_ud, xmlpath_path_ud, xmlpath_iter_ud
-func Example_full() {
+func Test_full(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -33,7 +33,7 @@ local iter = path:iter(node)
 for k, v in pairs(iter) do print(v:string()) end
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 1

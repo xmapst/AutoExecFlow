@@ -11,7 +11,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/tests"
 )
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		ioutil.Preload,
 		Preload,
@@ -19,7 +19,7 @@ func TestApi(t *testing.T) {
 	assert.NotZero(t, tests.RunLuaTestFile(t, preload, "./test/test_api.lua"))
 }
 
-func TestLogLevelApi(t *testing.T) {
+func Test_LogLevelApi(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		ioutil.Preload,
 		filepath.Preload,

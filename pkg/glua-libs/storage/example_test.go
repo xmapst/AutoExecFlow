@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"log"
+	"testing"
 
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/inspect"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
@@ -10,7 +10,7 @@ import (
 )
 
 // storage.open(), storage_ud:get(), storage_ud:set()
-func Example_package() {
+func Test_package(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -41,7 +41,7 @@ print(inspect(dump, {newline="", indent=""}))
 os.remove("./test/db-example.json")
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// { "one", "two", 1 }

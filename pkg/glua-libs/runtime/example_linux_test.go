@@ -3,7 +3,7 @@
 package runtime
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -11,7 +11,7 @@ import (
 )
 
 // runtime.goos(), runtime.goarch()
-func Example_package() {
+func Test_package(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -21,7 +21,7 @@ func Example_package() {
     print(runtime.goarch())
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// linux

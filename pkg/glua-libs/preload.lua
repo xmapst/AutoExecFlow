@@ -27,7 +27,6 @@ function TestRequireModule(t)
         "strings",
         "tac",
         "tcp",
-        "telegram",
         "template",
         "time",
         "xmlpath",

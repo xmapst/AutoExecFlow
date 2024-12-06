@@ -1,7 +1,7 @@
 package strings
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // strings.split(string, sep)
-func ExampleSplit() {
+func Test_Split(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -20,14 +20,14 @@ func ExampleSplit() {
     print(inspect(result, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// { "a", "b", "c", "d" }
 }
 
 // strings.fields(string)
-func ExampleFields() {
+func Test_Fields(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -38,14 +38,14 @@ func ExampleFields() {
     print(inspect(result, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// { "a", "b", "c", "d" }
 }
 
 // strings.has_prefix(string, prefix)
-func ExampleHasPrefix() {
+func Test_HasPrefix(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -54,14 +54,14 @@ func ExampleHasPrefix() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true
 }
 
 // strings.has_suffix(string, suffix)
-func ExampleHasSuffix() {
+func Test_HasSuffix(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -70,14 +70,14 @@ func ExampleHasSuffix() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true
 }
 
 // strings.trim(string, cutset)
-func ExampleTrim() {
+func Test_Trim(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -86,14 +86,14 @@ func ExampleTrim() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// abc
 }
 
 // strings.trim_prefix(string, cutset)
-func ExampleTrimPrefix() {
+func Test_TrimPrefix(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -102,14 +102,14 @@ func ExampleTrimPrefix() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// abcd
 }
 
 // strings.trim_suffix(string, cutset)
-func ExampleTrimSuffix() {
+func Test_TrimSuffix(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -118,14 +118,14 @@ func ExampleTrimSuffix() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// abc
 }
 
 // strings.contains(string, substring)
-func ExampleContains() {
+func Test_Contains(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -134,7 +134,7 @@ func ExampleContains() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true

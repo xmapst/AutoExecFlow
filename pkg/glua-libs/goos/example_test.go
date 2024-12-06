@@ -1,7 +1,7 @@
 package goos
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // goos.stat(filename)
-func ExampleStat() {
+func Test_Stat(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -24,14 +24,14 @@ info.mod_time=0
 print(inspect(info, {newline="", indent=""}))
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// {is_dir = false,mod_time = 0,mode = "",size = 0}
 }
 
 // goos.hostname()
-func ExampleHostname() {
+func Test_Hostname(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -42,14 +42,14 @@ if err then error(err) end
 print(hostname > "")
 	`
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true
 }
 
 // goos.get_pagesize()
-func ExampleGetpagesize() {
+func Test_Getpagesize(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -59,14 +59,14 @@ local page_size = goos.get_pagesize()
 print(page_size > 0)
 	`
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true
 }
 
 // goos.mkdir_all()
-func ExampleMkdirAll() {
+func Test_MkdirAll(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	inspect.Preload(state)
@@ -78,7 +78,7 @@ local _, err = goos.stat("./test/test_dir_example/test_dir")
 print(err == nil)
 	`
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true

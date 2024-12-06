@@ -1,14 +1,14 @@
 package pb
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/time"
 )
 
-func ExampleAllParams() {
+func Test_AllParams(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	time.Preload(state)
@@ -31,7 +31,7 @@ func ExampleAllParams() {
                 bar:finish()
         `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// [custom template] 2 / 2 100.00% 2s

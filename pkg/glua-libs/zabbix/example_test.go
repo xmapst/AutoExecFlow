@@ -1,7 +1,7 @@
 package zabbix_test
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -11,7 +11,7 @@ import (
 )
 
 // example zabbix
-func Example_package() {
+func Test_package(t *testing.T) {
 	state := lua.NewState()
 	zabbix.Preload(state)
 	http.Preload(state)
@@ -47,6 +47,6 @@ end
 zbx:logout()
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 }

@@ -40,14 +40,14 @@ func handleTCPClient(conn net.Conn) {
 		}
 		data := buf[0:count]
 		if string(data) == "ping" {
-			conn.Write([]byte("pong\n"))
+			_, _ = conn.Write([]byte("pong\n"))
 		} else {
-			conn.Write([]byte("unknown\n"))
+			_, _ = conn.Write([]byte("unknown\n"))
 		}
 	}
 }
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 	closer, err := runPingPongServer(":12345")
 	require.NoError(t, err)
 	t.Cleanup(func() {

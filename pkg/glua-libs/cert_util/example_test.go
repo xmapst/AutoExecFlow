@@ -1,7 +1,7 @@
 package cert_util
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -9,7 +9,7 @@ import (
 )
 
 // cert_util.not_after("host", <ip:port>)
-func Example_package() {
+func Test_package(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	time.Preload(state)
@@ -21,7 +21,7 @@ func Example_package() {
     print(tx > time.unix())
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// true

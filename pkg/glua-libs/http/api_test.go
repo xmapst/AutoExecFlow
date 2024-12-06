@@ -6,10 +6,10 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -32,7 +32,7 @@ func basicAuth(handler http.HandlerFunc, username, password, realm string) http.
 		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
 			w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
 			w.WriteHeader(401)
-			w.Write([]byte("Unauthorised.\n"))
+			_, _ = w.Write([]byte("Unauthorised.\n"))
 			return
 		}
 		handler(w, r)
@@ -44,7 +44,7 @@ func httpCheckHeaders(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(412)
 		return
 	}
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func httpCheckUserAgent(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +52,7 @@ func httpCheckUserAgent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(412)
 		return
 	}
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func getFormFile(r *http.Request, key, filename string) (err error) {
@@ -73,7 +73,7 @@ func httpUploadFile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func httpUploadFileWithFields(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +86,7 @@ func httpUploadFileWithFields(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func httpUploadMultipleFile(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func httpUploadMultipleFile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func httpUploadMultipleFileWithFields(w http.ResponseWriter, r *http.Request) {
@@ -118,16 +118,16 @@ func httpUploadMultipleFileWithFields(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func httpRouterGet(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func httpRouterGetTimeout(w http.ResponseWriter, r *http.Request) {
 	time.Sleep(2 * time.Second)
-	w.Write([]byte(`OK`))
+	_, _ = w.Write([]byte(`OK`))
 }
 
 func runHttp(addr string) {
@@ -150,7 +150,7 @@ func request(url string) error {
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func manyRequest(addr string) *errgroup.Group {
 	return eg
 }
 
-func TestApi(t *testing.T) {
+func Test_Api(t *testing.T) {
 
 	http.HandleFunc("/get", httpRouterGet)
 	http.HandleFunc("/getBasicAuth", basicAuth(httpRouterGet, "admin", "123456", "Please enter your username and password for this site"))
@@ -226,14 +226,14 @@ func TestApi(t *testing.T) {
 	})
 }
 
-func TestMTLSClient(t *testing.T) {
+func Test_MTLSClient(t *testing.T) {
 	s := httptest.NewUnstartedServer(http.HandlerFunc(func(writer http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(writer, "OK\n")
 	}))
 	defer s.Close()
 	serverCert, err := tls.LoadX509KeyPair("test/data/test.cert.pem", "test/data/test.key.pem")
 	require.NoError(t, err)
-	caData, err := ioutil.ReadFile("test/data/test.cert.pem")
+	caData, err := os.ReadFile("test/data/test.cert.pem")
 	require.NoError(t, err)
 	cas := x509.NewCertPool()
 	cas.AppendCertsFromPEM(caData)
@@ -254,7 +254,7 @@ func TestMTLSClient(t *testing.T) {
 	assert.NotZero(t, tests.RunLuaTestFile(t, preload, "test/test_mtls_client.lua"))
 }
 
-func TestMTLSServerWithClient(t *testing.T) {
+func Test_MTLSServerWithClient(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		luahttp.Preload,
 		luatime.Preload,
@@ -264,7 +264,7 @@ func TestMTLSServerWithClient(t *testing.T) {
 	assert.NotZero(t, tests.RunLuaTestFile(t, preload, "test/test_mtls_server_with_client.lua"))
 }
 
-func TestServer(t *testing.T) {
+func Test_Server(t *testing.T) {
 	preload := tests.SeveralPreloadFuncs(
 		luahttp.Preload,
 		luatime.Preload,

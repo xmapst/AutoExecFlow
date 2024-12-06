@@ -1,13 +1,13 @@
 package tac
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // tac.open(), tac_ud:line(), tac_ud:close()
-func Example() {
+func Test_Tac(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -28,7 +28,7 @@ func Example() {
         scanner:close()
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 3

@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"log"
+	"testing"
+
+	lua "github.com/yuin/gopher-lua"
 
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/runtime"
-	lua "github.com/yuin/gopher-lua"
 )
 
 // cmd.exec()
-func ExampleExec() {
+func Test_Exec(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	runtime.Preload(state)
@@ -24,7 +25,7 @@ if err then error(err) end
 print(result.status)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 0

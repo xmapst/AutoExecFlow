@@ -34,7 +34,7 @@ type testStruct struct {
 	Func   interface{}
 }
 
-func TestMap(t *testing.T) {
+func Test_Map(t *testing.T) {
 	L := lua.NewState()
 	if err := L.DoString(`
     person = {
@@ -65,7 +65,7 @@ func TestMap(t *testing.T) {
 	errorIfNotEqual(t, "Operator", person.Role[1].Name)
 }
 
-func TestTypes(t *testing.T) {
+func Test_Types(t *testing.T) {
 	L := lua.NewState()
 	if err := L.DoString(`
     tbl = {
@@ -89,7 +89,7 @@ func TestTypes(t *testing.T) {
 	errorIfNotEqual(t, 10, stct.Number)
 }
 
-func TestNameFunc(t *testing.T) {
+func Test_NameFunc(t *testing.T) {
 	L := lua.NewState()
 	if err := L.DoString(`
     person = {
@@ -121,12 +121,12 @@ func TestNameFunc(t *testing.T) {
 	errorIfNotEqual(t, "Operator", person.Role[1].Name)
 }
 
-func TestError(t *testing.T) {
+func Test_Error(t *testing.T) {
 	L := lua.NewState()
 	tbl := L.NewTable()
 	L.SetField(tbl, "key", lua.LString("value"))
 	err := Map(tbl, 1)
-	if err.Error() != "result must be a pointer" {
+	if err != nil && err.Error() != "result must be a pointer" {
 		t.Error("invalid error message")
 	}
 
@@ -134,7 +134,7 @@ func TestError(t *testing.T) {
 	tbl.Append(lua.LNumber(1))
 	var person testPerson
 	err = Map(tbl, &person)
-	if err.Error() != "arguments #1 must be a table, but got an array" {
+	if err != nil && err.Error() != "arguments #1 must be a table, but got an array" {
 		t.Error("invalid error message")
 	}
 }

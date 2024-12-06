@@ -1,7 +1,7 @@
 package pprof_test
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 
@@ -11,7 +11,7 @@ import (
 )
 
 // pprof:register(), pprof_ud:enable(), pprof_ud:disable()
-func Example_package() {
+func Test_package(t *testing.T) {
 	state := lua.NewState()
 	luapprof.Preload(state)
 	luahttp.Preload(state)
@@ -41,7 +41,7 @@ local resp, err = client:do_request(req)
 if not(err) then error("must be error") end
         `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 200

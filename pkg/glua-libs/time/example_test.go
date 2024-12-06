@@ -1,13 +1,13 @@
 package time
 
 import (
-	"log"
+	"testing"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 // time.sleep(number)
-func ExampleSleep() {
+func Test_Sleep(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -21,14 +21,14 @@ func ExampleSleep() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 1.2
 }
 
 // time.parse(value, layout)
-func ExampleParse() {
+func Test_Parse(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -38,14 +38,14 @@ func ExampleParse() {
     print(result)
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// 1543721585
 }
 
 // time.format(value, layout, timezone)
-func ExampleFormat() {
+func Test_Format(t *testing.T) {
 	state := lua.NewState()
 	Preload(state)
 	source := `
@@ -55,7 +55,7 @@ func ExampleFormat() {
     print( time.format(1543721585, "Jan  2 15:04:05 2006", "Europe/Moscow") )
 `
 	if err := state.DoString(source); err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	// Output:
 	// Thu Jan 1 00:00:00 +0000 UTC 1970
