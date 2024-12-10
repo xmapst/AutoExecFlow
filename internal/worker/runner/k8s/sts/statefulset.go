@@ -3,7 +3,6 @@ package sts
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -61,25 +60,19 @@ func (s *SStatefulSet) Update() error {
 			}
 			return err
 		}
-		for k, container := range result.Spec.Template.Spec.Containers {
-			image := strings.Split(container.Image, ":")
-			if len(image) != 2 {
-				continue
-			}
-			name, tag := image[0], image[1]
-			s.Storage.Log().Writef("%s/%s container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, s.GetImageTag())
-			result.Spec.Template.Spec.Containers[k].Image = fmt.Sprintf("%s:%s", name, s.GetImageTag())
-		}
+		s.UpdateContainersImage(result.Spec.Template.Spec.Containers, func(str string) {
+			s.Storage.Log().Write("update container image;", str)
+		})
+		s.UpdateEnvVariables(result.Spec.Template.Spec.Containers, func(str string) {
+			s.Storage.Log().Write("update container env;", str)
+		})
 		if s.IgnoreInitContainer == nil || !*s.IgnoreInitContainer {
-			for k, container := range result.Spec.Template.Spec.InitContainers {
-				image := strings.Split(container.Image, ":")
-				if len(image) != 2 {
-					continue
-				}
-				name, tag := image[0], image[1]
-				s.Storage.Log().Writef("%s/%s init container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, s.GetImageTag())
-				result.Spec.Template.Spec.InitContainers[k].Image = fmt.Sprintf("%s:%s", name, s.GetImageTag())
-			}
+			s.UpdateContainersImage(result.Spec.Template.Spec.InitContainers, func(str string) {
+				s.Storage.Log().Write("update init container image;", str)
+			})
+			s.UpdateEnvVariables(result.Spec.Template.Spec.InitContainers, func(str string) {
+				s.Storage.Log().Write("update init container env;", str)
+			})
 		}
 
 		_, err = s.Client.Update(s.Context, result, metav1.UpdateOptions{})
