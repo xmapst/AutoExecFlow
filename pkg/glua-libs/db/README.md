@@ -11,7 +11,7 @@ local config = {
   read_only = false,   -- must execute read-write query
 }
 
-local sqlite, err = db.open("sqlite3", "file:test.db?cache=shared&mode=memory", config)
+local sqlite, err = db.open("mysql", "root:123456@localhost/test", config)
 if err then error(err) end
 
 local result, err = sqlite:query("select 1")
