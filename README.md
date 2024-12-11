@@ -267,6 +267,12 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
   - 1004: pending
   - 1005: paused
 
+## Script language support
++ [bash/sh/ps1/bat/python2/python3](internal/worker/runner/exec/README.md)
++ [lua](internal/worker/runner/lua/README.md)
++ [starlark](internal/worker/runner/starlark/README.md)
++ [yeagi](internal/worker/runner/yeagi/README.md)
+
 ## Swagger API documentation
 [Swagger API documentation](https://github.com/xmapst/AutoExecFlow/blob/main/docs/swagger.yaml)
 

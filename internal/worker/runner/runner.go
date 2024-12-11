@@ -39,7 +39,7 @@ func New(
 	case strings.EqualFold(commandType, "star"):
 		return starlark.New(storage, workspace)
 	case strings.EqualFold(commandType, "yeagi"):
-		return yeagi.New(storage, workspace, scriptDir)
+		return yeagi.New(storage, workspace)
 	default:
 		return exec.New(storage, commandType, workspace, scriptDir)
 	}

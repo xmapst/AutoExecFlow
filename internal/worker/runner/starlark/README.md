@@ -6,7 +6,7 @@ exec starlark type script
 
 ```text
 # params is dict
-def Main(params):
+def EvalCall(params):
     print(params)
     coins = {
       'dime': 10,

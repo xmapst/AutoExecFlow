@@ -6,7 +6,7 @@ exec lua type script
 
 ```text
 # params is dict
-function Main(params)
+function EvalCall(params)
     print(params)
     print("Hello, world!")
 end

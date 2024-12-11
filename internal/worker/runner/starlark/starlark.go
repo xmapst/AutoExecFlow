@@ -2,6 +2,7 @@ package starlark
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/qri-io/starlib"
@@ -38,23 +39,34 @@ func New(storage storage.IStep, workspace string) (*SStarLark, error) {
 }
 
 func (s *SStarLark) Run(ctx context.Context) (code int64, err error) {
+	defer func() {
+		if _r := recover(); _r != nil {
+			code = common.CodeSystemErr
+			if err != nil {
+				err = fmt.Errorf("panic during execution %v %v", err, _r)
+				return
+			}
+			err = fmt.Errorf("panic during execution %v", _r)
+		}
+	}()
+
 	content, err := s.storage.Content()
 	if err != nil {
 		return common.CodeFailed, err
 	}
 
-	mainFnVal, err := starlark.ExecFileOptions(syntax.LegacyFileOptions(), s.thread, s.name+".star", content, starlark.StringDict{
+	evalFnVal, err := starlark.ExecFileOptions(syntax.LegacyFileOptions(), s.thread, s.name+".star", content, starlark.StringDict{
 		"workspace": starlark.String(s.workspace),
 	})
 	if err != nil {
 		return common.CodeFailed, err
 	}
-	mainFn, ok := mainFnVal["Main"]
+	evalFn, ok := evalFnVal["EvalCall"]
 	if !ok {
-		return common.CodeFailed, errors.New("not found Main")
+		return common.CodeFailed, errors.New("not found EvalCall")
 	}
 
-	_, err = starlark.Call(s.thread, mainFn, starlark.Tuple{
+	_, err = starlark.Call(s.thread, evalFn, starlark.Tuple{
 		s.getParam(),
 	}, nil)
 	return common.CodeSuccess, nil

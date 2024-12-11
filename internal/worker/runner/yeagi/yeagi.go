@@ -3,10 +3,9 @@ package yeagi
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
+	"io"
 
-	"github.com/segmentio/ksuid"
+	"github.com/pkg/errors"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 	"github.com/traefik/yaegi/stdlib/syscall"
@@ -14,39 +13,40 @@ import (
 	"github.com/traefik/yaegi/stdlib/unsafe"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
-	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 )
 
 type SYeagi struct {
-	vm        *interp.Interpreter
+	interp    *interp.Interpreter
 	storage   storage.IStep
 	workspace string
-	scriptDir string
 }
 
-func New(storage storage.IStep, workspace, scriptDir string) (*SYeagi, error) {
+func New(storage storage.IStep, workspace string) (*SYeagi, error) {
 	return &SYeagi{
 		storage:   storage,
 		workspace: workspace,
-		scriptDir: scriptDir,
 	}, nil
 }
 
 func (y *SYeagi) Run(ctx context.Context) (code int64, err error) {
-	filename := filepath.Join(os.TempDir(), ksuid.New().String())
-	defer func(path string) {
-		_ = os.RemoveAll(path)
-	}(filename)
+	defer func() {
+		if _r := recover(); _r != nil {
+			code = common.CodeSystemErr
+			if err != nil {
+				err = fmt.Errorf("panic during execution %v %v", err, _r)
+				return
+			}
+			err = fmt.Errorf("panic during execution %v", _r)
+		}
+	}()
+
 	content, err := y.storage.Content()
 	if err != nil {
 		return common.CodeFailed, err
 	}
-	if err = os.WriteFile(filename, []byte(content), os.ModePerm); err != nil {
-		return common.CodeFailed, err
-	}
 
-	var params = map[string]string{}
+	var params = map[string]any{}
 	taskEnv := y.storage.GlobalEnv().List()
 	for _, v := range taskEnv {
 		params[v.Name] = v.Value
@@ -56,53 +56,61 @@ func (y *SYeagi) Run(ctx context.Context) (code int64, err error) {
 		params[v.Name] = v.Value
 	}
 
-	vm := interp.New(interp.Options{
-		Env: utils.MapToSlice(params),
+	if err = y.createVM(); err != nil {
+		return common.CodeSystemErr, err
+	}
+
+	_, err = y.interp.EvalWithContext(ctx, content)
+	if err != nil {
+		return common.CodeFailed, err
+	}
+
+	evalFnval, err := y.interp.EvalWithContext(ctx, "EvalCall")
+	if err != nil {
+		return common.CodeFailed, err
+	}
+	evalFn, ok := evalFnval.Interface().(func(map[string]any))
+	if !ok {
+		return common.CodeFailed, errors.New("not found EvalCall")
+	}
+	evalFn(params)
+	return common.CodeSuccess, nil
+}
+
+func (y *SYeagi) createVM() (err error) {
+	y.interp = interp.New(interp.Options{
+		Env: []string{
+			fmt.Sprintf("WORKSPACE=%s", y.workspace),
+		},
+		Stdout: y.output(),
+		Stderr: y.output(),
 	})
 
-	if err = vm.Use(stdlib.Symbols); err != nil {
-		return common.CodeFailed, fmt.Errorf("failed to load Go runtime: %v", err)
-	}
-	if err = vm.Use(stdlib.Symbols); err != nil {
-		return common.CodeFailed, fmt.Errorf("failed to load Go runtime: %v", err)
-	}
+	_ = y.interp.Use(stdlib.Symbols)
+	_ = y.interp.Use(unsafe.Symbols)
+	_ = y.interp.Use(syscall.Symbols)
+	_ = y.interp.Use(unrestricted.Symbols)
+	_ = y.interp.Use(interp.Symbols)
 
-	if err = vm.Use(unsafe.Symbols); err != nil {
-		return common.CodeFailed, fmt.Errorf("failed to load Go runtime: %v", err)
-	}
-
-	if err = vm.Use(syscall.Symbols); err != nil {
-		return common.CodeFailed, fmt.Errorf("failed to load Go runtime: %v", err)
-	}
-
-	if err = vm.Use(unrestricted.Symbols); err != nil {
-		return common.CodeFailed, fmt.Errorf("failed to load Go runtime: %v", err)
-	}
-
-	if err = vm.Use(interp.Symbols); err != nil {
-		return common.CodeFailed, fmt.Errorf("failed to load Go runtime: %v", err)
-	}
-	defer func() {
-		if _r := recover(); _r != nil {
-			if err != nil {
-				err = fmt.Errorf("panic during execution %v %v", err, _r)
-				return
-			}
-			err = fmt.Errorf("panic during execution %v", _r)
-		}
-	}()
-	prog, err := vm.CompilePath(filename)
-	if err != nil {
-		return common.CodeFailed, err
-	}
-	_, err = vm.ExecuteWithContext(ctx, prog)
-	if err != nil {
-		return common.CodeFailed, err
-	}
-
-	return common.CodeSuccess, nil
+	return
 }
 
 func (y *SYeagi) Clear() error {
 	return nil
+}
+
+type sYeagiOutput struct {
+	storage storage.IStep
+}
+
+func (s *sYeagiOutput) Write(p []byte) (n int, err error) {
+	n = len(p)
+	s.storage.Log().Write(string(p))
+	return
+}
+
+func (y *SYeagi) output() io.Writer {
+	return &sYeagiOutput{
+		storage: y.storage,
+	}
 }

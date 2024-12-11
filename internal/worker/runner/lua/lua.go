@@ -31,6 +31,17 @@ func (l *SLua) Clear() error {
 }
 
 func (l *SLua) Run(ctx context.Context) (code int64, err error) {
+	defer func() {
+		if _r := recover(); _r != nil {
+			code = common.CodeSystemErr
+			if err != nil {
+				err = fmt.Errorf("panic during execution %v %v", err, _r)
+				return
+			}
+			err = fmt.Errorf("panic during execution %v", _r)
+		}
+	}()
+
 	content, err := l.storage.Content()
 	if err != nil {
 		return common.CodeSystemErr, err
@@ -56,12 +67,12 @@ func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 	if err != nil {
 		return common.CodeSystemErr, err
 	}
-	mainFn := L.GetGlobal("Main")
-	if mainFn.Type() != lua.LTFunction {
-		return common.CodeSystemErr, errors.New("main function not found")
+	evalFn := L.GetGlobal("EvalCall")
+	if evalFn.Type() != lua.LTFunction {
+		return common.CodeSystemErr, errors.New("EvalCall function not found")
 	}
 	if err = L.CallByParam(lua.P{
-		Fn: mainFn,
+		Fn: evalFn,
 	}, luar.New(L, params)); err != nil {
 		return common.CodeSystemErr, err
 	}
