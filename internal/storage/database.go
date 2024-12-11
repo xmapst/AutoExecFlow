@@ -41,14 +41,15 @@ func newDB(rawURL string) (*sDatabase, error) {
 			NoLowerCase:         false,
 			IdentifierMaxLength: 256,
 		},
-		FullSaveAssociations: true,
 		Logger: logger.New(logx.GetSubLogger(), logger.Config{
 			SlowThreshold:             200 * time.Millisecond,
 			Colorful:                  false,
 			IgnoreRecordNotFoundError: true,
-			LogLevel:                  logger.Info,
+			LogLevel:                  logger.Warn,
 		}),
-		TranslateError: true,
+		SkipDefaultTransaction: true,
+		FullSaveAssociations:   true,
+		TranslateError:         true,
 	}
 	gdb, err := gorm.Open(dialector, config)
 	if err != nil {
