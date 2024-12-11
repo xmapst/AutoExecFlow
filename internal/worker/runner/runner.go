@@ -10,7 +10,9 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/lua"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/mkdir"
+	"github.com/xmapst/AutoExecFlow/internal/worker/runner/starlark"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/touch"
+	"github.com/xmapst/AutoExecFlow/internal/worker/runner/yeagi"
 )
 
 func New(
@@ -34,6 +36,10 @@ func New(
 		return touch.New(storage, workspace)
 	case strings.EqualFold(commandType, "lua"):
 		return lua.New(storage, workspace)
+	case strings.EqualFold(commandType, "star"):
+		return starlark.New(storage, workspace)
+	case strings.EqualFold(commandType, "yeagi"):
+		return yeagi.New(storage, workspace, scriptDir)
 	default:
 		return exec.New(storage, commandType, workspace, scriptDir)
 	}

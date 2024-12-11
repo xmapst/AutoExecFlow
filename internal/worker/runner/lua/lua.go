@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
 
@@ -13,12 +14,14 @@ import (
 )
 
 type SLua struct {
-	storage storage.IStep
+	storage   storage.IStep
+	workspace string
 }
 
 func New(storage storage.IStep, workspace string) (*SLua, error) {
 	l := &SLua{
-		storage: storage,
+		storage:   storage,
+		workspace: workspace,
 	}
 	return l, nil
 }
@@ -47,10 +50,19 @@ func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 	for _, v := range stepEnv {
 		params[v.Name] = v.Value
 	}
-	L.SetGlobal("Env", luar.New(L, params))
+	L.SetGlobal("workspace", luar.New(L, l.workspace))
 
 	err = L.DoString(content)
 	if err != nil {
+		return common.CodeSystemErr, err
+	}
+	mainFn := L.GetGlobal("Main")
+	if mainFn.Type() != lua.LTFunction {
+		return common.CodeSystemErr, errors.New("main function not found")
+	}
+	if err = L.CallByParam(lua.P{
+		Fn: mainFn,
+	}, luar.New(L, params)); err != nil {
 		return common.CodeSystemErr, err
 	}
 	return common.CodeSuccess, nil
