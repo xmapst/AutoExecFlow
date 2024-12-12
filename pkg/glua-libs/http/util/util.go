@@ -17,13 +17,13 @@ func QueryEscape(L *lua.LState) int {
 // QueryUnescape lua http.query_unescape(string) returns unescaped (string, error)
 func QueryUnescape(L *lua.LState) int {
 	query := L.CheckString(1)
-	url, err := url.QueryUnescape(query)
+	_url, err := url.QueryUnescape(query)
 	if err != nil {
 		L.Push(lua.LNil)
 		L.Push(lua.LString(err.Error()))
 		return 2
 	}
-	L.Push(lua.LString(url))
+	L.Push(lua.LString(_url))
 	return 1
 }
 
@@ -114,9 +114,9 @@ func BuildURL(L *lua.LState) int {
 			values := make(url.Values, 0)
 			if value, ok := v.(*lua.LTable); ok {
 				value.ForEach(func(k lua.LValue, v lua.LValue) {
-					if value, ok := v.(*lua.LTable); ok {
-						queryValues := []string{}
-						value.ForEach(func(k lua.LValue, v lua.LValue) {
+					if _value, _ok := v.(*lua.LTable); _ok {
+						var queryValues []string
+						_value.ForEach(func(k lua.LValue, v lua.LValue) {
 							queryValues = append(queryValues, v.String())
 						})
 						values[k.String()] = queryValues

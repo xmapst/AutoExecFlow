@@ -17,9 +17,9 @@ func Preload(L *lua.LState) {
 // Loader is the module loader function.
 func Loader(L *lua.LState) int {
 
-	http_server_response_writer_ud := L.NewTypeMetatable(`http_server_response_writer_ud`)
-	L.SetGlobal(`http_server_response_writer_ud`, http_server_response_writer_ud)
-	L.SetField(http_server_response_writer_ud, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+	httpServerResponseWriterUd := L.NewTypeMetatable(`http_server_response_writer_ud`)
+	L.SetGlobal(`http_server_response_writer_ud`, httpServerResponseWriterUd)
+	L.SetField(httpServerResponseWriterUd, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"code":     HeaderCode,
 		"header":   Header,
 		"write":    Write,
@@ -27,9 +27,9 @@ func Loader(L *lua.LState) int {
 		"done":     Done,
 	}))
 
-	http_server_ud := L.NewTypeMetatable(`http_server_ud`)
-	L.SetGlobal(`http_server_ud`, http_server_ud)
-	L.SetField(http_server_ud, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+	httpServerUd := L.NewTypeMetatable(`http_server_ud`)
+	L.SetGlobal(`http_server_ud`, httpServerUd)
+	L.SetField(httpServerUd, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"accept":             Accept,
 		"addr":               Addr,
 		"do_handle_file":     HandleFile,

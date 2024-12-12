@@ -63,7 +63,7 @@ func Start(L *lua.LState) int {
 		<-pp.stop
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		h.Shutdown(ctx)
+		_ = h.Shutdown(ctx)
 	}()
 	return 0
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -82,7 +81,9 @@ func NewFileRequest(L *lua.LState) int {
 		if err != nil {
 			return
 		}
-		defer file.Close()
+		defer func(file *os.File) {
+			_ = file.Close()
+		}(file)
 		_, err = io.Copy(part, file)
 		return
 	}
@@ -166,7 +167,9 @@ func DoRequest(L *lua.LState) int {
 		L.Push(lua.LString(err.Error()))
 		return 2
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
 	headers := L.NewTable()
 	for k, v := range response.Header {
 		if len(v) > 0 {
@@ -174,7 +177,7 @@ func DoRequest(L *lua.LState) int {
 		}
 	}
 
-	data, err := ioutil.ReadAll(response.Body)
+	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		L.Push(lua.LNil)
 		L.Push(lua.LString(err.Error()))

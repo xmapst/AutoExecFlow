@@ -78,6 +78,7 @@ func (s *luaServer) serve(L *lua.LState) {
 				_ = s.Listener.Close()
 			}
 		}
+		close(s.serveData)
 	}(s)
 }
 
@@ -163,7 +164,10 @@ func New(L *lua.LState) int {
 func Accept(L *lua.LState) int {
 	s := checkServer(L, 1)
 	select {
-	case data := <-s.serveData:
+	case data, ok := <-s.serveData:
+		if !ok {
+			return 0
+		}
 		L.Push(NewRequest(L, data.req))
 		L.Push(NewWriter(L, data.w, data.req, data.done))
 		return 2
@@ -229,7 +233,10 @@ func HandleFile(L *lua.LState) int {
 	file := L.CheckString(2)
 	for {
 		select {
-		case data := <-s.serveData:
+		case data, ok := <-s.serveData:
+			if !ok {
+				return 0
+			}
 			go func(sData *serveData, filename string) {
 				state := newHandlerState(data)
 				defer state.Close()
@@ -250,7 +257,10 @@ func HandleString(L *lua.LState) int {
 	body := L.CheckString(2)
 	for {
 		select {
-		case data := <-s.serveData:
+		case data, ok := <-s.serveData:
+			if !ok {
+				return 0
+			}
 			go func(sData *serveData, content string) {
 				state := newHandlerState(sData)
 				defer state.Close()
@@ -281,7 +291,10 @@ func HandleFunction(L *lua.LState) int {
 
 	for {
 		select {
-		case data := <-s.serveData:
+		case data, ok := <-s.serveData:
+			if !ok {
+				return 0
+			}
 			go func(sData *serveData) {
 				state := newHandlerState(sData)
 				defer state.Close()

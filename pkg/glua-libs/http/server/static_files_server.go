@@ -26,7 +26,7 @@ func ServeStaticFiles(L *lua.LState) int {
 		if ctx != nil {
 			select {
 			case <-ctx.Done():
-				l.Close()
+				_ = l.Close()
 			}
 		}
 	}(L, listener)

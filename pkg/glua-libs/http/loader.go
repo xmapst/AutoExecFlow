@@ -24,22 +24,22 @@ func Preload(L *lua.LState) {
 // Loader is the module loader function.
 func Loader(L *lua.LState) int {
 
-	http_client_ud := L.NewTypeMetatable(`http_client_ud`)
-	L.SetGlobal(`http_client_ud`, http_client_ud)
-	L.SetField(http_client_ud, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+	httpClientUd := L.NewTypeMetatable(`http_client_ud`)
+	L.SetGlobal(`http_client_ud`, httpClientUd)
+	L.SetField(httpClientUd, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"do_request": client.DoRequest,
 	}))
 
-	http_request_ud := L.NewTypeMetatable(`http_request_ud`)
-	L.SetGlobal(`http_request_ud`, http_request_ud)
-	L.SetField(http_request_ud, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+	httpRequestUd := L.NewTypeMetatable(`http_request_ud`)
+	L.SetGlobal(`http_request_ud`, httpRequestUd)
+	L.SetField(httpRequestUd, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"set_basic_auth": client.SetBasicAuth,
 		"header_set":     client.HeaderSet,
 	}))
 
-	http_server_response_writer_ud := L.NewTypeMetatable(`http_server_response_writer_ud`)
-	L.SetGlobal(`http_server_response_writer_ud`, http_server_response_writer_ud)
-	L.SetField(http_server_response_writer_ud, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+	httpServerResponseWriterUd := L.NewTypeMetatable(`http_server_response_writer_ud`)
+	L.SetGlobal(`http_server_response_writer_ud`, httpServerResponseWriterUd)
+	L.SetField(httpServerResponseWriterUd, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"code":     server.HeaderCode,
 		"header":   server.Header,
 		"write":    server.Write,
@@ -47,9 +47,9 @@ func Loader(L *lua.LState) int {
 		"done":     server.Done,
 	}))
 
-	http_server_ud := L.NewTypeMetatable(`http_server_ud`)
-	L.SetGlobal(`http_server_ud`, http_server_ud)
-	L.SetField(http_server_ud, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+	httpServerUd := L.NewTypeMetatable(`http_server_ud`)
+	L.SetGlobal(`http_server_ud`, httpServerUd)
+	L.SetField(httpServerUd, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"accept":             server.Accept,
 		"addr":               server.Addr,
 		"do_handle_file":     server.HandleFile,

@@ -48,6 +48,13 @@ func Exec(L *lua.LState) int {
 		done <- cmd.Wait()
 	}()
 
+	ctx := L.Context()
+	if ctx != nil {
+		<-ctx.Done()
+		_ = cmd.Process.Kill()
+		done <- ctx.Err()
+	}
+
 	select {
 	case <-time.After(timeout):
 		go cmd.Process.Kill()

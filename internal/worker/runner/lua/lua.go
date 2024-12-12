@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"strings"
 
 	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
@@ -12,7 +13,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	glualibs "github.com/xmapst/AutoExecFlow/pkg/glua-libs"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type SLua struct {
@@ -41,13 +41,14 @@ func (l *SLua) Clear() error {
 func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
 		if _r := recover(); _r != nil {
-			stack := debug.Stack()
+			err = fmt.Errorf("panic during execution %v", _r)
 			code = common.CodeSystemErr
-			if err != nil {
-				err = fmt.Errorf("panic during execution %v %v", err, _r)
-				return
+			stack := debug.Stack()
+			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
+				code = common.CodeKilled
+				err = common.ErrManual
 			}
-			err = fmt.Errorf("panic during execution %v %s", _r, stack)
+			l.storage.Log().Write(err.Error(), string(stack))
 		}
 	}()
 
@@ -67,47 +68,20 @@ func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 		params[v.Name] = v.Value
 	}
 	l.lua.SetGlobal("workspace", luar.New(l.lua, l.workspace))
-	var done = make(chan error, 1)
-	defer close(done)
-	go func() {
-		defer func() {
-			if _r := recover(); _r != nil {
-				stack := debug.Stack()
-				logx.Errorln(_r, string(stack))
-				done <- errors.New("panic during execution")
-			}
-		}()
-
-		_err := l.lua.DoString(content)
-		if err != nil {
-			done <- _err
-			return
-		}
-		evalFn := l.lua.GetGlobal("EvalCall")
-		if evalFn.Type() != lua.LTFunction {
-			done <- errors.New("EvalCall function not found")
-			return
-		}
-		if _err = l.lua.CallByParam(lua.P{
-			Fn: evalFn,
-		}, luar.New(l.lua, params)); _err != nil {
-			done <- _err
-			return
-		}
-		done <- nil
-	}()
-
-	select {
-	case err = <-done:
-		if err != nil {
-			l.storage.Log().Writef("[ERROR] %v", err)
-			return common.CodeFailed, err
-		}
-		return common.CodeSuccess, nil
-	case <-ctx.Done():
-		l.lua.Close()
-		return common.CodeFailed, errors.New("has been killed")
+	err = l.lua.DoString(content)
+	if err != nil {
+		return common.CodeFailed, err
 	}
+	evalFn := l.lua.GetGlobal("EvalCall")
+	if evalFn.Type() != lua.LTFunction {
+		return common.CodeFailed, errors.New("EvalCall function not found")
+	}
+	if err = l.lua.CallByParam(lua.P{
+		Fn: evalFn,
+	}, luar.New(l.lua, params)); err != nil {
+		return common.CodeFailed, err
+	}
+	return common.CodeSuccess, nil
 }
 
 func (l *SLua) newLuaState() {

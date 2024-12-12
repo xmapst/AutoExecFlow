@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -165,7 +164,7 @@ func New(L *lua.LState) int {
 			// parse root_cas
 			case `root_cas_pem_file`:
 				if value, ok := v.(lua.LString); ok {
-					pemData, err := ioutil.ReadFile(string(value))
+					pemData, err := os.ReadFile(string(value))
 					if err != nil {
 						L.RaiseError("error loading root_cas_pem_file from %s: %v", value, err)
 					}
@@ -208,12 +207,12 @@ func New(L *lua.LState) int {
 			// parse headers
 			case `headers`:
 				if tbl, ok := v.(*lua.LTable); ok {
-					headers := make(map[string]string, 0)
+					headers := make(map[string]string)
 					data, err := luajson.ValueEncode(tbl)
 					if err != nil {
 						L.ArgError(1, "headers must be table of key-values string")
 					}
-					if err := json.Unmarshal(data, &headers); err != nil {
+					if err = json.Unmarshal(data, &headers); err != nil {
 						L.ArgError(1, "headers must be table of key-values string")
 					}
 					client.headers = headers

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/qri-io/starlib"
@@ -44,13 +45,14 @@ func (s *SStarLark) Run(ctx context.Context) (code int64, err error) {
 	s.thread.SetLocal("star_ctx", ctx)
 	defer func() {
 		if _r := recover(); _r != nil {
-			stack := debug.Stack()
+			err = fmt.Errorf("panic during execution %v", _r)
 			code = common.CodeSystemErr
-			if err != nil {
-				err = fmt.Errorf("panic during execution %v %v", err, _r)
-				return
+			stack := debug.Stack()
+			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
+				code = common.CodeKilled
+				err = common.ErrManual
 			}
-			err = fmt.Errorf("panic during execution %v %s", _r, string(stack))
+			s.storage.Log().Write(err.Error(), string(stack))
 		}
 	}()
 

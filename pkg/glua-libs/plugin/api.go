@@ -246,7 +246,10 @@ func Wait(L *lua.LState) int {
 		L.RaiseError("cannot wait on unstarted plugin")
 	}
 	// Add timeout if requested
-	ctx := context.Background()
+	ctx := L.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	cancel := func() {}
 	timeout := lua.LVAsNumber(L.Get(2))
 	if timeout > 0 {

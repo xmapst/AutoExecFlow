@@ -1,7 +1,7 @@
 package http
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	lua "github.com/yuin/gopher-lua"
@@ -11,7 +11,7 @@ import (
 func NewRequest(L *lua.LState, req *http.Request) *lua.LTable {
 	luaRequest := L.NewTable()
 	bodyReader := L.NewFunction(func(L *lua.LState) int {
-		data, err := ioutil.ReadAll(req.Body)
+		data, err := io.ReadAll(req.Body)
 		if err != nil {
 			L.Push(lua.LNil)
 			L.Push(lua.LString(err.Error()))
