@@ -35,10 +35,12 @@ func New(storage storage.IStep, workspace string) (*SStarLark, error) {
 			s.storage.Log().Write(msg)
 		},
 	}
+	s.thread.SetLocal("storage", s.storage)
 	return s, nil
 }
 
 func (s *SStarLark) Run(ctx context.Context) (code int64, err error) {
+	s.thread.SetLocal("star_ctx", ctx)
 	defer func() {
 		if _r := recover(); _r != nil {
 			code = common.CodeSystemErr
@@ -55,8 +57,16 @@ func (s *SStarLark) Run(ctx context.Context) (code int64, err error) {
 		return common.CodeFailed, err
 	}
 
-	evalFnVal, err := starlark.ExecFileOptions(syntax.LegacyFileOptions(), s.thread, s.name+".star", content, starlark.StringDict{
-		"workspace": starlark.String(s.workspace),
+	evalFnVal, err := starlark.ExecFileOptions(&syntax.FileOptions{
+		Set:             true,
+		While:           true,
+		TopLevelControl: true,
+		GlobalReassign:  true,
+		Recursion:       true,
+	}, s.thread, s.name+".star", content, starlark.StringDict{
+		"workspace":  starlark.String(s.workspace),
+		"read_file":  starlark.NewBuiltin("read_file", s.readFile),
+		"write_file": starlark.NewBuiltin("write_file", s.writeFile),
 	})
 	if err != nil {
 		return common.CodeFailed, err
@@ -85,6 +95,6 @@ func (s *SStarLark) getParam() *starlark.Dict {
 	return paramDict
 }
 func (s *SStarLark) Clear() error {
-	s.thread.Cancel("cancel")
+	s.thread.Cancel("user interrupt")
 	return nil
 }
