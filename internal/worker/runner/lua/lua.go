@@ -3,6 +3,7 @@ package lua
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
@@ -11,9 +12,11 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	glualibs "github.com/xmapst/AutoExecFlow/pkg/glua-libs"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type SLua struct {
+	lua       *lua.LState
 	storage   storage.IStep
 	workspace string
 }
@@ -23,22 +26,28 @@ func New(storage storage.IStep, workspace string) (*SLua, error) {
 		storage:   storage,
 		workspace: workspace,
 	}
+	l.newLuaState()
 	return l, nil
 }
 
 func (l *SLua) Clear() error {
+	if l.lua.IsClosed() {
+		return nil
+	}
+	l.lua.Close()
 	return nil
 }
 
 func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
 		if _r := recover(); _r != nil {
+			stack := debug.Stack()
 			code = common.CodeSystemErr
 			if err != nil {
 				err = fmt.Errorf("panic during execution %v %v", err, _r)
 				return
 			}
-			err = fmt.Errorf("panic during execution %v", _r)
+			err = fmt.Errorf("panic during execution %v %s", _r, stack)
 		}
 	}()
 
@@ -47,11 +56,7 @@ func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 		return common.CodeSystemErr, err
 	}
 
-	L := l.newLuaState(nil)
-	defer L.Close()
-
-	L.SetContext(ctx)
-
+	l.lua.SetContext(ctx)
 	var params = map[string]any{}
 	taskEnv := l.storage.GlobalEnv().List()
 	for _, v := range taskEnv {
@@ -61,63 +66,84 @@ func (l *SLua) Run(ctx context.Context) (code int64, err error) {
 	for _, v := range stepEnv {
 		params[v.Name] = v.Value
 	}
-	L.SetGlobal("workspace", luar.New(L, l.workspace))
+	l.lua.SetGlobal("workspace", luar.New(l.lua, l.workspace))
+	var done = make(chan error, 1)
+	defer close(done)
+	go func() {
+		defer func() {
+			if _r := recover(); _r != nil {
+				stack := debug.Stack()
+				logx.Errorln(_r, string(stack))
+				done <- errors.New("panic during execution")
+			}
+		}()
 
-	err = L.DoString(content)
-	if err != nil {
-		return common.CodeSystemErr, err
+		_err := l.lua.DoString(content)
+		if err != nil {
+			done <- _err
+			return
+		}
+		evalFn := l.lua.GetGlobal("EvalCall")
+		if evalFn.Type() != lua.LTFunction {
+			done <- errors.New("EvalCall function not found")
+			return
+		}
+		if _err = l.lua.CallByParam(lua.P{
+			Fn: evalFn,
+		}, luar.New(l.lua, params)); _err != nil {
+			done <- _err
+			return
+		}
+		done <- nil
+	}()
+
+	select {
+	case err = <-done:
+		if err != nil {
+			l.storage.Log().Writef("[ERROR] %v", err)
+			return common.CodeFailed, err
+		}
+		return common.CodeSuccess, nil
+	case <-ctx.Done():
+		l.lua.Close()
+		return common.CodeFailed, errors.New("has been killed")
 	}
-	evalFn := L.GetGlobal("EvalCall")
-	if evalFn.Type() != lua.LTFunction {
-		return common.CodeSystemErr, errors.New("EvalCall function not found")
-	}
-	if err = L.CallByParam(lua.P{
-		Fn: evalFn,
-	}, luar.New(L, params)); err != nil {
-		return common.CodeSystemErr, err
-	}
-	return common.CodeSuccess, nil
 }
 
-func (l *SLua) newLuaState(globals map[string]interface{}) *lua.LState {
-	L := lua.NewState(lua.Options{IncludeGoStackTrace: true})
+func (l *SLua) newLuaState() {
+	l.lua = lua.NewState(lua.Options{IncludeGoStackTrace: true})
 
 	// load module
-	glualibs.Preload(L)
+	glualibs.Preload(l.lua)
 
 	// 默认通用Global符号
-	L.SetGlobal("debugf", luar.New(L, func(format string, args ...any) {
+	l.lua.SetGlobal("debugf", luar.New(l.lua, func(format string, args ...any) {
 		l.outPrintf(fmt.Sprintf("[DEBUG] %s", format), args...)
 	}))
-	L.SetGlobal("debug", luar.New(L, func(args ...any) {
+	l.lua.SetGlobal("debug", luar.New(l.lua, func(args ...any) {
 		l.outPrintf(fmt.Sprintf("[DEBUG] %s", args...))
 	}))
-	L.SetGlobal("infof", luar.New(L, func(format string, args ...any) {
+	l.lua.SetGlobal("infof", luar.New(l.lua, func(format string, args ...any) {
 		l.outPrintf(fmt.Sprintf("[INFO] %s", format), args...)
 	}))
-	L.SetGlobal("info", luar.New(L, func(args ...any) {
+	l.lua.SetGlobal("info", luar.New(l.lua, func(args ...any) {
 		l.outPrintf(fmt.Sprintf("[INFO] %s", args...))
 	}))
-	L.SetGlobal("warnf", luar.New(L, func(format string, args ...any) {
+	l.lua.SetGlobal("warnf", luar.New(l.lua, func(format string, args ...any) {
 		l.outPrintf(fmt.Sprintf("[WARN] %s", format), args...)
 	}))
-	L.SetGlobal("warn", luar.New(L, func(args ...any) {
+	l.lua.SetGlobal("warn", luar.New(l.lua, func(args ...any) {
 		l.outPrintf(fmt.Sprintf("[WARN] %s", args...))
 	}))
-	L.SetGlobal("errorf", luar.New(L, func(format string, args ...any) {
+	l.lua.SetGlobal("errorf", luar.New(l.lua, func(format string, args ...any) {
 		l.outPrintf(fmt.Sprintf("[ERROR] %s", format), args...)
 	}))
-	L.SetGlobal("error", luar.New(L, func(args ...any) {
+	l.lua.SetGlobal("error", luar.New(l.lua, func(args ...any) {
 		l.outPrintf(fmt.Sprintf("[ERROR] %s", args...))
 	}))
-	L.SetGlobal("printf", luar.New(L, l.outPrintf))
-	L.SetGlobal("print", luar.New(L, l.outPrint))
+	l.lua.SetGlobal("printf", luar.New(l.lua, l.outPrintf))
+	l.lua.SetGlobal("print", luar.New(l.lua, l.outPrint))
 
-	for k, v := range globals {
-		L.SetGlobal(k, luar.New(L, v))
-	}
-
-	return L
 }
 
 func (l *SLua) outPrintf(format string, args ...any) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -86,7 +87,8 @@ func (c *SCmd) Clear() error {
 func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
 		if _err := recover(); _err != nil {
-			err = fmt.Errorf("%v", _err)
+			stack := debug.Stack()
+			err = fmt.Errorf("%v\n%s", _err, string(stack))
 		}
 	}()
 

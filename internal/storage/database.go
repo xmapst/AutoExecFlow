@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -137,6 +138,8 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 	tx := d.Begin()
 	defer func() {
 		if r := recover(); r != nil {
+			stack := debug.Stack()
+			logx.Errorln(r, string(stack))
 			tx.Rollback()
 		}
 	}()

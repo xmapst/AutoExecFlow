@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"runtime/debug"
 
 	"github.com/pkg/errors"
 	"github.com/traefik/yaegi/interp"
@@ -32,12 +33,13 @@ func New(storage storage.IStep, workspace string) (*SYeagi, error) {
 func (y *SYeagi) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
 		if _r := recover(); _r != nil {
+			stack := debug.Stack()
 			code = common.CodeSystemErr
 			if err != nil {
 				err = fmt.Errorf("panic during execution %v %v", err, _r)
 				return
 			}
-			err = fmt.Errorf("panic during execution %v", _r)
+			err = fmt.Errorf("panic during execution %v %s", _r, string(stack))
 		}
 	}()
 
