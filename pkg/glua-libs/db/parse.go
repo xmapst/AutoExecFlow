@@ -2,11 +2,12 @@ package db
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/lib/pq"
 	lua "github.com/yuin/gopher-lua"
+
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 func parseRows(sqlRows *sql.Rows, L *lua.LState) (*lua.LTable, *lua.LTable, error) {
@@ -64,7 +65,7 @@ func parseRows(sqlRows *sql.Rows, L *lua.LState) (*lua.LTable, *lua.LTable, erro
 			case nil:
 				luaRow.RawSetInt(i+1, lua.LNil)
 			default:
-				log.Printf("[ERROR] unknown type (value: `%#v`, converted: `%#v`)\n", value, converted)
+				logx.Errorf("unknown type (value: `%#v`, converted: `%#v`)\n", value, converted)
 				luaRow.RawSetInt(i+1, lua.LNil)
 			}
 		}

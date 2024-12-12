@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -16,6 +15,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 
 	luahttp "github.com/xmapst/AutoExecFlow/pkg/glua-libs/http/client/interface"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type luaBot struct {
@@ -65,7 +65,7 @@ func (b *luaBot) updateURLs() error {
 
 func (b *luaBot) sendRequest(method string, data interface{}) (rpcResponse, error) {
 	if b.debug {
-		log.Printf("[DEBUG] send request method: `%s` data: %#v\n", method, data)
+		logx.Debugf("send request method: `%s` data: %#v\n", method, data)
 	}
 	id := b.id
 	b.id = id + 1
@@ -78,7 +78,7 @@ func (b *luaBot) sendRequest(method string, data interface{}) (rpcResponse, erro
 		return rpcResponse{Error: zbxError{Code: -1, Data: err.Error()}}, err
 	}
 	if b.debug {
-		log.Printf("[DEBUG] send request body: %s\n", encoded)
+		logx.Debugf("send request body: %s\n", encoded)
 	}
 	httpRequest, err := http.NewRequest(`POST`, b.apiURL, bytes.NewBuffer(encoded))
 	if err != nil {

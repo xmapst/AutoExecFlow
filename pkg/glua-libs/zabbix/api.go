@@ -4,13 +4,13 @@ package zabbix
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 
 	lua "github.com/yuin/gopher-lua"
 
 	luahttp "github.com/xmapst/AutoExecFlow/pkg/glua-libs/http/client/interface"
 	luajson "github.com/xmapst/AutoExecFlow/pkg/glua-libs/json"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 // NewBot lua zabbix.bot(config table, http_ud.client) return zabbix_bot_ud
@@ -71,7 +71,7 @@ func NewBot(L *lua.LState) int {
 	L.SetMetatable(ud, L.GetTypeMetatable("zabbix_bot_ud"))
 	L.Push(ud)
 	if bot.debug {
-		log.Printf("[DEBUG] create zabbix bot: %#v\n", bot)
+		logx.Debugf("create zabbix bot: %#v\n", bot)
 	}
 	return 1
 }
@@ -147,7 +147,7 @@ func Request(L *lua.LState) int {
 		return 2
 	}
 	if b.debug {
-		log.Printf("[DEBUG] response body json: %s\n", byt)
+		logx.Debugf("response body json: %s\n", byt)
 	}
 	if isString {
 		L.Push(lua.LString(string(byt)))
@@ -155,7 +155,7 @@ func Request(L *lua.LState) int {
 	}
 	result, err := luajson.ValueDecode(L, byt)
 	if b.debug {
-		log.Printf("[DEBUG] response body lua: %s\n", result)
+		logx.Debugf("response body lua: %s\n", result)
 	}
 	if err != nil {
 		L.Push(lua.LNil)

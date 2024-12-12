@@ -4,7 +4,6 @@ package storage
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -13,6 +12,7 @@ import (
 
 	luajson "github.com/xmapst/AutoExecFlow/pkg/glua-libs/json"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/storage/drivers/interfaces"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 var listOfStorages = &listStorages{list: make(map[string]*Storage)}
@@ -114,11 +114,11 @@ func (s *Storage) loop() {
 	for {
 		time.Sleep(time.Minute)
 		if err := s.Sync(); err != nil {
-			log.Printf("[ERROR] scheduler for memory storage [%p-%s], sync save: %s\n", s, s.filename, err.Error())
+			logx.Errorf("scheduler for memory storage [%p-%s], sync save: %s\n", s, s.filename, err.Error())
 		} else {
 			if s.usageCounter == 0 {
 				listOfStorages.Lock()
-				log.Printf("[INFO] close unused memory storage [%p-%s]\n", s, s.filename)
+				logx.Errorf("[INFO] close unused memory storage [%p-%s]\n", s, s.filename)
 				delete(listOfStorages.list, s.filename)
 				listOfStorages.Unlock()
 				return

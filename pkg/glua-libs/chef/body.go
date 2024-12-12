@@ -6,8 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
+
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 // luaBody wraps io.Reader and adds methods for calculating hashes and detecting content
@@ -37,7 +38,7 @@ func (body *luaBody) hash() (h string) {
 // hashStr returns the base64 encoded SHA1 sum of the toHash string
 func hashStr(toHash string) string {
 	h := sha1.New()
-	io.WriteString(h, toHash)
+	_, _ = io.WriteString(h, toHash)
 	hashed := base64.StdEncoding.EncodeToString(h.Sum(nil))
 	return hashed
 }
@@ -49,10 +50,10 @@ func (body *luaBody) buffer() *bytes.Buffer {
 		return &b
 	}
 
-	b.ReadFrom(body.Reader)
+	_, _ = b.ReadFrom(body.Reader)
 	_, err := body.Reader.(io.Seeker).Seek(0, 0)
 	if err != nil {
-		log.Fatal(err)
+		logx.Panicln(err)
 	}
 	return &b
 }

@@ -3,7 +3,6 @@ package http
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -36,6 +35,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/xmlpath"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/yaml"
 	"github.com/xmapst/AutoExecFlow/pkg/glua-libs/zabbix"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -46,6 +46,7 @@ type luaServer struct {
 	sync.Mutex
 	serveData chan *serveData
 	err       error
+	closed    bool
 }
 
 type serveData struct {
@@ -76,9 +77,10 @@ func (s *luaServer) serve(L *lua.LState) {
 			select {
 			case <-ctx.Done():
 				_ = s.Listener.Close()
+				close(s.serveData)
+				s.closed = true
 			}
 		}
-		close(s.serveData)
 	}(s)
 }
 
@@ -151,6 +153,7 @@ func New(L *lua.LState) int {
 	server := &luaServer{
 		Listener:  l,
 		serveData: make(chan *serveData, 1),
+		closed:    false,
 	}
 	server.serve(L)
 	ud := L.NewUserData()
@@ -241,9 +244,9 @@ func HandleFile(L *lua.LState) int {
 				state := newHandlerState(data)
 				defer state.Close()
 				if err := state.DoFile(filename); err != nil {
-					log.Printf("[ERROR] handle file %s: %s\n", filename, err.Error())
+					logx.Errorf("handle file %s: %s\n", filename, err.Error())
 					data.done <- true
-					log.Printf("[ERROR] closed connection\n")
+					logx.Errorf("closed connection\n")
 				}
 			}(data, file)
 
@@ -265,9 +268,9 @@ func HandleString(L *lua.LState) int {
 				state := newHandlerState(sData)
 				defer state.Close()
 				if err := state.DoString(content); err != nil {
-					log.Printf("[ERROR] handle: %s\n", err.Error())
+					logx.Errorf("handle: %s\n", err.Error())
 					data.done <- true
-					log.Printf("[ERROR] closed connection\n")
+					logx.Errorf("closed connection\n")
 				}
 			}(data, body)
 		}
@@ -309,9 +312,9 @@ func HandleFunction(L *lua.LState) int {
 					state.Push(arg)
 				}
 				if err := state.PCall(2+len(args), 0, nil); err != nil {
-					log.Printf("[ERROR] handle: %s\n", err.Error())
+					logx.Errorf("handle: %s\n", err.Error())
 					data.done <- true
-					log.Printf("[ERROR] closed connection\n")
+					logx.Errorf("closed connection\n")
 				}
 				state.Pop(state.GetTop())
 			}(data)
@@ -321,6 +324,9 @@ func HandleFunction(L *lua.LState) int {
 
 // ServeHTTP interface realisation
 func (s *luaServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if s.closed {
+		return
+	}
 	doneChan := make(chan bool)
 	data := &serveData{w: w, req: req, done: doneChan}
 	// send data for lua

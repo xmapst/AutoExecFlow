@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httputil"
@@ -15,6 +14,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 
 	luajson "github.com/xmapst/AutoExecFlow/pkg/glua-libs/json"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 const (
@@ -62,7 +62,7 @@ func (client *LuaClient) DoRequest(req *http.Request) (*http.Response, error) {
 	client.updateRequest(req)
 	if client.debug {
 		dump, _ := httputil.DumpRequestOut(req, true)
-		log.Printf("[DEBUG] send request:\n%s\n", dump)
+		logx.Debugf("send request:\n%s\n", dump)
 	}
 	return client.Do(req)
 }
