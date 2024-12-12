@@ -145,7 +145,7 @@ response:code(200) -- write header
 response:write(request.request_uri)
 response:done()
 
-]]
+]])
 ```
 
 #### Handle variant (multithreaded as function)
