@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 
 	"dario.cat/mergo"
@@ -24,7 +25,6 @@ import (
 	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
 	"github.com/yargevad/filepathx"
-	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
 )
 
@@ -834,7 +834,7 @@ func filterMerge(_ *exec.Evaluator, in *exec.Value, params *exec.VarArgs) *exec.
 	inputSimpleType := in.ToGoSimpleType(false)
 	withSimpleType := withValue.ToGoSimpleType(false)
 
-	modifiers := []func(*mergo.Config){}
+	var modifiers []func(*mergo.Config)
 
 	if override {
 		modifiers = append(modifiers, mergo.WithOverride)
