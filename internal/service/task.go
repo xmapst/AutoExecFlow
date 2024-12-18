@@ -342,15 +342,18 @@ func (ts *STaskService) Steps() (code types.Code, data types.SStepsRes, err erro
 	if err != nil {
 		return types.CodeNoData, nil, err
 	}
+
 	steps := db.StepList(storage.All)
 	if steps == nil {
 		return types.CodeNoData, nil, errors.New("steps not found")
 	}
 
+	// 用于分组和构建任务数据
 	var groups = make(map[models.State][]string)
+	taskMap := make(map[string]*types.SStepRes, len(steps))
 	for _, step := range steps {
 		groups[*step.State] = append(groups[*step.State], step.Name)
-		res := &types.SStepRes{
+		taskMap[step.Name] = &types.SStepRes{
 			Name:    step.Name,
 			State:   models.StateMap[*step.State],
 			Code:    *step.Code,
@@ -359,10 +362,42 @@ func (ts *STaskService) Steps() (code types.Code, data types.SStepsRes, err erro
 				Start: step.STimeStr(),
 				End:   step.ETimeStr(),
 			},
+			Depends: db.Step(step.Name).Depend().List(),
 		}
-		res.Depends = db.Step(step.Name).Depend().List()
-		data = append(data, res)
 	}
+
+	// 按深度排序
+	data = ts.sortTasksByDepth(taskMap)
+
+	// 生成任务的状态消息
 	task.Message = GenerateStateMessage(task.Message, groups)
+
 	return ConvertState(*task.State), data, errors.New(task.Message)
+}
+
+// 按深度排序
+func (ts *STaskService) sortTasksByDepth(taskMap map[string]*types.SStepRes) types.SStepsRes {
+	visited := make(map[string]bool)
+	sorted := make([]*types.SStepRes, 0, len(taskMap))
+
+	var visit func(name string)
+	visit = func(name string) {
+		if visited[name] {
+			return
+		}
+		visited[name] = true
+
+		if task, exists := taskMap[name]; exists {
+			for _, dep := range task.Depends {
+				visit(dep) // 递归访问依赖
+			}
+			sorted = append(sorted, task)
+		}
+	}
+
+	for name := range taskMap {
+		visit(name) // 遍历所有任务
+	}
+
+	return sorted
 }
