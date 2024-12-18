@@ -1,4 +1,4 @@
-package star_libs
+package starlibs
 
 import (
 	"go.starlark.net/starlark"

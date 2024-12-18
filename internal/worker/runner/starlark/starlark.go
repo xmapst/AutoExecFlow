@@ -14,7 +14,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
-	star_libs "github.com/xmapst/AutoExecFlow/pkg/star-libs"
+	starlibs "github.com/xmapst/AutoExecFlow/pkg/star-libs"
 )
 
 type SStarLark struct {
@@ -62,7 +62,7 @@ func (s *SStarLark) Run(ctx context.Context) (code int64, err error) {
 		return common.CodeFailed, err
 	}
 
-	var predeclared = star_libs.StarlarkPredeclared
+	var predeclared = starlibs.StarlarkPredeclared
 	predeclared["workspace"] = starlark.String(s.workspace)
 	predeclared["log"] = s.logModule()
 	evalFnVal, err := starlark.ExecFileOptions(&syntax.FileOptions{

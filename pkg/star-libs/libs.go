@@ -1,7 +1,8 @@
-package star_libs
+package starlibs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"runtime"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/go-cmd/cmd"
+	"github.com/qri-io/starlib/util"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarktest"
 
@@ -209,4 +211,26 @@ func convertDictToMap(dict *starlark.Dict) (map[string]string, error) {
 	}
 
 	return result, nil
+}
+
+func convertToMap(value starlark.Value) (map[string]any, error) {
+	switch value.(type) {
+	case starlark.NoneType:
+		value = starlark.String("{}")
+	case starlark.String, starlark.Mapping:
+	default:
+		return nil, fmt.Errorf("got %s, want string or mapping", value.Type())
+	}
+
+	data, err := util.Unmarshal(value)
+	if err != nil {
+		return nil, err
+	}
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	var dataM map[string]any
+	err = json.Unmarshal(bs, &dataM)
+	return dataM, err
 }
