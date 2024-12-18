@@ -89,6 +89,200 @@ make
 
 ## Request Example
 
+![](images/dag_exec.png)
+
+```text
+name: 测试
+desc: 这是一段任务描述
+async: true
+timeout: 2m
+env:
+  - name: GLOBAL_NAME
+    value: "全局变量"
+step:
+  - name: shell
+    desc: 执行shell脚本
+    timeout: 2m
+    env:
+      - name: Test
+        value: "test_env"
+    type: sh
+    content: |-
+      ping -c 4 1.1.1.1
+  - name: python
+    desc: 执行python脚本
+    timeout: 2m
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - shell
+    type: py3
+    content: |-
+      import subprocess
+      command = ["ping", "-c", "4", "1.1.1.1"]
+      try:
+          result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+          print("Ping 命令的输出：")
+          print(result.stdout)
+      except subprocess.CalledProcessError as e:
+          print("执行 ping 命令时发生错误：")
+          print(e.stderr)
+  - name: lua
+    desc: 执行lua脚本
+    timeout: 2m
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - shell
+    type: lua
+    content: |-
+      local cmd = require("cmd")
+      function EvalCall(params)
+        print(params)
+        local command = "ping -c 4 1.1.1.1"
+        local result, err = cmd.exec(command)
+        if err then
+          print("Error executing command:", err)
+          return
+        end
+        if not(result.status == 0) then
+          print("Ping failed with status:", result.status)
+          return
+        end
+        
+        print("Ping 命令的输出：")
+        print(result.stdout)
+      end
+  - name: star
+    desc: 执行starlark脚本
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - lua
+    type: star
+    content: |-
+      def EvalCall(params):
+        print(params)
+        cmd = "ping -c 4 1.1.1.1"
+        exit_code, stdout, stderr = exec_command(cmd)
+        if exit_code != 0:
+          print("Ping 命令执行失败 (退出码: %d)" % exit_code)
+          if stderr:
+            print("错误输出: %s" % stderr)
+          return
+        print("Ping 命令的输出：")
+        print(stdout)
+  - name: yaegi
+    desc: 执行yaegi脚本
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - python
+    type: yaegi
+    content: |-
+      import (
+        "fmt"
+        "os/exec"
+      )
+      func EvalCall(params map[string]interface{}) {
+        fmt.Println(params)
+        cmd := exec.Command("ping", "-c", "4", "1.1.1.1")
+        output, err := cmd.CombinedOutput()
+        if err != nil {
+          fmt.Println("执行 ping 命令时发生错误：", err)
+          return
+        }
+        fmt.Println("Ping 命令的输出：")
+        fmt.Println(string(output))
+      }
+  - name: 聚合测试
+    desc: 等待所有脚本执行完成
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - yaegi
+      - star
+    type: sh
+    content: |-
+      echo "done done"
+  - name: 测试lua-http
+    desc: 测试lua执行http获取内容
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - shell
+    type: lua
+    content: |-
+      local http = require("http")
+      local client = http.client()
+      function EvalCall(params)
+        local request = http.request("GET", "https://www.baidu.com")
+        local result, err = client:do_request(request)
+        if err then
+          error(err)
+          return
+        end
+        print(result)
+      end
+  - name: 多分支执行
+    desc: 测试多分支执行
+    env:
+      - name: Test
+        value: "test_env"
+    type: star
+    content: |-
+      load('http.star', 'http')
+      def EvalCall(params):
+        result = http.get("https://www.baidu.com")
+        if result.status_code != 200:
+          log.error(result.status_code)
+          return
+        print(result.body())
+  - name: 多分支执行2
+    desc: 测试多分支执行
+    env:
+      - name: Test
+        value: "test_env"
+    depends:
+      - 多分支执行
+    type: yaegi
+    content: |-
+      import (
+        "fmt"
+        "io"
+        "log"
+        "net/http"
+      )
+      func EvalCall(params map[string]interface{}) {
+        resp, err := http.Get("https://www.baidu.com")
+        if err != nil {
+          log.Fatalf("HTTP 请求失败: %v", err)
+          return
+        }
+        defer resp.Body.Close()
+        if resp.StatusCode != http.StatusOK {
+          log.Printf("HTTP 请求失败，状态码: %d", resp.StatusCode)
+          return
+        }
+        // 读取响应体
+        body, err := io.ReadAll(resp.Body)
+        if err != nil {
+        	log.Fatalf("读取响应体失败: %v", err)
+        	return
+        }
+        
+        // 打印响应内容
+        fmt.Println("HTTP 响应内容:")
+        fmt.Println(string(body))
+      }
+```
+
 ### Create a task
 
 ```shell
@@ -267,7 +461,14 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
   - 1004: pending
   - 1005: paused
 
+## Script language support
++ [bash/sh/ps1/bat/python2/python3](internal/worker/runner/exec/README.md)
++ [lua](internal/worker/runner/lua/README.md)
++ [starlark](internal/worker/runner/starlark/README.md)
++ [yaegi](internal/worker/runner/yaegi/README.md)
+
 ## Swagger API documentation
 [Swagger API documentation](https://github.com/xmapst/AutoExecFlow/blob/main/docs/swagger.yaml)
 
 ![](images/swagger.png)
+]()

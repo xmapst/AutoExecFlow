@@ -84,7 +84,7 @@ func fileWriter(path string) io.Writer {
 		LocalTime:  true, // use local time zone
 	}
 	c := cron.New()
-	_, _ = c.AddFunc("@daily", func() {
+	_, _ = c.AddFunc("59 23 * * *", func() {
 		_ = out.Rotate()
 	})
 	c.Start()

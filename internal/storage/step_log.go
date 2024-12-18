@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -53,10 +54,10 @@ func (l *sStepLog) Insert(log *models.SStepLog) error {
 	})
 }
 
-func (l *sStepLog) Write(content string) {
+func (l *sStepLog) Write(contents ...string) {
 	if err := l.Insert(&models.SStepLog{
 		Timestamp: time.Now().UnixNano(),
-		Content:   content,
+		Content:   strings.Join(contents, " "),
 	}); err != nil {
 		logx.Warnln(err)
 	}

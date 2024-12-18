@@ -9,7 +9,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/internal/utils/jinja"
+	"github.com/xmapst/AutoExecFlow/pkg/jinja"
 	"github.com/xmapst/AutoExecFlow/types"
 )
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -85,8 +86,15 @@ func (c *SCmd) Clear() error {
 
 func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 	defer func() {
-		if _err := recover(); _err != nil {
-			err = fmt.Errorf("%v", _err)
+		if _r := recover(); _r != nil {
+			err = fmt.Errorf("panic during execution %v", _r)
+			code = common.CodeSystemErr
+			stack := debug.Stack()
+			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
+				code = common.CodeKilled
+				err = common.ErrManual
+			}
+			c.storage.Log().Write(err.Error(), string(stack))
 		}
 	}()
 

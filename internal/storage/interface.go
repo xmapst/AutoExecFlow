@@ -110,7 +110,7 @@ type ILog interface {
 	List(latestLine *int64) (res models.SStepLogs)
 	// Insert 插入
 	Insert(log *models.SStepLog) (err error)
-	Write(content string)
+	Write(contents ...string)
 	Writef(format string, args ...interface{})
 	RemoveAll() (err error)
 }

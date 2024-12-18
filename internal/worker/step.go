@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/pkg/errors"
@@ -47,7 +48,8 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 		var res = new(models.SStepUpdate)
 		defer func() {
 			if _err := recover(); _err != nil {
-				logx.Errorln(_err)
+				stack := string(debug.Stack())
+				logx.Errorln(stack, _err)
 				res.Code = models.Pointer(common.CodeSystemErr)
 				res.Message = fmt.Sprint(_err)
 			}

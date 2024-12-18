@@ -3,7 +3,6 @@ package deploy
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -61,25 +60,20 @@ func (d *SDeployment) Update() error {
 			}
 			return err
 		}
-		for k, container := range result.Spec.Template.Spec.Containers {
-			image := strings.Split(container.Image, ":")
-			if len(image) != 2 {
-				continue
-			}
-			name, tag := image[0], image[1]
-			d.Storage.Log().Writef("%s/%s container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, d.GetImageTag())
-			result.Spec.Template.Spec.Containers[k].Image = fmt.Sprintf("%s:%s", name, d.GetImageTag())
-		}
+		d.UpdateContainersImage(result.Spec.Template.Spec.Containers, func(str string) {
+			d.Storage.Log().Write("update container image;", str)
+		})
+		d.UpdateEnvVariables(result.Spec.Template.Spec.Containers, func(str string) {
+			d.Storage.Log().Write("update container env;", str)
+		})
+
 		if d.IgnoreInitContainer == nil || !*d.IgnoreInitContainer {
-			for k, container := range result.Spec.Template.Spec.InitContainers {
-				image := strings.Split(container.Image, ":")
-				if len(image) != 2 {
-					continue
-				}
-				name, tag := image[0], image[1]
-				d.Storage.Log().Writef("%s/%s init container %s %s -> %s", result.Namespace, result.Name, container.Name, tag, d.GetImageTag())
-				result.Spec.Template.Spec.InitContainers[k].Image = fmt.Sprintf("%s:%s", name, d.GetImageTag())
-			}
+			d.UpdateContainersImage(result.Spec.Template.Spec.InitContainers, func(str string) {
+				d.Storage.Log().Write("update init container image;", str)
+			})
+			d.UpdateEnvVariables(result.Spec.Template.Spec.InitContainers, func(str string) {
+				d.Storage.Log().Write("update init container env;", str)
+			})
 		}
 
 		_, err = d.Client.Update(d.Context, result, metav1.UpdateOptions{})

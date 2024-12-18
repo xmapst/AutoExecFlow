@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,7 +14,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
-	_ "github.com/xmapst/AutoExecFlow/internal/worker/plugins"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
 	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
@@ -143,7 +143,10 @@ func (t *sTask) run() (err error) {
 
 	var res = new(models.STaskUpdate)
 	defer func() {
-		recover()
+		if _r := recover(); _r != nil {
+			stack := debug.Stack()
+			logx.Errorln(_r, string(stack))
+		}
 		// 清理
 		t.clearDir()
 		// 结束时间

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -41,15 +42,15 @@ func newDB(rawURL string) (*sDatabase, error) {
 			NoLowerCase:         false,
 			IdentifierMaxLength: 256,
 		},
-		FullSaveAssociations: true,
 		Logger: logger.New(logx.GetSubLogger(), logger.Config{
 			SlowThreshold:             200 * time.Millisecond,
 			Colorful:                  false,
 			IgnoreRecordNotFoundError: true,
-			LogLevel:                  logger.Error,
+			LogLevel:                  logger.Warn,
 		}),
-		TranslateError: true,
-		PrepareStmt:    true,
+		SkipDefaultTransaction: true,
+		FullSaveAssociations:   true,
+		TranslateError:         true,
 	}
 	gdb, err := gorm.Open(dialector, config)
 	if err != nil {
@@ -137,6 +138,8 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 	tx := d.Begin()
 	defer func() {
 		if r := recover(); r != nil {
+			stack := debug.Stack()
+			logx.Errorln(r, string(stack))
 			tx.Rollback()
 		}
 	}()
