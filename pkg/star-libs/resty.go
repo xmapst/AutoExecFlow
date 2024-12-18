@@ -86,7 +86,7 @@ func (r *sRestyModule) StringDict() starlark.StringDict {
 		"set_common_content_type": starlark.NewBuiltin("set_common_content_type", r.setContentType),
 		"set_common_query_params": starlark.NewBuiltin("set_common_query_params", r.setQueryParams),
 		"set_common_form_data":    starlark.NewBuiltin("set_common_form_data", r.setFormData),
-		"add_common_query_params": starlark.NewBuiltin("add_query_params", r.addQueryParams),
+		"add_common_query_params": starlark.NewBuiltin("add_common_query_params", r.addQueryParams),
 		"get":                     starlark.NewBuiltin("get", r.reqMethod("get")),
 		"post":                    starlark.NewBuiltin("post", r.reqMethod("post")),
 		"head":                    starlark.NewBuiltin("head", r.reqMethod("head")),
@@ -235,7 +235,7 @@ func (r *sRestyModule) setTlsFingerprint(thread *starlark.Thread, _ *starlark.Bu
 
 func (r *sRestyModule) setBasicAuth(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var username, password string
-	if err := starlark.UnpackArgs("set_basic_auth", args, kwargs, "username", &username, "password", &password); err != nil {
+	if err := starlark.UnpackArgs("set_common_basic_auth", args, kwargs, "username", &username, "password", &password); err != nil {
 		return nil, err
 	}
 	r.client.SetCommonBasicAuth(username, password)
@@ -244,7 +244,7 @@ func (r *sRestyModule) setBasicAuth(thread *starlark.Thread, _ *starlark.Builtin
 
 func (r *sRestyModule) setBearerAuth(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var token string
-	if err := starlark.UnpackArgs("set_proxy_auth", args, kwargs, "token", &token); err != nil {
+	if err := starlark.UnpackArgs("set_common_bearer_auth", args, kwargs, "token", &token); err != nil {
 		return nil, err
 	}
 	r.client.SetCommonBearerAuthToken(token)
@@ -253,7 +253,7 @@ func (r *sRestyModule) setBearerAuth(thread *starlark.Thread, _ *starlark.Builti
 
 func (r *sRestyModule) setDigestAuth(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var username, password string
-	if err := starlark.UnpackArgs("set_digest_auth", args, kwargs, "username", &username, "password", &password); err != nil {
+	if err := starlark.UnpackArgs("set_common_digest_auth", args, kwargs, "username", &username, "password", &password); err != nil {
 		return nil, err
 	}
 	r.client.SetCommonDigestAuth(username, password)
@@ -262,7 +262,7 @@ func (r *sRestyModule) setDigestAuth(thread *starlark.Thread, _ *starlark.Builti
 
 func (r *sRestyModule) setContentType(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var contentType string
-	if err := starlark.UnpackArgs("set_content_type", args, kwargs, "content_type", &contentType); err != nil {
+	if err := starlark.UnpackArgs("set_common_content_type", args, kwargs, "content_type", &contentType); err != nil {
 		return nil, err
 	}
 	r.client.SetCommonContentType(contentType)
@@ -271,7 +271,7 @@ func (r *sRestyModule) setContentType(thread *starlark.Thread, _ *starlark.Built
 
 func (r *sRestyModule) setQueryParams(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var queryParams = &starlark.Dict{}
-	if err := starlark.UnpackArgs("set_query_params", args, kwargs, "query_params", &queryParams); err != nil {
+	if err := starlark.UnpackArgs("set_common_query_params", args, kwargs, "query_params", &queryParams); err != nil {
 		return nil, err
 	}
 	_map, err := convertDictToMap(queryParams)
@@ -284,7 +284,7 @@ func (r *sRestyModule) setQueryParams(thread *starlark.Thread, _ *starlark.Built
 
 func (r *sRestyModule) setFormData(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var formData = &starlark.Dict{}
-	if err := starlark.UnpackArgs("set_form_data", args, kwargs, "form_data", &formData); err != nil {
+	if err := starlark.UnpackArgs("set_common_form_data", args, kwargs, "form_data", &formData); err != nil {
 		return nil, err
 	}
 	_map, err := convertDictToMap(formData)
@@ -298,7 +298,7 @@ func (r *sRestyModule) setFormData(thread *starlark.Thread, _ *starlark.Builtin,
 func (r *sRestyModule) addQueryParams(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var key starlark.String
 	var values starlark.Value
-	if err := starlark.UnpackArgs("add_query_params", args, kwargs, "key", &key, "values", &values); err != nil {
+	if err := starlark.UnpackArgs("add_common_query_params", args, kwargs, "key", &key, "values", &values); err != nil {
 		return nil, err
 	}
 	vals, err := asStringSlice(values)
@@ -399,7 +399,7 @@ func (r *sRequest) setBasicAuth(thread *starlark.Thread, _ *starlark.Builtin, ar
 
 func (r *sRequest) setBearerAuth(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var token string
-	if err := starlark.UnpackArgs("set_proxy_auth", args, kwargs, "token", &token); err != nil {
+	if err := starlark.UnpackArgs("set_bearer_auth", args, kwargs, "token", &token); err != nil {
 		return nil, err
 	}
 	r.client.SetBearerAuthToken(token)
@@ -519,8 +519,36 @@ func (r *sRequest) addQueryParams(thread *starlark.Thread, _ *starlark.Builtin, 
 func (r *sRequest) reqMethod(method string) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		var urlv starlark.String
-		if err := starlark.UnpackArgs(method, args, kwargs, "url", &urlv); err != nil {
+		var data starlark.Value
+		var headers = &starlark.Dict{}
+		var pathParams = &starlark.Dict{}
+		var queryParams = &starlark.Dict{}
+		if err := starlark.UnpackArgs(method, args, kwargs, "url", &urlv, "data?", &data, "headers?", &headers, "path_params?", &pathParams, "query_params?", &queryParams); err != nil {
 			return nil, err
+		}
+		if data != nil {
+			_, err := r.setBody(thread, nil, starlark.Tuple{data}, nil)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if headers != nil {
+			_, err := r.setHeaders(thread, nil, starlark.Tuple{headers}, nil)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if pathParams != nil {
+			_, err := r.setPathParams(thread, nil, starlark.Tuple{pathParams}, nil)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if queryParams != nil {
+			_, err := r.setQueryParams(thread, nil, starlark.Tuple{queryParams}, nil)
+			if err != nil {
+				return nil, err
+			}
 		}
 		rawurl, err := asString(urlv)
 		if err != nil {
