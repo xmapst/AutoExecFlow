@@ -9,18 +9,18 @@ import (
 )
 
 type SResource struct {
-	Kind                string `yaml:"Kind" json:"kind"`
-	Namespace           string `yaml:"Namespace" json:"namespace"`
-	Name                string `yaml:"Name" json:"name"`
-	Replicas            *int32 `yaml:"Replicas" json:"replicas"`
-	ImageTag            string `yaml:"ImageTag" json:"image_tag"`
-	IgnoreInitContainer *bool  `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
-	Env                 []Env  `yaml:"Env" json:"env"`
+	Kind                string `json:"kind"`
+	Namespace           string `json:"namespace"`
+	Name                string `json:"name"`
+	Replicas            *int32 `json:"replicas"`
+	ImageTag            string `json:"image_tag"`
+	IgnoreInitContainer *bool  `json:"ignoreInitContainer"`
+	Env                 []Env  `json:"env"`
 }
 
 type Env struct {
-	Containers []string `yaml:"Containers" json:"containers"`
-	Operator   Operator `yaml:"Operator" json:"operator"`
+	Containers []string `json:"containers"`
+	Operator   Operator `json:"operator"`
 	corev1.EnvVar
 }
 

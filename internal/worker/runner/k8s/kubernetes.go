@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"sync"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -18,20 +18,22 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
+	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type SKubectl struct {
-	kubeConf            *rest.Config
-	client              *kubernetes.Clientset
-	dynamicClient       *dynamic.DynamicClient
-	storage             storage.IStep
-	subCommand          string
-	workspace           string
-	Config              string             `json:"kube_config" yaml:"KubeConfig"`
-	Namespace           string             `json:"namespace" yaml:"Namespace"`
-	ImageTag            string             `json:"image_tag" yaml:"ImageTag"`
-	IgnoreInitContainer *bool              `json:"ignore_init_container" yaml:"IgnoreInitContainer"`
-	Resources           []*types.SResource `json:"resources" yaml:"Resources"`
+	kubeConf      *rest.Config
+	client        *kubernetes.Clientset
+	dynamicClient *dynamic.DynamicClient
+	storage       storage.IStep
+	subCommand    string
+	workspace     string
+
+	Config              string             `json:"kube_config"`
+	Namespace           string             `json:"namespace"`
+	ImageTag            string             `json:"image_tag"`
+	IgnoreInitContainer *bool              `json:"ignoreInitContainer"`
+	Resources           []*types.SResource `json:"resources"`
 }
 
 func New(storage storage.IStep, command, workspace string) (*SKubectl, error) {
@@ -42,15 +44,20 @@ func New(storage storage.IStep, command, workspace string) (*SKubectl, error) {
 	}, nil
 }
 
-func (k *SKubectl) init() error {
+func (k *SKubectl) init() (err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			logx.Errorln(string(debug.Stack()), r)
+			err = fmt.Errorf("panic: %s", r)
+		}
+	}()
 	content, err := k.storage.Content()
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal([]byte(content), k); err != nil {
-		if err = yaml.Unmarshal([]byte(content), k); err != nil {
-			return err
-		}
+	if err = yaml.Unmarshal([]byte(content), k); err != nil {
+		return err
 	}
 
 	if k.Config == "" {
@@ -101,10 +108,18 @@ func (k *SKubectl) init() error {
 			k.Resources[kk].IgnoreInitContainer = k.IgnoreInitContainer
 		}
 	}
-	return nil
+	return
 }
 
 func (k *SKubectl) Run(ctx context.Context) (code int64, err error) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			logx.Errorln(string(debug.Stack()), r)
+			err = fmt.Errorf("panic: %s", r)
+			code = common.CodeSystemErr
+		}
+	}()
 	timeout, err := k.storage.Timeout()
 	if err != nil {
 		return common.CodeSystemErr, err
