@@ -15,7 +15,7 @@ require (
 	github.com/expr-lang/expr v1.16.9
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/gzip v1.1.0
-	github.com/gin-contrib/pprof v1.5.1
+	github.com/gin-contrib/pprof v1.5.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-cmd/cmd v1.4.3
 	github.com/go-git/go-git/v5 v5.13.0
