@@ -3,10 +3,12 @@ package service
 import (
 	"fmt"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
+	"go.uber.org/multierr"
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
@@ -114,13 +116,20 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 		return err
 	}
 
+	// 使用并行的方式入库
+	var wg sync.WaitGroup
 	for _, step := range task.Step {
-		// save step
-		stepSvc := Step(task.Name, step.Name)
-		if err = stepSvc.Create(timeout, step); err != nil {
-			return err
-		}
+		wg.Add(1)
+		go func(step *types.SStepReq) {
+			defer wg.Done()
+			// save step
+			stepSvc := Step(task.Name, step.Name)
+			if _err := stepSvc.Create(timeout, step); _err != nil {
+				err = multierr.Append(err, fmt.Errorf("save step error: %s", _err))
+			}
+		}(step)
 	}
+	wg.Wait()
 	// 提交任务
 	return queues.PublishTask(task.Node, ts.name)
 }

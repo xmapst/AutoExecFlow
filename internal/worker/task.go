@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -26,6 +27,10 @@ type sTask struct {
 }
 
 func newTask(taskName string) (*sTask, error) {
+	sTime := time.Now()
+	defer func() {
+		logx.Debugln(taskName, "耗时", time.Since(sTime))
+	}()
 	t := &sTask{
 		storage:   storage.Task(taskName),
 		workspace: filepath.Join(config.App.WorkSpace(), taskName),
@@ -68,21 +73,43 @@ func newTask(taskName string) (*sTask, error) {
 	// 1. 创建顶点
 	var stepVertex = make(map[string]*dag.Vertex)
 	var steps = t.storage.StepNameList("")
+
+	// 缓存步骤信息
+	stepInfo := make(map[string]storage.IStep)
 	for _, sName := range steps {
-		// 跳过禁用的步骤
-		if t.storage.Step(sName).IsDisable() {
-			logx.Infoln("the step is disabled, no execution required", sName)
-			_ = t.storage.Step(sName).Update(&models.SStepUpdate{
-				Message:  "the step is disabled, no execution required",
-				State:    models.Pointer(models.StateStopped),
-				OldState: models.Pointer(models.StatePending),
-				STime:    models.Pointer(time.Now()),
-				ETime:    models.Pointer(time.Now()),
-			})
-			continue
-		}
-		stepVertex[sName] = dag.NewVertex(sName, newStep(t.storage.Step(sName), t.workspace, t.scriptDir))
+		stepInfo[sName] = t.storage.Step(sName)
 	}
+
+	// 使用并行的方式创建顶点
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for _, sName := range steps {
+		wg.Add(1)
+		go func(sName string) {
+			defer wg.Done()
+
+			step := stepInfo[sName]
+			if step.IsDisable() {
+				logx.Infoln("the step is disabled, no execution required", sName)
+				_ = step.Update(&models.SStepUpdate{
+					Message:  "the step is disabled, no execution required",
+					State:    models.Pointer(models.StateStopped),
+					OldState: models.Pointer(models.StatePending),
+					STime:    models.Pointer(time.Now()),
+					ETime:    models.Pointer(time.Now()),
+				})
+				return
+			}
+			vertex := dag.NewVertex(sName, newStep(step, t.workspace, t.scriptDir))
+
+			mu.Lock()
+			stepVertex[sName] = vertex
+			mu.Unlock()
+
+		}(sName)
+	}
+	wg.Wait()
+
 	if len(stepVertex) == 0 {
 		err = errors.New("no enabled steps")
 		return nil, err
@@ -102,17 +129,14 @@ func newTask(taskName string) (*sTask, error) {
 			logx.Errorln(t.name(), err)
 			return nil, err
 		}
-		err = vertex.WithDeps(func() []*dag.Vertex {
-			var stepFns []*dag.Vertex
-			for _, dep := range t.storage.Step(sName).Depend().List() {
-				_stepFn, _ok := stepVertex[dep]
-				if !_ok {
-					continue
-				}
+		deps := stepInfo[sName].Depend().List()
+		var stepFns []*dag.Vertex
+		for _, dep := range deps {
+			if _stepFn, _ok := stepVertex[dep]; _ok {
 				stepFns = append(stepFns, _stepFn)
 			}
-			return stepFns
-		}()...)
+		}
+		err = vertex.WithDeps(stepFns...)
 		if err != nil {
 			logx.Errorln(t.name(), err)
 			return nil, err

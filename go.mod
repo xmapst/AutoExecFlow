@@ -50,6 +50,7 @@ require (
 	github.com/yargevad/filepathx v1.0.0
 	github.com/yuin/gopher-lua v1.1.1
 	go.starlark.net v0.0.0-20241125201518-c05ff208a98f
+	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.31.0
 	golang.org/x/exp v0.0.0-20241215155358-4a5509556b9e
@@ -161,7 +162,6 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.mongodb.org/mongo-driver v1.17.1 // indirect
 	go.uber.org/mock v0.5.0 // indirect
-	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.12.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.33.0 // indirect

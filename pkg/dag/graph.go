@@ -355,53 +355,62 @@ func (g *Graph) compile() (err error) {
 		}
 		g.ctx.Unlock()
 	}()
+
 	var nameMap = make(map[string]bool)
 
 	// 循环遍历任务列表 g.vertex，为每个节点设置相应的属性，并根据任务的依赖关系将节点连接起来。
-	for k := range g.vertex {
-		if _, ok := nameMap[g.vertex[k].Name()]; ok {
+	for _, v := range g.vertex {
+		if _, ok := nameMap[v.Name()]; ok {
 			return ErrDuplicateVertexName
 		}
-		nameMap[g.vertex[k].Name()] = true
+		nameMap[v.Name()] = true
 		// 设置依赖数量
-		g.vertex[k].ndeps = int64(len(g.vertex[k].deps))
+		v.ndeps = int64(len(v.deps))
 
 		// 将当前顶点作为邻接或相邻分配给父顶点。
 		// 具体地, 将依赖的节点的指针添加到当前节点的 adjs 切片中，表示当前节点依赖于这些节点。
-		for _, dep := range g.vertex[k].deps {
-			g.vertex[dep.cid-1].adjs = append(g.vertex[dep.cid-1].adjs, g.vertex[k])
+		for _, dep := range v.deps {
+			g.vertex[dep.cid-1].adjs = append(g.vertex[dep.cid-1].adjs, v)
 		}
 
 		// 如果任务没有依赖，将其节点添加到 roots 切片中。
-		if len(g.vertex[k].deps) == 0 {
-			g.vertex[k].root = true
+		if len(v.deps) == 0 {
+			v.root = true
 		}
+	}
 
-		// 检查图形是否存在回环, 检查以本节点为起点的子图是否存在回环。
-		if err = g.detectCircularDependencies(g.vertex[k], []*Vertex{}); err != nil {
+	// 使用 DFS 进行环检测
+	visited := make(map[*Vertex]bool)
+	stack := make(map[*Vertex]bool)
+	for _, vertex := range g.vertex {
+		if err = g.detectCircularDependencies(vertex, visited, stack); err != nil {
 			return err
 		}
 	}
+
 	return
 }
 
 // 使用深度优先搜索 (DFS) 的方式进行回环检测。它从给定的节点开始遍历邻接节点，并在遍历过程中检查是否存在回环。
 // 如果发现已访问过的节点，则存在回环，返回 ErrCycleDetected 错误。否则，继续递归遍历邻接节点。
 // 为了避免重复访问节点，使用 visited 属性对已访问的节点进行标记。
-func (g *Graph) detectCircularDependencies(current *Vertex, path []*Vertex) error {
-	// 如果发现某个邻接节点已经被访问过（即存在回环）
-	if current.ctx.visited {
+func (g *Graph) detectCircularDependencies(current *Vertex, visited, stack map[*Vertex]bool) error {
+	if stack[current] {
 		return ErrCycleDetected
 	}
-	current.ctx.visited = true
-	defer func() {
-		current.ctx.visited = false
-	}()
-	// 递归地遍历节点的邻接节点
-	for k := range current.adjs {
-		if err := g.detectCircularDependencies(current.adjs[k], append(path, current)); err != nil {
+	if visited[current] {
+		return nil
+	}
+
+	visited[current] = true
+	stack[current] = true
+
+	for _, adj := range current.adjs {
+		if err := g.detectCircularDependencies(adj, visited, stack); err != nil {
 			return err
 		}
 	}
+
+	stack[current] = false
 	return nil
 }
