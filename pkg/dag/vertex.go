@@ -2,7 +2,6 @@ package dag
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -38,11 +37,11 @@ func (v *Vertex) Name() string {
 // Kill 强杀
 func (v *Vertex) Kill() error {
 	if v.ctx.baseCancel == nil {
-		return ErrKill
+		return ErrContext
 	}
 
 	v.ctx.baseCancel()
-	eventChan <- fmt.Sprintf("kill step %s in task %s", v.Name(), v.graph.Name())
+	emitEvent("kill step %s in task %s", v.Name(), v.graph.Name())
 	return nil
 }
 
@@ -64,7 +63,7 @@ func (v *Vertex) Pause(duration string) error {
 	} else {
 		v.ctx.controlCtx, v.ctx.controlCancel = context.WithCancel(context.Background())
 	}
-	eventChan <- fmt.Sprintf("pause step %s in task %s", v.Name(), v.graph.Name())
+	emitEvent("pause step %s in task %s", v.Name(), v.graph.Name())
 	return nil
 }
 
@@ -80,7 +79,7 @@ func (v *Vertex) Resume() {
 	v.ctx.state = StateResume
 	// 解除挂起
 	v.ctx.controlCancel()
-	eventChan <- fmt.Sprintf("resume step %s in task %s", v.Name(), v.graph.Name())
+	emitEvent("resume step %s in task %s", v.Name(), v.graph.Name())
 }
 
 // WaitResume 等待解挂

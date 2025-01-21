@@ -2,6 +2,7 @@ package dag
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"sync/atomic"
 )
@@ -10,6 +11,10 @@ var (
 	eventChan  = make(chan string, 15)
 	observable = newEvent(eventChan)
 )
+
+func emitEvent(format string, args ...interface{}) {
+	eventChan <- fmt.Sprintf(format, args...)
+}
 
 func SubscribeEvent() (EventStream, int64, error) {
 	return observable.Subscribe()

@@ -16,6 +16,7 @@ import (
 	"github.com/pires/go-proxyproto"
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
@@ -24,7 +25,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/pkg/reaper"
 )
 

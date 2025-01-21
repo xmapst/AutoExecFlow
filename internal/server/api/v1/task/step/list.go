@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"
 )
 

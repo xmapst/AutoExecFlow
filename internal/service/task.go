@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
+	"github.com/xmapst/logx"
 	"go.uber.org/multierr"
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
@@ -16,7 +17,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"
 )
 

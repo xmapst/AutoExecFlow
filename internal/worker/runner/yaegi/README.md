@@ -6,9 +6,14 @@ exec yaegi type script
 
 ```text
 # params is dict
-import "fmt"
+import (
+    "context"
+    "fmt"
+    
+    "github.com/tidwall/gjson"
+)
 
-func EvalCall(params map[string]interface{}) {
+func EvalCall(ctx context.Context, params gjson.Result) {
 	fmt.Println(params)
 	fmt.Println("Hello, World!")
 }

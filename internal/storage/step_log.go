@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xmapst/logx"
 	"gorm.io/gorm"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type sStepLog struct {

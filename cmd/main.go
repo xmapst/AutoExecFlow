@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/cmd/server"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 const longText = `An API for cross-platform custom orchestration of execution steps without any third-party dependencies. 

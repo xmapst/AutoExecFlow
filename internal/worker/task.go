@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
@@ -16,7 +17,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type sTask struct {
@@ -170,6 +170,7 @@ func (t *sTask) run() (err error) {
 		if _r := recover(); _r != nil {
 			stack := debug.Stack()
 			logx.Errorln(_r, string(stack))
+			err = errors.Errorf("task is panic, %v", _r)
 		}
 		// 清理
 		t.clearDir()

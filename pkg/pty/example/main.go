@@ -14,8 +14,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/xmapst/logx"
 
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/pkg/pty"
 )
 

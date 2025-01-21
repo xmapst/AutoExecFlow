@@ -10,8 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
+	"github.com/xmapst/logx"
 )
 
 func Logger(c *gin.Context) {

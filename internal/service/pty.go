@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"github.com/gorilla/websocket"
+	"github.com/xmapst/logx"
 
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/pkg/pty"
 	"github.com/xmapst/AutoExecFlow/types"
 )

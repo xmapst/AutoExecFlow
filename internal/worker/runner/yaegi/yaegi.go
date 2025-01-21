@@ -8,11 +8,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"github.com/traefik/yaegi/interp"
-	"github.com/traefik/yaegi/stdlib"
-	"github.com/traefik/yaegi/stdlib/syscall"
-	"github.com/traefik/yaegi/stdlib/unrestricted"
-	"github.com/traefik/yaegi/stdlib/unsafe"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
@@ -45,43 +43,48 @@ func (y *SYaegi) Run(ctx context.Context) (code int64, err error) {
 		}
 	}()
 
-	content, err := y.storage.Content()
+	params, err := y.getParams()
 	if err != nil {
 		return common.CodeFailed, err
 	}
 
-	var params = map[string]any{}
-	taskEnv := y.storage.GlobalEnv().List()
-	for _, v := range taskEnv {
-		params[v.Name] = v.Value
-	}
-	stepEnv := y.storage.Env().List()
-	for _, v := range stepEnv {
-		params[v.Name] = v.Value
-	}
-
-	if err = y.createVM(); err != nil {
+	if err = y.createVM(ctx); err != nil {
 		return common.CodeSystemErr, err
-	}
-
-	_, err = y.interp.EvalWithContext(ctx, content)
-	if err != nil {
-		return common.CodeFailed, err
 	}
 
 	evalFnval, err := y.interp.EvalWithContext(ctx, "EvalCall")
 	if err != nil {
 		return common.CodeFailed, err
 	}
-	evalFn, ok := evalFnval.Interface().(func(map[string]any))
+	evalFn, ok := evalFnval.Interface().(func(ctx context.Context, params gjson.Result))
 	if !ok {
 		return common.CodeFailed, errors.New("not found EvalCall")
 	}
-	evalFn(params)
+	evalFn(ctx, params)
 	return common.CodeSuccess, nil
 }
 
-func (y *SYaegi) createVM() (err error) {
+func (y *SYaegi) getParams() (gjson.Result, error) {
+	var rawJSON string
+	var err error
+	taskEnv := y.storage.GlobalEnv().List()
+	for _, v := range taskEnv {
+		rawJSON, err = sjson.Set(rawJSON, v.Name, []byte(v.Value))
+		if err != nil {
+			return gjson.Result{}, err
+		}
+	}
+	stepEnv := y.storage.Env().List()
+	for _, v := range stepEnv {
+		rawJSON, err = sjson.Set(rawJSON, v.Name, []byte(v.Value))
+		if err != nil {
+			return gjson.Result{}, err
+		}
+	}
+	return gjson.Parse(rawJSON), nil
+}
+
+func (y *SYaegi) createVM(ctx context.Context) (err error) {
 	y.interp = interp.New(interp.Options{
 		Env: []string{
 			fmt.Sprintf("WORKSPACE=%s", y.workspace),
@@ -90,11 +93,19 @@ func (y *SYaegi) createVM() (err error) {
 		Stderr: y.output(),
 	})
 
-	_ = y.interp.Use(stdlib.Symbols)
-	_ = y.interp.Use(unsafe.Symbols)
-	_ = y.interp.Use(syscall.Symbols)
-	_ = y.interp.Use(unrestricted.Symbols)
-	_ = y.interp.Use(interp.Symbols)
+	if err = y.interp.Use(Symbols); err != nil {
+		return err
+	}
+
+	content, err := y.storage.Content()
+	if err != nil {
+		return err
+	}
+
+	_, err = y.interp.EvalWithContext(ctx, content)
+	if err != nil {
+		return err
+	}
 
 	return
 }

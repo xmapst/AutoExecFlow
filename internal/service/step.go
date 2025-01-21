@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
@@ -16,7 +17,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/types"
 )
 

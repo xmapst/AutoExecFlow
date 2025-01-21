@@ -12,9 +12,10 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/xmapst/logx"
+
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 	"github.com/xmapst/AutoExecFlow/pkg/osext"
 	"github.com/xmapst/AutoExecFlow/pkg/selfupdate"
 )

@@ -55,12 +55,12 @@ func deepCopySlice(original reflect.Value) reflect.Value {
 	if original.IsNil() {
 		return original
 	}
-	copy := reflect.MakeSlice(original.Type(), 0, 0)
+	_copy := reflect.MakeSlice(original.Type(), 0, 0)
 	for i := 0; i < original.Len(); i++ {
 		elementCopy := deepCopy(original.Index(i))
-		copy = reflect.Append(copy, elementCopy)
+		_copy = reflect.Append(_copy, elementCopy)
 	}
-	return copy
+	return _copy
 }
 
 func deepCopyArray(original reflect.Value) reflect.Value {
@@ -71,12 +71,12 @@ func deepCopyArray(original reflect.Value) reflect.Value {
 	elementType := original.Index(0).Type()
 	arrayType := reflect.ArrayOf(original.Len(), elementType)
 	newPointer := reflect.New(arrayType)
-	copy := newPointer.Elem()
+	_copy := newPointer.Elem()
 	for i := 0; i < original.Len(); i++ {
 		subCopy := deepCopy(original.Index(i))
-		copy.Index(i).Set(subCopy)
+		_copy.Index(i).Set(subCopy)
 	}
-	return copy
+	return _copy
 }
 
 func deepCopyMap(original reflect.Value) reflect.Value {
@@ -86,12 +86,12 @@ func deepCopyMap(original reflect.Value) reflect.Value {
 	keyType := original.Type().Key()
 	valueType := original.Type().Elem()
 	mapType := reflect.MapOf(keyType, valueType)
-	copy := reflect.MakeMap(mapType)
+	_copy := reflect.MakeMap(mapType)
 	for _, key := range original.MapKeys() {
 		value := deepCopy(original.MapIndex(key))
-		copy.SetMapIndex(key, value)
+		_copy.SetMapIndex(key, value)
 	}
-	return copy
+	return _copy
 }
 
 func deepCopyPointer(original reflect.Value) reflect.Value {
@@ -99,21 +99,21 @@ func deepCopyPointer(original reflect.Value) reflect.Value {
 		return original
 	}
 	element := original.Elem()
-	copy := reflect.New(element.Type())
+	_copy := reflect.New(element.Type())
 	copyElement := deepCopy(element)
-	copy.Elem().Set(copyElement)
-	return copy
+	_copy.Elem().Set(copyElement)
+	return _copy
 }
 
 func deepCopyStruct(original reflect.Value) reflect.Value {
-	copy := reflect.New(original.Type()).Elem()
-	copy.Set(original)
+	_copy := reflect.New(original.Type()).Elem()
+	_copy.Set(original)
 	for i := 0; i < original.NumField(); i++ {
-		fieldValue := copy.Field(i)
+		fieldValue := _copy.Field(i)
 		fieldValue = reflect.NewAt(fieldValue.Type(), unsafe.Pointer(fieldValue.UnsafeAddr())).Elem()
 		fieldValue.Set(deepCopy(fieldValue))
 	}
-	return copy
+	return _copy
 }
 
 func deepCopyChan(original reflect.Value) reflect.Value {

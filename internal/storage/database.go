@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
+	"github.com/xmapst/logx"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type sDatabase struct {

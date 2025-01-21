@@ -9,11 +9,11 @@ import (
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/server"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 func New() *cobra.Command {

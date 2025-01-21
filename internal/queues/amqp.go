@@ -7,10 +7,10 @@ import (
 
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/xmapst/go-rabbitmq"
+	"github.com/xmapst/logx"
 	"go.uber.org/zap"
 
 	"github.com/xmapst/AutoExecFlow/internal/utils"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 var (

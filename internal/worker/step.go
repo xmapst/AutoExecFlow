@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type sStep struct {

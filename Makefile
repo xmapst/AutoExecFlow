@@ -2,7 +2,7 @@ PACKAGE_NAME          := github.com/xmapst/AutoExecFlow
 GOLANG_CROSS_VERSION  ?= latest
 
 .PHONY: all
-all: binary copy-binary
+all: generate binary copy-binary
 	@sha256sum bin/AutoExecFlow* > bin/latest.sha256sum
 
 .PHONY: dev
@@ -12,6 +12,13 @@ dev:
 
 swag:
 	@swag init --exclude pkg --parseDependencyLevel 3 --dir internal/server/api -g router.go
+
+# Run code generation
+generate:
+	@echo "Tidying up Go modules..."
+	@go mod tidy
+	@echo "Running go generate..."
+	@go generate ./...
 
 .PHONY: binary
 binary:

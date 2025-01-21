@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	ErrKill      = errors.New("force kill error, context is null")
-	ErrForceKill = errors.New("the graph or vertex was forcibly terminated")
+	ErrContext   = errors.New("context is null")
+	ErrForceKill = errors.New("was forcibly terminated")
 	ErrNotFound  = errors.New("not found or closed")
 	ErrRunning   = errors.New("is running, can't pause")
 	ErrWrongType = errors.New("wrong interface type, cannot be closed")

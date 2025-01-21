@@ -1484,6 +1484,9 @@ class TaskTable {
             if (task.message) {
                 msgDocument.innerText = task.message;
                 msgDocument.setAttribute('title', task.message);
+                if (task.message.length > 150) {
+                    msgDocument.innerText = task.message.substring(0, 150) + '...';
+                }
             }
             row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task.name));
             row.querySelector("#dump-task").addEventListener("click", () => this.dumpTask(task));

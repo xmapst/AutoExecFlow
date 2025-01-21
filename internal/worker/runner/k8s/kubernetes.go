@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xmapst/logx"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -18,7 +19,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s/types"
-	"github.com/xmapst/AutoExecFlow/pkg/logx"
 )
 
 type SKubectl struct {

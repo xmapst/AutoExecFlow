@@ -40,12 +40,12 @@ func (g *Graph) Name() string {
 // Kill 强杀
 func (g *Graph) Kill() error {
 	if g.ctx.baseCancel == nil {
-		return ErrKill
+		return ErrContext
 	}
 
 	g.ctx.baseCancel()
 	remove(fmt.Sprintf(graphPrefix, g.Name()))
-	eventChan <- fmt.Sprintf("kill task %s", g.Name())
+	emitEvent("kill task %s", g.Name())
 	return nil
 }
 
@@ -67,7 +67,7 @@ func (g *Graph) Pause(duration string) error {
 	} else {
 		g.ctx.controlCtx, g.ctx.controlCancel = context.WithCancel(context.Background())
 	}
-	eventChan <- fmt.Sprintf("pause task %s", g.Name())
+	emitEvent("pause task %s", g.Name())
 
 	return nil
 }
@@ -84,7 +84,7 @@ func (g *Graph) Resume() {
 	g.ctx.state = StateResume
 	// 解除挂起
 	g.ctx.controlCancel()
-	eventChan <- fmt.Sprintf("resume task %s", g.Name())
+	emitEvent("resume task %s", g.Name())
 }
 
 // WaitResume 等待解挂
@@ -110,7 +110,7 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 	defer g.ctx.Unlock()
 
 	if g.ctx.visited {
-		eventChan <- fmt.Sprintf("duplicate step %s in task %s", v.Name(), g.Name())
+		emitEvent("duplicate step %s in task %s", v.Name(), g.Name())
 		return nil, ErrDuplicateCompile
 	}
 
@@ -138,7 +138,7 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 	var err error
 	defer g.wg.Done()
-	eventChan <- fmt.Sprintf("start step %s in task %s", v.Name(), g.Name())
+	emitEvent("start step %s in task %s", v.Name(), g.Name())
 	defer func() {
 		v.ctx.mainCancel()
 
@@ -150,15 +150,15 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 		remove(fmt.Sprintf(vertexPrefix, g.Name(), v.Name()))
 		if err != nil {
 			errCh <- err
-			eventChan <- fmt.Sprintf("error exec step %s in task %s, %s", v.Name(), g.Name(), err)
+			emitEvent("error exec step %s in task %s, %s", v.Name(), g.Name(), err)
 			return
 		}
-		eventChan <- fmt.Sprintf("stoped step %s in task %s", v.Name(), g.Name())
+		emitEvent("stoped step %s in task %s", v.Name(), g.Name())
 	}()
 
 	// 图形级暂停
 	if g.State() == StatePaused {
-		eventChan <- fmt.Sprintf("step %s paused because task %s is paused", v.Name(), g.Name())
+		emitEvent("step %s paused because task %s is paused", v.Name(), g.Name())
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
@@ -166,13 +166,13 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 			return
 		case <-g.ctx.controlCtx.Done():
 			// 继续
-			eventChan <- fmt.Sprintf("resumed step %s in task %s", v.Name(), g.Name())
+			emitEvent("resumed step %s in task %s", v.Name(), g.Name())
 		}
 	}
 
 	// 节点级执行前控制, 挂起/解卦/强杀
 	if v.State() == StatePaused {
-		eventChan <- fmt.Sprintf("paused step %s in task %s", v.Name(), g.Name())
+		emitEvent("paused step %s in task %s", v.Name(), g.Name())
 		select {
 		case <-g.ctx.mainCtx.Done():
 			// 被终止
@@ -184,7 +184,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 			return
 		case <-v.ctx.controlCtx.Done():
 			// 继续
-			eventChan <- fmt.Sprintf("resumed step %s in task %s", v.Name(), g.Name())
+			emitEvent("resumed step %s in task %s", v.Name(), g.Name())
 		}
 	}
 
@@ -200,11 +200,11 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 
 	// 节点级执行后控制, 挂起/解卦/强杀
 	if v.State() == StatePaused {
-		eventChan <- fmt.Sprintf("paused step %s in task %s", v.Name(), g.Name())
+		emitEvent("paused step %s in task %s", v.Name(), g.Name())
 		select {
 		case <-v.ctx.controlCtx.Done():
 			// 继续
-			eventChan <- fmt.Sprintf("resumed step %s in task %s", v.Name(), g.Name())
+			emitEvent("resumed step %s in task %s", v.Name(), g.Name())
 		}
 	}
 
@@ -244,24 +244,12 @@ func (g *Graph) withCancel(main, extra context.Context) (context.Context, contex
 // Run 运行任务流程,控制整个图算法的执行流程。它启动一个 Goroutine 来监听错误通道，同时遍历图的根节点并启动相应的 Goroutine 来处理每个根节点。
 // 然后等待所有节点的处理完成，最后检查并打印可能发生的错误信息。同时，通过上下文的取消来通知所有 Goroutine 停止处理。
 func (g *Graph) Run(ctx context.Context) (err error) {
-	eventChan <- fmt.Sprintf("start task %s", g.Name())
+	emitEvent("start task %s", g.Name())
 	if err = g.Validator(true); err != nil {
-		eventChan <- fmt.Sprintf("invalid task %s, %s", g.Name(), err)
+		emitEvent("invalid task %s, %s", g.Name(), err)
 		return err
 	}
-
-	// 设置图形主上下文
-	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancel(ctx, g.ctx.baseCtx)
-	// 设置运行中
-	g.ctx.Lock()
-	g.ctx.oldState = g.ctx.state
-	g.ctx.state = StateRunning
-	g.ctx.Unlock()
-
-	// 设置所有顶点主上下文
-	for k := range g.vertex {
-		g.vertex[k].ctx.mainCtx, g.vertex[k].ctx.mainCancel = g.withCancel(g.ctx.mainCtx, g.vertex[k].ctx.baseCtx)
-	}
+	g.initContext(ctx)
 
 	defer func() {
 		g.ctx.mainCancel()
@@ -285,7 +273,8 @@ func (g *Graph) Run(ctx context.Context) (err error) {
 				}
 				err = errors.Join(err, _err)
 			case <-g.ctx.mainCtx.Done():
-				eventChan <- fmt.Sprintf("task %s ends because task %s is terminated", g.Name(), g.Name())
+				err = ErrForceKill
+				emitEvent("task %s ends because task %s is terminated", g.Name(), g.Name())
 				return
 			}
 		}
@@ -303,11 +292,26 @@ func (g *Graph) Run(ctx context.Context) (err error) {
 	close(chError)
 	<-done
 	if err != nil {
-		eventChan <- fmt.Sprintf("error exec task %s, %s", g.Name(), err)
-		return
+		emitEvent("error exec task %s, %s", g.Name(), err)
+		return err
 	}
-	eventChan <- fmt.Sprintf("end task %s", g.Name())
+	emitEvent("end task %s", g.Name())
 	return
+}
+
+func (g *Graph) initContext(ctx context.Context) {
+	// 设置图形主上下文
+	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancel(ctx, g.ctx.baseCtx)
+	// 设置运行中
+	g.ctx.Lock()
+	g.ctx.oldState = g.ctx.state
+	g.ctx.state = StateRunning
+	g.ctx.Unlock()
+
+	// 设置所有顶点主上下文
+	for k := range g.vertex {
+		g.vertex[k].ctx.mainCtx, g.vertex[k].ctx.mainCancel = g.withCancel(g.ctx.mainCtx, g.vertex[k].ctx.baseCtx)
+	}
 }
 
 // Validator 检查图的状态，并根据需要进行编译
