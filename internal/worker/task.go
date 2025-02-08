@@ -21,7 +21,7 @@ import (
 
 type sTask struct {
 	storage   storage.ITask
-	graph     *dag.Graph
+	graph     dag.IGraph
 	workspace string
 	scriptDir string
 }

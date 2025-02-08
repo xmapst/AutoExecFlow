@@ -93,6 +93,8 @@ func (ss *SStepService) saveStep(timeout time.Duration, step *types.SStepReq) (e
 		Desc:     step.Desc,
 		Type:     step.Type,
 		Content:  step.Content,
+		Action:   step.Action,
+		Rule:     step.Rule,
 		Timeout:  timeout,
 		Disable:  models.Pointer(step.Disable),
 		SStepUpdate: models.SStepUpdate{
@@ -141,6 +143,8 @@ func (ss *SStepService) Detail() (types.Code, *types.SStepRes, error) {
 		Disable: *step.Disable,
 		Type:    step.Type,
 		Content: step.Content,
+		Action:  step.Action,
+		Rule:    step.Rule,
 		Time: types.STimeRes{
 			Start: step.STimeStr(),
 			End:   step.ETimeStr(),
@@ -256,6 +260,8 @@ func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error
 		models.StateRunning: ss.handleRunningState,
 		models.StateStopped: ss.handleFinalState(types.CodeSuccess),
 		models.StateFailed:  ss.handleFinalState(types.CodeFailed),
+		models.StateSkipped: ss.handleFinalState(types.CodeSkipped),
+		models.StateBlocked: ss.handleFinalState(types.CodeBlocked),
 	}
 
 	for {

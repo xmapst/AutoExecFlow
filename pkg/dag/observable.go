@@ -28,7 +28,7 @@ func UnSubscribeEvent(id int64) {
 type EventStream <-chan string
 
 // Emitter 负责管理订阅者和广播事件
-type emitter struct {
+type sEmitter struct {
 	eventStream EventStream
 	subscribers sync.Map // 使用sync.Map替代map
 	done        bool
@@ -37,10 +37,10 @@ type emitter struct {
 }
 
 // process 处理事件流并将事件发送给所有订阅者
-func (e *emitter) process() {
+func (e *sEmitter) process() {
 	for event := range e.eventStream {
 		e.subscribers.Range(func(_, value any) bool {
-			sub := value.(*subscriber)
+			sub := value.(*sSubscriber)
 			sub.sendEvent(event)
 			return true
 		})
@@ -49,7 +49,7 @@ func (e *emitter) process() {
 }
 
 // close 关闭所有的订阅者
-func (e *emitter) close() {
+func (e *sEmitter) close() {
 	e.mux.Lock()
 	defer e.mux.Unlock()
 
@@ -60,14 +60,14 @@ func (e *emitter) close() {
 
 	// 关闭所有的订阅者
 	e.subscribers.Range(func(_, value any) bool {
-		sub := value.(*subscriber)
+		sub := value.(*sSubscriber)
 		sub.close()
 		return true
 	})
 }
 
 // Subscribe 创建一个新的订阅者并返回其事件流
-func (e *emitter) Subscribe() (EventStream, int64, error) {
+func (e *sEmitter) Subscribe() (EventStream, int64, error) {
 	e.mux.Lock()
 	defer e.mux.Unlock()
 
@@ -82,20 +82,20 @@ func (e *emitter) Subscribe() (EventStream, int64, error) {
 }
 
 // UnSubscribe 移除指定的订阅者并关闭其通道
-func (e *emitter) UnSubscribe(id int64) {
+func (e *sEmitter) UnSubscribe(id int64) {
 	value, exist := e.subscribers.Load(id)
 	if !exist {
 		return
 	}
 
-	sub := value.(*subscriber)
+	sub := value.(*sSubscriber)
 	e.subscribers.Delete(id)
 	sub.close()
 }
 
 // New 创建一个新的事件发射器
-func newEvent(eventStream EventStream) *emitter {
-	e := &emitter{
+func newEvent(eventStream EventStream) *sEmitter {
+	e := &sEmitter{
 		eventStream: eventStream,
 	}
 	go e.process()
@@ -103,13 +103,13 @@ func newEvent(eventStream EventStream) *emitter {
 }
 
 // subscriber 表示一个事件订阅者
-type subscriber struct {
+type sSubscriber struct {
 	buffer chan string
 	once   sync.Once
 }
 
 // SendEvent 将事件发送到订阅者的通道
-func (s *subscriber) sendEvent(event string) {
+func (s *sSubscriber) sendEvent(event string) {
 	// 非阻塞发送数据到通道
 	select {
 	case s.buffer <- event:
@@ -119,20 +119,20 @@ func (s *subscriber) sendEvent(event string) {
 }
 
 // eventChannel 返回订阅者的事件通道
-func (s *subscriber) eventChannel() EventStream {
+func (s *sSubscriber) eventChannel() EventStream {
 	return s.buffer
 }
 
 // Close 关闭订阅者的事件通道
-func (s *subscriber) close() {
+func (s *sSubscriber) close() {
 	s.once.Do(func() {
 		close(s.buffer)
 	})
 }
 
 // newEventSubscriber 创建一个新的订阅者
-func newEventSubscriber() *subscriber {
-	return &subscriber{
+func newEventSubscriber() *sSubscriber {
+	return &sSubscriber{
 		buffer: make(chan string, 200), // 缓冲区大小可以调整为参数
 	}
 }

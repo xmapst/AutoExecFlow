@@ -67,6 +67,8 @@ const (
 	CodeNoData
 	CodePending
 	CodePaused
+	CodeSkipped
+	CodeBlocked
 )
 
 var CodeMap = map[Code]string{
@@ -76,6 +78,8 @@ var CodeMap = map[Code]string{
 	CodeNoData:  "no data",
 	CodePending: "pending",
 	CodePaused:  "paused",
+	CodeSkipped: "skipped",
+	CodeBlocked: "blocked",
 }
 
 var WebsocketMessageType = map[int]string{

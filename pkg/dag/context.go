@@ -15,7 +15,7 @@ const (
 	StateResume
 )
 
-type iContext struct {
+type sContext struct {
 	sync.Mutex
 	name     string // 名称
 	visited  bool   // 编译过或者追踪节点的遍历状态，以防止重复访问或陷入无限循环

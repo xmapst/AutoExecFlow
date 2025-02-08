@@ -169,6 +169,7 @@ class Utils {
             'timeout': '#FFC107',
             'canceled': '#9B59B6',
             'skipped': '#007BFF',
+            'blacked': '#000000',
             'unknown': '#A9A9A9'
         };
         return statusColorMap[status] || 'gray';

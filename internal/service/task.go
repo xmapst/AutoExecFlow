@@ -93,7 +93,7 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 	if err != nil {
 		return err
 	}
-	if state != models.StateStopped && state != models.StateUnknown && state != models.StateFailed {
+	if state != models.StateStopped && state != models.StateSkipped && state != models.StateUnknown && state != models.StateFailed {
 		return errors.New("task is running")
 	}
 

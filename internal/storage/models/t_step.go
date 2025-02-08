@@ -11,6 +11,8 @@ type SStep struct {
 	Desc     string        `json:"desc,omitempty" gorm:"comment:描述"`
 	Type     string        `json:"type,omitempty" gorm:"size:256;index;not null;comment:类型"`
 	Content  string        `json:"content,omitempty" gorm:"comment:内容"`
+	Action   string        `json:"action,omitempty" gorm:"comment:动作"`
+	Rule     string        `json:"rule,omitempty" gorm:"comment:规则"`
 	Timeout  time.Duration `json:"timeout,omitempty" gorm:"not null;default:86400000000000;comment:超时时间"`
 	Disable  *bool         `json:"disable,omitempty" gorm:"not null;default:false;comment:禁用"`
 	SStepUpdate

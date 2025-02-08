@@ -8,8 +8,8 @@ import (
 type VertexFunc = func(ctx context.Context, gName, vName string) error
 
 type Vertex struct {
-	ctx   *iContext
-	graph *Graph
+	ctx   *sContext
+	graph IGraph
 
 	cid   int64      // 临时id
 	fn    VertexFunc // 函数
@@ -21,7 +21,7 @@ type Vertex struct {
 
 func NewVertex(name string, fn VertexFunc) *Vertex {
 	v := &Vertex{
-		ctx: &iContext{
+		ctx: &sContext{
 			name: name,
 		},
 		fn: fn,

@@ -93,6 +93,10 @@ type IStep interface {
 	Type() (res string, err error)
 	// Content 内容
 	Content() (res string, err error)
+	// Action 动作
+	Action() (res string, err error)
+	// Rule 规则
+	Rule() (res string, err error)
 	// Get 根据名称获取指定步骤
 	Get() (res *models.SStep, err error)
 	// Update 更新

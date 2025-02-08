@@ -2,6 +2,7 @@ package step
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -57,6 +58,7 @@ func Log(c *gin.Context) {
 		if err != nil {
 			_ = ws.WriteJSON(base.WithCode[any](types.CodeFailed).WithError(err))
 		}
+		time.Sleep(500 * time.Millisecond)
 		return
 	}
 

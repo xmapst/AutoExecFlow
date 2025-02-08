@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/expr-lang/expr"
 	"github.com/pkg/errors"
 	"github.com/xmapst/logx"
 
@@ -60,14 +61,41 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 			}
 		}()
 
+		// 日志写入
+		s.storage.Log().Write(common.ConsoleStart)
+		defer s.storage.Log().Write(common.ConsoleDone)
+
+		// 评估规则, 使用expr
+		var action common.Action
+		action, err = s.evaluateExprRule()
+		if err != nil {
+			logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+			// 写入步骤日志
+			s.storage.Log().Write(err.Error())
+			res.State = models.Pointer(models.StateFailed)
+			res.Code = models.Pointer(common.CodeSystemErr)
+			res.Message = err.Error()
+			return err
+		}
+		switch action {
+		case common.ActionBlock:
+			res.State = models.Pointer(models.StateBlocked)
+			res.Code = models.Pointer(common.CodeBlocked)
+			res.Message = "blocked due to rule"
+			return errors.New(res.Message)
+		case common.ActionSkip:
+			res.State = models.Pointer(models.StateSkipped)
+			res.Code = models.Pointer(common.CodeSkipped)
+			res.Message = "skipped due to rule"
+			return
+		default:
+			// 继续执行
+		}
+
 		s.before(ctx, taskName, stepName)
 		defer func() {
 			s.after(ctx, taskName, stepName)
 		}()
-
-		// 日志写入
-		s.storage.Log().Write(common.ConsoleStart)
-		defer s.storage.Log().Write(common.ConsoleDone)
 
 		runnerItr, err := runner.New(
 			s.storage,
@@ -104,6 +132,54 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 		}
 		return nil
 	}
+}
+
+func (s *sStep) evaluateExprRule() (common.Action, error) {
+	// 查询规则
+	rule, err := s.storage.Rule()
+	if err != nil {
+		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		return common.ActionBlock, err
+	}
+	action, err := s.storage.Action()
+	if err != nil {
+		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		return common.ActionBlock, err
+	}
+	if rule == "" || action == "" {
+		logx.Infoln(s.storage.TaskName(), s.storage.Name(), "no rule or no action")
+		return common.ActionAllow, nil
+	}
+	program, err := expr.Compile(
+		rule,
+		// 预期返回值类型
+		expr.AsBool(),
+		// TODO: 内置函数或工具链
+		//expr.Env(map[string]any{
+		//	"storage": s.storage,
+		//}),
+		//expr.Function("test", func(params ...any) (any, error) {
+		//	return "test", nil
+		//}),
+	)
+	if err != nil {
+		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		return common.ActionBlock, err
+	}
+	result, err := expr.Run(program, nil)
+	if err != nil {
+		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		return common.ActionBlock, err
+	}
+	matched, ok := result.(bool)
+	if !ok {
+		return common.ActionBlock, fmt.Errorf("rule result is not a boolean")
+	}
+	// 如果不匹配, 继续执行
+	if !matched {
+		return common.ActionAllow, nil
+	}
+	return common.ActionConvert(action), nil
 }
 
 func (s *sStep) before(ctx context.Context, taskName, stepName string) {

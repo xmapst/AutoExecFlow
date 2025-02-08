@@ -12,6 +12,8 @@ type SStepRes struct {
 	Env     SEnvs    `json:"env,omitempty" yaml:"env,omitempty"`
 	Type    string   `json:"type,omitempty" yaml:"type,omitempty"`
 	Content string   `json:"content,omitempty" yaml:"content,omitempty"`
+	Action  string   `json:"action,omitempty" yaml:"action,omitempty"`
+	Rule    string   `json:"rule,omitempty" yaml:"rule,omitempty"`
 	Time    STimeRes `json:"time,omitempty" yaml:"time,omitempty"`
 }
 
@@ -26,6 +28,8 @@ type SStepReq struct {
 	Env     SEnvs    `json:"env,omitempty" form:"env" yaml:"env,omitempty"`
 	Type    string   `json:"type,omitempty" form:"type" yaml:"type,omitempty" binding:"required"`
 	Content string   `json:"content,omitempty" form:"content" yaml:"content,omitempty" binding:"required"`
+	Action  string   `json:"action,omitempty" form:"action" yaml:"action,omitempty"`
+	Rule    string   `json:"rule,omitempty" form:"rule" yaml:"rule,omitempty"`
 }
 
 type SStepsReq []*SStepReq

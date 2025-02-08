@@ -521,6 +521,8 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
   - 1003: not found
   - 1004: pending
   - 1005: paused
+  - 1006: skipped
+  - 1007: blocked
 
 ## Script language support
 + [bash/sh/ps1/bat/python2/python3](internal/worker/runner/exec/README.md)

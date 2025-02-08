@@ -160,7 +160,7 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 	if err = tx.Model(&models.SStep{}).
 		Where("task_name IN (?)",
 			d.Model(&models.STask{}).Select("name").
-				Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed),
+				Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateSkipped, models.StateFailed),
 		).
 		Where("state = ? OR state = ?", models.StateRunning, models.StatePaused).
 		Updates(map[string]interface{}{

@@ -120,6 +120,30 @@ func (s *sStep) Content() (res string, err error) {
 	return
 }
 
+func (s *sStep) Action() (res string, err error) {
+	err = s.Model(&models.SStep{}).
+		Select("action").
+		Where(map[string]interface{}{
+			"task_name": s.tName,
+			"name":      s.sName,
+		}).
+		Scan(&res).
+		Error
+	return
+}
+
+func (s *sStep) Rule() (res string, err error) {
+	err = s.Model(&models.SStep{}).
+		Select("rule").
+		Where(map[string]interface{}{
+			"task_name": s.tName,
+			"name":      s.sName,
+		}).
+		Scan(&res).
+		Error
+	return
+}
+
 func (s *sStep) Get() (res *models.SStep, err error) {
 	res = new(models.SStep)
 	err = s.Model(&models.SStep{}).

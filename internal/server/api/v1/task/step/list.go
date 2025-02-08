@@ -95,9 +95,12 @@ func List(c *gin.Context) {
 		if err != nil {
 			return
 		}
-		if currentCode == types.CodeSuccess || currentCode == types.CodeFailed {
-			return
-		}
 		time.Sleep(500 * time.Millisecond)
+		switch currentCode {
+		case types.CodeSuccess, types.CodeFailed, types.CodeSkipped, types.CodeBlocked:
+			return
+		default:
+
+		}
 	}
 }

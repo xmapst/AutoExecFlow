@@ -8,17 +8,25 @@ import (
 	"time"
 )
 
-type Graph struct {
+type IGraph interface {
+	IManager
+
+	AddVertex(v *Vertex) (*Vertex, error)
+	Validator(force bool) error
+	Run(ctx context.Context) (err error)
+}
+
+type sGraph struct {
 	wg  *sync.WaitGroup
-	ctx *iContext
+	ctx *sContext
 
 	vertex []*Vertex // 顶点集
 }
 
-func New(name string) *Graph {
-	g := &Graph{
+func New(name string) IGraph {
+	g := &sGraph{
 		wg: new(sync.WaitGroup),
-		ctx: &iContext{
+		ctx: &sContext{
 			name: name,
 		},
 	}
@@ -33,12 +41,12 @@ func New(name string) *Graph {
 }
 
 // Name 获取名称
-func (g *Graph) Name() string {
+func (g *sGraph) Name() string {
 	return g.ctx.name
 }
 
 // Kill 强杀
-func (g *Graph) Kill() error {
+func (g *sGraph) Kill() error {
 	if g.ctx.baseCancel == nil {
 		return ErrContext
 	}
@@ -50,7 +58,7 @@ func (g *Graph) Kill() error {
 }
 
 // Pause 挂起
-func (g *Graph) Pause(duration string) error {
+func (g *sGraph) Pause(duration string) error {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
@@ -73,7 +81,7 @@ func (g *Graph) Pause(duration string) error {
 }
 
 // Resume 解挂
-func (g *Graph) Resume() {
+func (g *sGraph) Resume() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 	if g.ctx.state != StatePaused || g.ctx.controlCancel == nil {
@@ -88,7 +96,7 @@ func (g *Graph) Resume() {
 }
 
 // WaitResume 等待解挂
-func (g *Graph) WaitResume() {
+func (g *sGraph) WaitResume() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
@@ -100,12 +108,12 @@ func (g *Graph) WaitResume() {
 }
 
 // State 返回当前状态
-func (g *Graph) State() State {
+func (g *sGraph) State() State {
 	return g.ctx.state
 }
 
 // AddVertex 添加顶点
-func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
+func (g *sGraph) AddVertex(v *Vertex) (*Vertex, error) {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
@@ -135,7 +143,7 @@ func (g *Graph) AddVertex(v *Vertex) (*Vertex, error) {
 // 处理当前节点及其邻接节点的任务逻辑。首先处理当前节点的任务函数，并根据返回的错误情况进行相应的处理。
 // 然后，遍历邻接节点，对于每个邻接节点，更新其依赖数量，如果依赖数量为 0，则启动一个新的 Goroutine 来处理该邻接节点。
 // 这样可以实现图算法中节点之间的并发处理和依赖关系的维护。
-func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
+func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	var err error
 	defer g.wg.Done()
 	emitEvent("start step %s in task %s", v.Name(), g.Name())
@@ -230,7 +238,7 @@ func (g *Graph) runVertex(v *Vertex, errCh chan<- error) {
 }
 
 // 合并多个上下文取消
-func (g *Graph) withCancel(main, extra context.Context) (context.Context, context.CancelFunc) {
+func (g *sGraph) withCancel(main, extra context.Context) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(main)
 	stopf := context.AfterFunc(extra, func() {
 		cancel()
@@ -243,7 +251,7 @@ func (g *Graph) withCancel(main, extra context.Context) (context.Context, contex
 
 // Run 运行任务流程,控制整个图算法的执行流程。它启动一个 Goroutine 来监听错误通道，同时遍历图的根节点并启动相应的 Goroutine 来处理每个根节点。
 // 然后等待所有节点的处理完成，最后检查并打印可能发生的错误信息。同时，通过上下文的取消来通知所有 Goroutine 停止处理。
-func (g *Graph) Run(ctx context.Context) (err error) {
+func (g *sGraph) Run(ctx context.Context) (err error) {
 	emitEvent("start task %s", g.Name())
 	if err = g.Validator(true); err != nil {
 		emitEvent("invalid task %s, %s", g.Name(), err)
@@ -299,7 +307,7 @@ func (g *Graph) Run(ctx context.Context) (err error) {
 	return
 }
 
-func (g *Graph) initContext(ctx context.Context) {
+func (g *sGraph) initContext(ctx context.Context) {
 	// 设置图形主上下文
 	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancel(ctx, g.ctx.baseCtx)
 	// 设置运行中
@@ -315,7 +323,7 @@ func (g *Graph) initContext(ctx context.Context) {
 }
 
 // Validator 检查图的状态，并根据需要进行编译
-func (g *Graph) Validator(force bool) error {
+func (g *sGraph) Validator(force bool) error {
 	if g.vertex == nil {
 		return ErrEmptyGraph
 	}
@@ -327,7 +335,7 @@ func (g *Graph) Validator(force bool) error {
 }
 
 // Reset 清除图和顶点的状态，准备重新编译
-func (g *Graph) reset() {
+func (g *sGraph) reset() {
 	g.ctx.Lock()
 	defer g.ctx.Unlock()
 
@@ -343,7 +351,7 @@ func (g *Graph) reset() {
 // compile 将任务列表转换为有向无环图。它遍历任务列表中的每个任务，创建对应的节点，并建立节点之间的依赖关系。
 // 在建立依赖关系时，将依赖的节点的指针添加到当前节点的 adjs 切片中。
 // 如果检测到回环，则返回 ErrCycleDetected 错误
-func (g *Graph) compile() (err error) {
+func (g *sGraph) compile() (err error) {
 	// 先重置图的状态，以支持多次编译
 	g.reset()
 
@@ -398,7 +406,7 @@ func (g *Graph) compile() (err error) {
 // 使用深度优先搜索 (DFS) 的方式进行回环检测。它从给定的节点开始遍历邻接节点，并在遍历过程中检查是否存在回环。
 // 如果发现已访问过的节点，则存在回环，返回 ErrCycleDetected 错误。否则，继续递归遍历邻接节点。
 // 为了避免重复访问节点，使用 visited 属性对已访问的节点进行标记。
-func (g *Graph) detectCircularDependencies(current *Vertex, visited, stack map[*Vertex]bool) error {
+func (g *sGraph) detectCircularDependencies(current *Vertex, visited, stack map[*Vertex]bool) error {
 	if stack[current] {
 		return ErrCycleDetected
 	}
