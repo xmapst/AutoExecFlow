@@ -146,7 +146,7 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 
 	// 更新所有符合条件的任务状态为失败
 	if err = tx.Model(&models.STask{}).
-		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateFailed).
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateSkipped, models.StateFailed).
 		Updates(map[string]interface{}{
 			"node":    nodeName,
 			"state":   models.StateFailed,

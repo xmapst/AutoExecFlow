@@ -3,18 +3,18 @@
 package pty
 
 import (
-	"github.com/xmapst/AutoExecFlow/pkg/pty/winpty"
+	"github.com/xmapst/AutoExecFlow/pkg/pty/conpty"
 )
 
 type terminal struct {
-	*winpty.ConPty
+	*conpty.ConPty
 }
 
 func New(cmd string) (Terminal, error) {
 	if cmd == "" {
 		cmd = "cmd.exe"
 	}
-	pty, err := winpty.Start(cmd)
+	pty, err := conpty.Start(cmd)
 	if err != nil {
 		return nil, err
 	}

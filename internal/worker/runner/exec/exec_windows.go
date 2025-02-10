@@ -4,17 +4,21 @@ package exec
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os/exec"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"syscall"
 
-	"github.com/go-cmd/cmd"
 	"golang.org/x/sys/windows"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
+
+	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 )
 
 var acp = windows.GetACP()
@@ -30,36 +34,81 @@ func (c *SCmd) selfScriptSuffix() string {
 	}
 }
 
-func (c *SCmd) beforeExec() []func(cmd *exec.Cmd) {
-	return []func(cmd *exec.Cmd){
-		func(cmd *exec.Cmd) {
-			cmd.SysProcAttr = &syscall.SysProcAttr{
-				HideWindow: true,
-			}
-		},
-	}
-}
-
-func (c *SCmd) selfCmd() {
+func (c *SCmd) selfCmd() *exec.Cmd {
+	var cmd *exec.Cmd
 	switch c.shell {
 	case "cmd", "bat":
-		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
+		cmd = exec.CommandContext(c.ctx, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
 	case "powershell", "ps", "ps1":
 		// 解决用户不写exit时, powershell进程外获取不到退出码
 		command := fmt.Sprintf("$ErrorActionPreference='Continue';%s;exit $LASTEXITCODE", c.scriptName)
 		// 激进方式, 强制用户脚本没问题
 		// command := fmt.Sprintf("$ErrorActionPreference='Stop';%s;exit $LASTEXITCODE", c.absFilePath)
-		c.cmd = cmd.NewCmdOptions(c.ops, "powershell", "-NoLogo", "-NonInteractive", "-Command", command)
+		cmd = exec.CommandContext(c.ctx, "powershell", "-NoLogo", "-NonInteractive", "-Command", command)
 	default:
-		c.cmd = cmd.NewCmdOptions(c.ops, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
+		cmd = exec.CommandContext(c.ctx, "cmd", "/D", "/E:ON", "/V:OFF", "/Q", "/S", "/C", c.scriptName)
 	}
+	return cmd
 }
 
-func (c *SCmd) kill() error {
-	if c.cmd.Status().PID == 0 {
+func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
+	defer func() {
+		c.cancel()
+		if _r := recover(); _r != nil {
+			err = fmt.Errorf("panic during execution %v", _r)
+			code = common.CodeSystemErr
+			stack := debug.Stack()
+			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
+				code = common.CodeKilled
+				err = common.ErrManual
+			}
+			c.storage.Log().Write(err.Error(), string(stack))
+		}
+	}()
+
+	cmd, err := c.newCmd(ctx)
+	if err != nil {
+		c.storage.Log().Write(err.Error())
+		return common.CodeSystemErr, err
+	}
+	// 设置输出
+
+	reader, err := cmd.StdoutPipe()
+	if err != nil {
+		c.storage.Log().Write(err.Error())
+		return common.CodeSystemErr, err
+	}
+	cmd.Stderr = cmd.Stdout
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		HideWindow: true,
+	}
+	go c.copyOutput(reader)
+	err = cmd.Run()
+	if cmd.ProcessState != nil {
+		code = int64(cmd.ProcessState.ExitCode())
+		if cmd.ProcessState.Pid() != 0 {
+			_ = c.kill(cmd.ProcessState.Pid())
+		}
+	}
+
+	if c.ctx.Err() != nil {
+		switch {
+		case errors.Is(context.Cause(c.ctx), common.ErrTimeOut):
+			err = common.ErrTimeOut
+			code = common.CodeTimeout
+		default:
+			err = common.ErrManual
+			code = common.CodeKilled
+		}
+	}
+	return
+}
+
+func (c *SCmd) kill(pid int) error {
+	if pid == 0 {
 		return nil
 	}
-	kill := exec.Command("TASKKILL.exe", "/T", "/F", "/PID", strconv.Itoa(c.cmd.Status().PID))
+	kill := exec.Command("TASKKILL.exe", "/T", "/F", "/PID", strconv.Itoa(pid))
 	return kill.Run()
 }
 

@@ -28,7 +28,7 @@ require (
 	github.com/kardianos/service v1.2.2
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/nikolalohinski/gonja/v2 v2.3.3
-	github.com/panjf2000/ants/v2 v2.11.0
+	github.com/panjf2000/ants/v2 v2.11.1
 	github.com/pelletier/go-toml/v2 v2.2.3
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/pkg/errors v0.9.1
@@ -50,8 +50,9 @@ require (
 	github.com/yargevad/filepathx v1.0.0
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
+	golang.org/x/exp v0.0.0-20250207012021-f9890c6ad9f3
 	golang.org/x/sys v0.29.0
+	golang.org/x/term v0.28.0
 	golang.org/x/text v0.21.0
 	google.golang.org/grpc v1.70.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -146,8 +147,7 @@ require (
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/term v0.28.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect

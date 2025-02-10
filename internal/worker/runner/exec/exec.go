@@ -1,16 +1,16 @@
 package exec
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 	"time"
 
-	"github.com/go-cmd/cmd"
-	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
@@ -20,12 +20,8 @@ import (
 type SCmd struct {
 	storage storage.IStep
 
-	done      chan struct{}
-	ops       cmd.Options
-	cmd       *cmd.Cmd
-	stderrBuf *cmd.OutputBuffer
-	ctx       context.Context
-	cancel    context.CancelFunc
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	shell      string
 	workspace  string
@@ -33,27 +29,15 @@ type SCmd struct {
 	timeout    time.Duration
 }
 
-func New(
-	storage storage.IStep,
+func New(storage storage.IStep,
 	shell, workspace, scriptDir string,
 ) (*SCmd, error) {
 	var c = &SCmd{
 		storage:   storage,
 		workspace: workspace,
 		shell:     shell,
-		done:      make(chan struct{}),
-		ctx:       context.Background(),
-		stderrBuf: cmd.NewOutputBuffer(),
-	}
-
-	c.ops = cmd.Options{
-		Buffered:       true,
-		Streaming:      true,
-		BeforeExec:     c.beforeExec(),
-		LineBufferSize: 1024,
 	}
 	c.ctx, c.cancel = context.WithCancel(context.Background())
-
 	c.scriptName = filepath.Join(scriptDir, ksuid.New().String())
 	c.scriptName = c.scriptName + c.scriptSuffix()
 	if err := os.MkdirAll(scriptDir, os.ModePerm); err != nil {
@@ -84,85 +68,7 @@ func (c *SCmd) Clear() error {
 	return os.Remove(c.scriptName)
 }
 
-func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
-	defer func() {
-		if _r := recover(); _r != nil {
-			err = fmt.Errorf("panic during execution %v", _r)
-			code = common.CodeSystemErr
-			stack := debug.Stack()
-			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
-				code = common.CodeKilled
-				err = common.ErrManual
-			}
-			c.storage.Log().Write(err.Error(), string(stack))
-		}
-	}()
-
-	err = c.newCmd()
-	if err != nil {
-		return common.CodeSystemErr, err
-	}
-	// Print STDOUT and STDERR lines streaming from Cmd
-	go c.consoleOutput()
-	defer func() {
-		c.cancel()
-		<-c.done
-	}()
-
-	select {
-	// 人工强制终止
-	case <-ctx.Done():
-		_ = c.kill()
-		err = common.ErrManual
-		code = common.CodeKilled
-		if context.Cause(ctx) != nil {
-			switch {
-			case errors.Is(context.Cause(ctx), common.ErrTimeOut):
-				err = common.ErrTimeOut
-				code = common.CodeTimeout
-			default:
-				err = context.Cause(ctx)
-			}
-		}
-	// 执行超时信号
-	case <-c.ctx.Done():
-		// 如果直接使用cmd.Process.Kill()并不能杀死主进程下的所有子进程
-		// _ = cmd.Process.Kill()
-		_ = c.kill()
-		err = common.ErrTimeOut
-		code = common.CodeTimeout
-	// 执行结果
-	case status := <-c.cmd.Start():
-		code = int64(status.Exit)
-		err = status.Error
-		if err != nil && code == 0 {
-			code = common.CodeSystemErr
-		}
-		if err == nil && code != 0 {
-			err = fmt.Errorf("exit code %d", code)
-		}
-	}
-	return
-}
-
-func (c *SCmd) newCmd() error {
-	timeout, err := c.storage.Timeout()
-	if err != nil {
-		return err
-	}
-	if timeout > 0 {
-		c.ctx, c.cancel = context.WithTimeout(c.ctx, timeout)
-	}
-	switch c.shell {
-	case "python", "python2", "py2", "py":
-		c.cmd = cmd.NewCmdOptions(c.ops, "python2", c.scriptName)
-	case "python3", "py3":
-		c.cmd = cmd.NewCmdOptions(c.ops, "python3", c.scriptName)
-	default:
-		c.selfCmd()
-	}
-
-	// 动态获取环境变量
+func (c *SCmd) envs() []string {
 	var envs []string
 	taskEnv := c.storage.GlobalEnv().List()
 	for _, env := range taskEnv {
@@ -173,42 +79,44 @@ func (c *SCmd) newCmd() error {
 		envs = append(envs, fmt.Sprintf("%s=%s", env.Name, env.Value))
 	}
 
-	// inject env
-	c.cmd.Env = append(os.Environ(), append(
+	return append(os.Environ(), append(
 		envs,
 		fmt.Sprintf("TASK_NAME=%s", c.storage.TaskName()),
 		fmt.Sprintf("TASK_STEP_NAME=%s", c.storage.Name()),
 		fmt.Sprintf("TASK_WORKSPACE=%s", c.workspace),
 	)...)
-	// set workspace
-	c.cmd.Dir = c.workspace
-	return nil
 }
 
-func (c *SCmd) consoleOutput() {
-	defer close(c.done)
-	for {
-		var line string
-		var open bool
-		select {
-		case <-c.ctx.Done():
-			if c.cmd.Stdout != nil || c.cmd.Stderr != nil {
-				continue
-			}
-			return
-		case line, open = <-c.cmd.Stdout:
-			if !open {
-				c.cmd.Stdout = nil
-				continue
-			}
-		case line, open = <-c.cmd.Stderr:
-			if !open {
-				c.cmd.Stderr = nil
-				continue
-			}
-			_, _ = c.stderrBuf.Write([]byte(line))
-		}
+func (c *SCmd) newCmd(ctx context.Context) (*exec.Cmd, error) {
+	timeout, err := c.storage.Timeout()
+	if err != nil {
+		return nil, err
+	}
+	if timeout > 0 {
+		c.ctx, c.cancel = context.WithTimeoutCause(ctx, timeout, common.ErrTimeOut)
+	}
+	var cmd *exec.Cmd
+	switch c.shell {
+	case "python", "python2", "py2", "py":
+		cmd = exec.CommandContext(c.ctx, "python2", c.scriptName)
+	case "python3", "py3":
+		cmd = exec.CommandContext(c.ctx, "python3", c.scriptName)
+	default:
+		cmd = c.selfCmd()
+	}
+	cmd.Dir = c.workspace
+	cmd.Env = c.envs()
+	return cmd, nil
+}
 
+func (c *SCmd) copyOutput(reader io.ReadCloser) {
+	defer func() {
+		_ = reader.Close()
+	}()
+	// 按行读取输出写入到日志中
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		line := scanner.Text()
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
