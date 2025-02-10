@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"regexp"
 	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/creack/pty"
+	"github.com/dlclark/regexp2"
 	"github.com/xmapst/logx"
 	"golang.org/x/term"
 
@@ -191,7 +191,7 @@ type ptyWriter struct {
 }
 
 // 定义正则表达式，用来匹配 ANSI 转义序列
-var ansiRegexp = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+var ansiRegexp = regexp2.MustCompile("[\\u001B\\u009B][[\\\\]()#;?]*(?:(?:(?:[a-zA-Z\\\\d]*(?:;[a-zA-Z\\\\d]*)*)?\\u0007)|(?:(?:\\\\d{1,4}(?:;\\\\d{0,4})*)?[\\\\dA-PRZcf-ntqry=><~]))", regexp2.RE2)
 
 func (w *ptyWriter) Write(buf []byte) (int, error) {
 	if w.AutoStop && len(buf) > 0 && buf[len(buf)-1] == 4 {
@@ -206,20 +206,23 @@ func (w *ptyWriter) Write(buf []byte) (int, error) {
 		return n, io.EOF
 	}
 
-	cleaned := ansiRegexp.ReplaceAll(buf, nil)
+	cleaned, err := ansiRegexp.Replace(string(buf), "", -1, -1)
+	if err != nil {
+		return 0, err
+	}
 	var lineStart int
 	for i, b := range cleaned {
 		if b == '\r' || b == '\n' {
 			if i > lineStart {
-				_, err := w.Out.Write(cleaned[lineStart:i])
+				_, err = w.Out.Write([]byte(cleaned[lineStart:i]))
 				if err != nil {
-					return len(buf), err
+					return 0, err
 				}
 			}
 			if b == '\n' || i == len(cleaned)-1 {
-				_, err := w.Out.Write([]byte("\n"))
+				_, err = w.Out.Write([]byte("\n"))
 				if err != nil {
-					return len(buf), err
+					return 0, err
 				}
 			}
 			lineStart = i + 1
