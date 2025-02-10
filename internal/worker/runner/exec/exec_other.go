@@ -127,6 +127,7 @@ func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 	cmd.Stdout = tty
 	cmd.Stderr = tty
 	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
 		Setsid:  true,
 		Setctty: true,
 	}
@@ -142,6 +143,9 @@ func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 		if cmd.ProcessState.Pid() != 0 {
 			_ = syscall.Kill(-cmd.ProcessState.Pid(), syscall.SIGKILL)
 		}
+	}
+	if err != nil && code == 0 {
+		code = common.CodeFailed
 	}
 	writer.AutoStop = true
 	if _, _err := tty.Write([]byte("\x04")); _err != nil {

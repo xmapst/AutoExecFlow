@@ -90,7 +90,9 @@ func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 			_ = c.kill(cmd.ProcessState.Pid())
 		}
 	}
-
+	if err != nil && code == 0 {
+		code = common.CodeFailed
+	}
 	if c.ctx.Err() != nil {
 		switch {
 		case errors.Is(context.Cause(c.ctx), common.ErrTimeOut):
