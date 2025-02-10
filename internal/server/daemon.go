@@ -25,7 +25,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker"
-	"github.com/xmapst/AutoExecFlow/pkg/reaper"
 )
 
 type sProgram struct {
@@ -82,7 +81,6 @@ func (p *sProgram) init() error {
 }
 
 func (p *sProgram) Start(service.Service) error {
-	reaper.Run()
 	p.cron.Start()
 	err := p.init()
 	if err != nil {

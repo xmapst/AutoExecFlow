@@ -127,7 +127,6 @@ func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 	cmd.Stdout = tty
 	cmd.Stderr = tty
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
 		Setsid:  true,
 		Setctty: true,
 	}
@@ -142,6 +141,7 @@ func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 		code = int64(cmd.ProcessState.ExitCode())
 		if cmd.ProcessState.Pid() != 0 {
 			_ = syscall.Kill(-cmd.ProcessState.Pid(), syscall.SIGKILL)
+			c.reaper(cmd.ProcessState.Pid())
 		}
 	}
 	if err != nil && code == 0 {
@@ -230,4 +230,24 @@ func (w *ptyWriter) Write(buf []byte) (int, error) {
 	}
 	w.dirtyLine = strings.LastIndex(string(buf), "\n") < len(buf)-1
 	return len(buf), nil
+}
+
+func (c *SCmd) reaper(pid int) {
+	for {
+		logx.Debugf("reaper process pid: %d", pid)
+		var wStatus syscall.WaitStatus
+		var err error
+		/*
+		 *  Reap 'em, so that zombies don't accumulate.
+		 *  Plants vs. Zombies!!
+		 */
+		pid, err = syscall.Wait4(-pid, &wStatus, 0, nil)
+		for errors.Is(err, syscall.EINTR) {
+			pid, err = syscall.Wait4(-pid, &wStatus, 0, nil)
+		}
+
+		if errors.Is(err, syscall.ECHILD) {
+			break
+		}
+	}
 }
