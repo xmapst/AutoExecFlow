@@ -144,18 +144,6 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 		}
 	}()
 
-	// 更新所有符合条件的任务状态为失败
-	if err = tx.Model(&models.STask{}).
-		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateSkipped, models.StateFailed).
-		Updates(map[string]interface{}{
-			"node":    nodeName,
-			"state":   models.StateFailed,
-			"message": "execution failed due to system error",
-		}).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	// 更新所有符合条件的步骤状态为失败
 	if err = tx.Model(&models.SStep{}).
 		Where("task_name IN (?)",
@@ -166,6 +154,18 @@ func (d *sDatabase) FixDatabase(nodeName string) (err error) {
 		Updates(map[string]interface{}{
 			"state":   models.StateFailed,
 			"code":    common.CodeSystemErr,
+			"message": "execution failed due to system error",
+		}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 更新所有符合条件的任务状态为失败
+	if err = tx.Model(&models.STask{}).
+		Where("(node IS NULL OR node = ?) AND (state <> ? AND state <> ? AND state <> ?)", nodeName, models.StateStopped, models.StateSkipped, models.StateFailed).
+		Updates(map[string]interface{}{
+			"node":    nodeName,
+			"state":   models.StateFailed,
 			"message": "execution failed due to system error",
 		}).Error; err != nil {
 		tx.Rollback()

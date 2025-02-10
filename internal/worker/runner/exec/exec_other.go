@@ -191,7 +191,8 @@ type ptyWriter struct {
 }
 
 // 定义正则表达式，用来匹配 ANSI 转义序列
-var ansiRegexp = regexp2.MustCompile("[\\u001B\\u009B][[\\\\]()#;?]*(?:(?:(?:[a-zA-Z\\\\d]*(?:;[a-zA-Z\\\\d]*)*)?\\u0007)|(?:(?:\\\\d{1,4}(?:;\\\\d{0,4})*)?[\\\\dA-PRZcf-ntqry=><~]))", regexp2.RE2)
+// var ansiRegexp = regexp2.MustCompile("[\\u001b\\u009b][[\\\\]()#;?]*(?:(?:(?:[a-zA-Z\\\\d]*(?:;[a-zA-Z\\\\d]*)*)?\\u0007)|(?:(?:\\\\d{1,4}(?:;\\\\d{0,4})*)?[\\\\dA-PRZcf-ntqry=><~]))", regexp2.RE2)
+var ansiRegexp = regexp2.MustCompile("\\x1b\\[[0-9;]*[a-zA-Z]", regexp2.RE2)
 
 func (w *ptyWriter) Write(buf []byte) (int, error) {
 	if w.AutoStop && len(buf) > 0 && buf[len(buf)-1] == 4 {
