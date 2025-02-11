@@ -26,6 +26,8 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/kardianos/service v1.2.2
 	github.com/modern-go/reflect2 v1.0.2
+	github.com/ncruces/go-sqlite3 v0.22.0
+	github.com/ncruces/go-sqlite3/gormlite v0.22.0
 	github.com/nikolalohinski/gonja/v2 v2.3.3
 	github.com/panjf2000/ants/v2 v2.11.1
 	github.com/pelletier/go-toml/v2 v2.2.3
@@ -56,7 +58,6 @@ require (
 	google.golang.org/grpc v1.70.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.7
-	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 	k8s.io/api v0.32.1
 	k8s.io/apimachinery v0.32.1
@@ -115,10 +116,10 @@ require (
 	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.22.0 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
@@ -134,6 +135,7 @@ require (
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/tetratelabs/wazero v1.8.2 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

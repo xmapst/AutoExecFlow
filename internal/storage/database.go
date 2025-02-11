@@ -5,10 +5,11 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/ncruces/go-sqlite3/embed"
+	"github.com/ncruces/go-sqlite3/gormlite"
 	"github.com/pkg/errors"
 	"github.com/xmapst/logx"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
@@ -31,7 +32,7 @@ func newDB(rawURL string) (*sDatabase, error) {
 	case TYPE_MYSQL:
 		dialector = mysql.Open(after)
 	case TYPE_SQLITE:
-		dialector = sqlite.Open(after)
+		dialector = gormlite.Open(after)
 	default:
 		return nil, errors.New("unsupported storage type")
 	}
@@ -88,6 +89,7 @@ func newDB(rawURL string) (*sDatabase, error) {
 }
 
 func (d *sDatabase) initSqlite() {
+	d.Exec("PRAGMA mode=rwc;")
 	// 开启外键约束
 	d.Exec("PRAGMA foreign_keys=ON;")
 	// 写同步

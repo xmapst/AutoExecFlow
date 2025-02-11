@@ -79,7 +79,7 @@ func (c *SConfig) init() error {
 		}
 		file := filepath.Join(dir, fmt.Sprintf("%s.db3", utils.ServiceName))
 		logx.Infof("%s file: %s", "data", file)
-		c.DBUrl = fmt.Sprintf("%s://%s?mode=rwc", storage.TYPE_SQLITE, file)
+		c.DBUrl = fmt.Sprintf("%s://%s", storage.TYPE_SQLITE, file)
 	}
 
 	var dirs = map[string]string{
