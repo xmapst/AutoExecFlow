@@ -5,6 +5,6 @@ import (
 )
 
 type IRunner interface {
-	Run(ctx context.Context) (code int64, err error)
+	Run(ctx context.Context) (exit int64, err error)
 	Clear() error
 }

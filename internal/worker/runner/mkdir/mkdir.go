@@ -30,7 +30,7 @@ func New(
 	}, nil
 }
 
-func (m *SMkdir) Run(ctx context.Context) (code int64, err error) {
+func (m *SMkdir) Run(ctx context.Context) (exit int64, err error) {
 	content, err := m.storage.Content()
 	if err != nil {
 		return common.CodeSystemErr, err

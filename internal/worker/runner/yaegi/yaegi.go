@@ -29,14 +29,14 @@ func New(storage storage.IStep, workspace string) (*SYaegi, error) {
 	}, nil
 }
 
-func (y *SYaegi) Run(ctx context.Context) (code int64, err error) {
+func (y *SYaegi) Run(ctx context.Context) (exit int64, err error) {
 	defer func() {
 		if _r := recover(); _r != nil {
 			err = fmt.Errorf("panic during execution %v", _r)
-			code = common.CodeSystemErr
+			exit = common.CodeSystemErr
 			stack := debug.Stack()
 			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
-				code = common.CodeKilled
+				exit = common.CodeKilled
 				err = common.ErrManual
 			}
 			y.storage.Log().Write(err.Error(), string(stack))

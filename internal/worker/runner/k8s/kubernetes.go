@@ -111,13 +111,13 @@ func (k *SKubectl) init() (err error) {
 	return
 }
 
-func (k *SKubectl) Run(ctx context.Context) (code int64, err error) {
+func (k *SKubectl) Run(ctx context.Context) (exit int64, err error) {
 	defer func() {
 		r := recover()
 		if r != nil {
 			logx.Errorln(string(debug.Stack()), r)
 			err = fmt.Errorf("panic: %s", r)
-			code = common.CodeSystemErr
+			exit = common.CodeSystemErr
 		}
 	}()
 	timeout, err := k.storage.Timeout()

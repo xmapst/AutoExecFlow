@@ -8,6 +8,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/k8s"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/mkdir"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/touch"
+	"github.com/xmapst/AutoExecFlow/internal/worker/runner/wasm"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner/yaegi"
 )
 
@@ -28,6 +29,8 @@ func New(
 		return touch.New(storage, workspace)
 	case strings.EqualFold(commandType, "yaegi"):
 		return yaegi.New(storage, workspace)
+	case strings.EqualFold(commandType, "wasm"):
+		return wasm.New(storage, workspace)
 	default:
 		return exec.New(storage, commandType, workspace, scriptDir)
 	}

@@ -51,15 +51,15 @@ func (c *SCmd) selfCmd() *exec.Cmd {
 	return cmd
 }
 
-func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
+func (c *SCmd) Run(ctx context.Context) (exit int64, err error) {
 	defer func() {
 		c.cancel()
 		if _r := recover(); _r != nil {
 			err = fmt.Errorf("panic during execution %v", _r)
-			code = common.CodeSystemErr
+			exit = common.CodeSystemErr
 			stack := debug.Stack()
 			if _err, ok := _r.(error); ok && strings.Contains(_err.Error(), context.Canceled.Error()) {
-				code = common.CodeKilled
+				exit = common.CodeKilled
 				err = common.ErrManual
 			}
 			c.storage.Log().Write(err.Error(), string(stack))
@@ -85,22 +85,22 @@ func (c *SCmd) Run(ctx context.Context) (code int64, err error) {
 	go c.copyOutput(reader)
 	err = cmd.Run()
 	if cmd.ProcessState != nil {
-		code = int64(cmd.ProcessState.ExitCode())
+		exit = int64(cmd.ProcessState.ExitCode())
 		if cmd.ProcessState.Pid() != 0 {
 			_ = c.kill(cmd.ProcessState.Pid())
 		}
 	}
-	if err != nil && code == 0 {
-		code = common.CodeFailed
+	if err != nil && exit == 0 {
+		exit = common.CodeFailed
 	}
 	if c.ctx.Err() != nil {
 		switch {
 		case errors.Is(context.Cause(c.ctx), common.ErrTimeOut):
 			err = common.ErrTimeOut
-			code = common.CodeTimeout
+			exit = common.CodeTimeout
 		default:
 			err = common.ErrManual
-			code = common.CodeKilled
+			exit = common.CodeKilled
 		}
 	}
 	return

@@ -32,7 +32,7 @@ func New(
 	}, nil
 }
 
-func (t *STouch) Run(ctx context.Context) (code int64, err error) {
+func (t *STouch) Run(ctx context.Context) (exit int64, err error) {
 	content, err := t.storage.Content()
 	if err != nil {
 		return common.CodeSystemErr, err
