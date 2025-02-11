@@ -6,10 +6,7 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/xmapst/AutoExecFlow/docs"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/middleware/zap"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/event"
@@ -62,8 +59,8 @@ func New(relativePath string) *gin.Engine {
 	baseGroup.GET("/heartbeat", heartbeat)
 	baseGroup.HEAD("/heartbeat", heartbeat)
 	// swagger
-	docs.SwaggerInfo.BasePath = relativePath
-	baseGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	//docs.SwaggerInfo.BasePath = relativePath
+	//baseGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	api := baseGroup.Group("/api")
 	// V1
 	{
