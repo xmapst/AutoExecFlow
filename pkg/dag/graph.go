@@ -237,15 +237,30 @@ func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	}
 }
 
-// 合并多个上下文取消
-func (g *sGraph) withCancel(main, extra context.Context) (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(main)
-	stopf := context.AfterFunc(extra, func() {
-		cancel()
-	})
+// WithCancelOnAny 返回一个上下文，当以下任一情况发生时自动取消：
+// 1. 父上下文 parent 被取消
+// 2. 任一 extra 上下文被取消
+// 同时返回一个清理函数，用于手动取消并释放资源。
+func (g *sGraph) withCancelOnAny(parent context.Context, extras ...context.Context) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(parent)
+	// 存储所有额外上下文的停止监听函数
+	var stopFuncs []func() bool
+	// 为每个 extra 上下文注册取消回调
+	for _, extra := range extras {
+		stop := context.AfterFunc(extra, func() {
+			// 任一 extra 被取消时，触发主上下文取消
+			cancel()
+		})
+		stopFuncs = append(stopFuncs, stop)
+	}
+	// 返回新上下文和统一的清理函数
 	return ctx, func() {
+		// 手动取消主上下文
 		cancel()
-		stopf()
+		// 停止所有 extra 的监听
+		for _, stop := range stopFuncs {
+			stop()
+		}
 	}
 }
 
@@ -309,7 +324,7 @@ func (g *sGraph) Run(ctx context.Context) (err error) {
 
 func (g *sGraph) initContext(ctx context.Context) {
 	// 设置图形主上下文
-	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancel(ctx, g.ctx.baseCtx)
+	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancelOnAny(ctx, g.ctx.baseCtx)
 	// 设置运行中
 	g.ctx.Lock()
 	g.ctx.oldState = g.ctx.state
@@ -318,7 +333,7 @@ func (g *sGraph) initContext(ctx context.Context) {
 
 	// 设置所有顶点主上下文
 	for k := range g.vertex {
-		g.vertex[k].ctx.mainCtx, g.vertex[k].ctx.mainCancel = g.withCancel(g.ctx.mainCtx, g.vertex[k].ctx.baseCtx)
+		g.vertex[k].ctx.mainCtx, g.vertex[k].ctx.mainCancel = g.withCancelOnAny(g.ctx.mainCtx, g.vertex[k].ctx.baseCtx)
 	}
 }
 
