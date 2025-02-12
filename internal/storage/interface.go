@@ -73,6 +73,8 @@ type ITask interface {
 	StepStateList(str string) (res map[string]models.State)
 	// StepList 获取任务下所有步骤
 	StepList(str string) (res models.SSteps)
+	// CheckDependentModel 检查依赖当前步骤的步骤模式
+	CheckDependentModel() (res bool)
 }
 
 type IStep interface {

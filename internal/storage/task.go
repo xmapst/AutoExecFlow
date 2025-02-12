@@ -175,3 +175,13 @@ func (t *sTask) StepList(str string) (res models.SSteps) {
 	query.Find(&res)
 	return
 }
+
+// CheckDependentModel 获取依赖当前步骤的步骤
+func (t *sTask) CheckDependentModel() (res bool) {
+	var count int64
+	t.Table("t_step").Select("count(DISTINCT t_step.name)").
+		Joins("INNER JOIN t_step_depend ON t_step.task_name = t_step_depend.task_name").
+		Where("t_step.task_name = ? AND t_step.action != '' AND t_step.rule != ''", t.tName).
+		Count(&count)
+	return count > 0
+}

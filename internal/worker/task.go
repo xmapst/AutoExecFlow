@@ -174,6 +174,8 @@ func (t *sTask) run() (err error) {
 		}
 		// 清理
 		t.clearDir()
+		res.State = models.Pointer(models.StateStopped)
+		res.Message = "task has stopped"
 		// 结束时间
 		res.ETime = models.Pointer(time.Now())
 		res.OldState = models.Pointer(models.StateRunning)
@@ -206,13 +208,13 @@ func (t *sTask) run() (err error) {
 		return
 	}
 
-	res.State = models.Pointer(models.StateStopped)
-	res.Message = "task has stopped"
 	if err = t.graph.Run(ctx); err != nil {
 		logx.Errorln(t.name(), err)
 		return
 	}
-
+	if t.storage.CheckDependentModel() {
+		return
+	}
 	for _, sName := range t.storage.StepNameList("") {
 		state, _ := t.storage.Step(sName).State()
 		if state == models.StateFailed {
