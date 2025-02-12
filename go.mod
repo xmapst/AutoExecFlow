@@ -26,8 +26,8 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/kardianos/service v1.2.2
 	github.com/modern-go/reflect2 v1.0.2
-	github.com/ncruces/go-sqlite3 v0.22.0
-	github.com/ncruces/go-sqlite3/gormlite v0.22.0
+	github.com/ncruces/go-sqlite3 v0.23.0
+	github.com/ncruces/go-sqlite3/gormlite v0.23.0
 	github.com/nikolalohinski/gonja/v2 v2.3.3
 	github.com/panjf2000/ants/v2 v2.11.1
 	github.com/pelletier/go-toml/v2 v2.2.3
@@ -142,7 +142,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/arch v0.13.0 // indirect
-	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
