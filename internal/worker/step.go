@@ -92,6 +92,14 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 			// 继续执行
 		}
 
+		defer func() {
+			// 依赖当前步骤的步骤在自定义策略模式下需要当前步骤成功才会触发
+			if s.storage.CheckDependentModel() {
+				err = nil
+				return
+			}
+		}()
+
 		s.before(ctx, taskName, stepName)
 		defer func() {
 			s.after(ctx, taskName, stepName)
@@ -134,6 +142,16 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 	}
 }
 
+func (s *sStep) before(ctx context.Context, taskName, stepName string) {
+	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "started")
+	return
+}
+
+func (s *sStep) after(ctx context.Context, taskName, stepName string) {
+	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "end")
+	return
+}
+
 func (s *sStep) evaluateExprRule() (common.Action, error) {
 	// 查询规则
 	rule, err := s.storage.Rule()
@@ -150,18 +168,7 @@ func (s *sStep) evaluateExprRule() (common.Action, error) {
 		logx.Infoln(s.storage.TaskName(), s.storage.Name(), "no rule or no action")
 		return common.ActionAllow, nil
 	}
-	program, err := expr.Compile(
-		rule,
-		// 预期返回值类型
-		expr.AsBool(),
-		// TODO: 内置函数或工具链
-		//expr.Env(map[string]any{
-		//	"storage": s.storage,
-		//}),
-		//expr.Function("test", func(params ...any) (any, error) {
-		//	return "test", nil
-		//}),
-	)
+	program, err := expr.Compile(rule, s.exprBuiltins()...)
 	if err != nil {
 		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
 		return common.ActionBlock, err
@@ -180,14 +187,4 @@ func (s *sStep) evaluateExprRule() (common.Action, error) {
 		return common.ActionAllow, nil
 	}
 	return common.ActionConvert(action), nil
-}
-
-func (s *sStep) before(ctx context.Context, taskName, stepName string) {
-	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "started")
-	return
-}
-
-func (s *sStep) after(ctx context.Context, taskName, stepName string) {
-	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "end")
-	return
 }

@@ -12,6 +12,7 @@ type sStepDepend struct {
 	sName string
 }
 
+// List 获取当前步骤所依赖的步骤
 func (d *sStepDepend) List() (res []string) {
 	d.Model(&models.SStepDepend{}).
 		Select("name").

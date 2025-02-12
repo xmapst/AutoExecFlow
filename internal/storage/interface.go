@@ -15,7 +15,7 @@ type IStorage interface {
 	Close() (err error)
 	GetDB() (db *gorm.DB)
 
-	// fix database
+	// FixDatabase fix database
 	FixDatabase(nodeName string) (err error)
 
 	// Task 任务接口
@@ -105,6 +105,8 @@ type IStep interface {
 	GlobalEnv() (env IEnv)
 	// Depend 依赖接口
 	Depend() (depend IDepend)
+	// CheckDependentModel 检查依赖当前步骤的步骤模式
+	CheckDependentModel() (res bool)
 	// Log 日志接口
 	Log() (log ILog)
 }
@@ -137,20 +139,20 @@ type IDepend interface {
 type IPipeline interface {
 	IBase
 
-	// 执行相关
+	// Build 执行相关
 	Build() (build IPipelineBuild)
-	// 任务接口
+	// Task 任务接口
 	Task(name string) (task ITask)
 
-	// 更新
+	// Update 更新
 	Update(value *models.SPipelineUpdate) (err error)
-	// 获取
+	// Get 获取
 	Get() (res *models.SPipeline, err error)
 	// IsDisable 是否禁用
 	IsDisable() (disable bool)
-	// 类型
+	// TplType 类型
 	TplType() (res string, err error)
-	// 内容
+	// Content 内容
 	Content() (res string, err error)
 }
 

@@ -8,8 +8,9 @@ const ConsoleDone = "OSREAPI::CONSOLE::DONE"
 type Action int
 
 const (
+	ActionUnknown Action = iota
 	// ActionAllow 允许执行
-	ActionAllow Action = iota
+	ActionAllow
 	// ActionBlock 禁止执行
 	ActionBlock
 	// ActionSkip 跳过执行
@@ -18,6 +19,8 @@ const (
 
 func (a Action) String() string {
 	switch a {
+	case ActionUnknown:
+		return "unknown"
 	case ActionAllow:
 		return "allow"
 	case ActionBlock:
@@ -39,6 +42,6 @@ func ActionConvert(action string) Action {
 	case "skip":
 		return ActionSkip
 	default:
-		return ActionBlock
+		return ActionUnknown
 	}
 }
