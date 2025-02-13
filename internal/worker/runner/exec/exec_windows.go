@@ -80,7 +80,8 @@ func (c *SCmd) Run(ctx context.Context) (exit int64, err error) {
 	}
 	cmd.Stderr = cmd.Stdout
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		HideWindow: true,
+		CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP,
+		HideWindow:    true,
 	}
 	go c.copyOutput(reader)
 	err = cmd.Run()
