@@ -261,7 +261,6 @@ func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error
 		models.StateStopped: ss.handleFinalState(types.CodeSuccess),
 		models.StateFailed:  ss.handleFinalState(types.CodeFailed),
 		models.StateSkipped: ss.handleFinalState(types.CodeSkipped),
-		models.StateBlocked: ss.handleFinalState(types.CodeBlocked),
 	}
 
 	for {

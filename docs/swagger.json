@@ -612,6 +612,44 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "创建任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "任务"
+                ],
+                "summary": "创建",
+                "parameters": [
+                    {
+                        "description": "任务内容",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.STaskReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-types_STaskCreateRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.SBase-any"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/task/{task}": {
@@ -1070,46 +1108,6 @@
                 }
             }
         },
-        "/api/v2/task": {
-            "post": {
-                "description": "创建任务",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "任务"
-                ],
-                "summary": "创建",
-                "parameters": [
-                    {
-                        "description": "任务内容",
-                        "name": "task",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.STaskReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-types_STaskCreateRes"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/types.SBase-any"
-                        }
-                    }
-                }
-            }
-        },
         "/healthyz": {
             "get": {
                 "description": "用于检测服务是否正常",
@@ -1207,7 +1205,9 @@
                 1002,
                 1003,
                 1004,
-                1005
+                1005,
+                1006,
+                1007
             ],
             "x-enum-varnames": [
                 "CodeSuccess",
@@ -1215,7 +1215,9 @@
                 "CodeFailed",
                 "CodeNoData",
                 "CodePending",
-                "CodePaused"
+                "CodePaused",
+                "CodeSkipped",
+                "CodeBlocked"
             ]
         },
         "types.SBase-any": {
@@ -1750,6 +1752,9 @@
                 "type"
             ],
             "properties": {
+                "action": {
+                    "type": "string"
+                },
                 "content": {
                     "type": "string"
                 },
@@ -1774,6 +1779,9 @@
                 "name": {
                     "type": "string"
                 },
+                "rule": {
+                    "type": "string"
+                },
                 "timeout": {
                     "type": "string"
                 },
@@ -1785,6 +1793,9 @@
         "types.SStepRes": {
             "type": "object",
             "properties": {
+                "action": {
+                    "type": "string"
+                },
                 "code": {
                     "type": "integer"
                 },
@@ -1813,6 +1824,9 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "rule": {
                     "type": "string"
                 },
                 "state": {
@@ -1860,9 +1874,6 @@
                 "step"
             ],
             "properties": {
-                "async": {
-                    "type": "boolean"
-                },
                 "desc": {
                     "type": "string"
                 },
@@ -1874,6 +1885,9 @@
                     "items": {
                         "$ref": "#/definitions/types.SEnv"
                     }
+                },
+                "kind": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -1909,6 +1923,9 @@
                     "items": {
                         "$ref": "#/definitions/types.SEnv"
                     }
+                },
+                "kind": {
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"

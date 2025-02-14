@@ -179,16 +179,6 @@ func (s *sStep) GlobalEnv() IEnv {
 	return s.genv
 }
 
-// CheckDependentModel 获取依赖当前步骤的步骤
-func (s *sStep) CheckDependentModel() (res bool) {
-	var count int64
-	s.Table("t_step").Select("count(DISTINCT t_step.name)").
-		Joins("INNER JOIN t_step_depend ON t_step.task_name = t_step_depend.task_name AND t_step.name = t_step_depend.step_name").
-		Where("t_step.task_name = ? AND t_step_depend.name = ? AND t_step.action != '' AND t_step.rule != ''", s.tName, s.sName).
-		Count(&count)
-	return count > 0
-}
-
 func (s *sStep) Depend() IDepend {
 	if s.depend == nil {
 		s.depend = &sStepDepend{

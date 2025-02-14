@@ -13,6 +13,7 @@ type STaskListDetailRes struct {
 type STasksRes []*STaskRes
 
 type STaskRes struct {
+	Kind    string   `json:"kind" yaml:"kind"`
 	Name    string   `json:"name" yaml:"name"`
 	State   string   `json:"state" yaml:"state"`
 	Count   int64    `json:"count,omitempty" yaml:"count,omitempty"`
@@ -26,10 +27,10 @@ type STaskRes struct {
 }
 
 type STaskReq struct {
+	Kind    string    `json:"kind,omitempty" form:"kind" yaml:"kind,omitempty"`
 	Name    string    `json:"name,omitempty" form:"name" yaml:"name,omitempty"`
 	Desc    string    `json:"desc,omitempty" form:"desc" yaml:"desc,omitempty"`
 	Node    string    `json:"node,omitempty" form:"node" yaml:"node,omitempty"`
-	Async   bool      `json:"async,omitempty" form:"async" yaml:"async,omitempty"`
 	Disable bool      `json:"disable,omitempty" form:"disable" yaml:"disable,omitempty"`
 	Timeout string    `json:"timeout,omitempty" form:"timeout,omitempty" yaml:"timeout,omitempty"`
 	Env     SEnvs     `json:"env,omitempty" form:"env" yaml:"env,omitempty"`

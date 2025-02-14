@@ -11,7 +11,7 @@ dev:
 	@CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o bin/AutoExecFlow cmd/main.go
 
 swag:
-	@swag init --exclude pkg --parseDependencyLevel 3 --dir internal/server/api -g router.go
+	@swag init --exclude pkg --parseDependencyLevel 3 --dir internal/server/api --outputTypes json -g router.go
 
 # Run code generation
 generate:

@@ -18,7 +18,7 @@ import (
 // @Param		task body types.STaskReq true "任务内容"
 // @Success		200 {object} types.SBase[types.STaskCreateRes]
 // @Failure		500 {object} types.SBase[any]
-// @Router		/api/v2/task [post]
+// @Router		/api/v1/task [post]
 func Post(c *gin.Context) {
 	var req = new(types.STaskReq)
 	if err := c.ShouldBind(req); err != nil {

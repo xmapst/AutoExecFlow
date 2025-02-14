@@ -94,7 +94,7 @@ make
 ```text
 name: 测试
 desc: 这是一段任务描述
-async: true
+kind: dag
 timeout: 2m
 env:
   - name: GLOBAL_NAME
@@ -388,7 +388,7 @@ curl -X POST -H "Content-Type:application/json" -d '"name": "test",
     "value" : "www.google.com"
   }
 ],
-"async: true,
+"kind": "dag",
 "step": [
   {
     "type": "bash", # support[python2,python3,bash,sh,cmd,powershell]
@@ -421,7 +421,7 @@ curl -X POST -H "Content-Type:application/json" -d '"name": "test",
     "value" : "www.google.com"
   }
 ],
-"async: true,
+"kind": dag,
 "step": [
   {
     "name": "step0",
@@ -522,7 +522,6 @@ curl -X PUT -H "Content-Type:application/json" http://localhost:2376/api/v1/task
   - 1004: pending
   - 1005: paused
   - 1006: skipped
-  - 1007: blocked
 
 ## Script language support
 + [bash/sh/ps1/bat/python2/python3](internal/worker/runner/exec/README.md)

@@ -19,13 +19,15 @@ import (
 
 type sStep struct {
 	storage   storage.IStep
+	kind      string
 	workspace string
 	scriptDir string
 }
 
-func newStep(storage storage.IStep, workspace, scriptDir string) dag.VertexFunc {
+func newStep(storage storage.IStep, kind string, workspace, scriptDir string) dag.VertexFunc {
 	s := &sStep{
 		storage:   storage,
+		kind:      kind,
 		workspace: workspace,
 		scriptDir: scriptDir,
 	}
@@ -65,44 +67,37 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 		s.storage.Log().Write(common.ConsoleStart)
 		defer s.storage.Log().Write(common.ConsoleDone)
 
-		// 评估规则, 使用expr
-		var action common.Action
-		action, err = s.evaluateExprRule()
-		if err != nil {
-			logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-			// 写入步骤日志
-			s.storage.Log().Write(err.Error())
-			res.State = models.Pointer(models.StateFailed)
-			res.Code = models.Pointer(common.CodeSystemErr)
-			res.Message = err.Error()
-			return err
-		}
-		switch action {
-		case common.ActionBlock:
-			res.State = models.Pointer(models.StateBlocked)
-			res.Code = models.Pointer(common.CodeBlocked)
-			res.Message = "blocked due to rule"
-			return errors.New(res.Message)
-		case common.ActionSkip:
-			res.State = models.Pointer(models.StateSkipped)
-			res.Code = models.Pointer(common.CodeSkipped)
-			res.Message = "skipped due to rule"
-			return
-		default:
-			// 继续执行
-		}
-
-		defer func() {
-			// 依赖当前步骤的步骤在自定义策略模式下需要当前步骤成功才会触发
-			if s.storage.CheckDependentModel() {
-				err = nil
-				return
+		if s.kind != common.KindStrategy {
+			// 评估规则, 使用expr
+			var action common.Action
+			action, err = s.evaluateExprRule()
+			if err != nil {
+				logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+				// 写入步骤日志
+				s.storage.Log().Write(err.Error())
+				res.State = models.Pointer(models.StateFailed)
+				res.Code = models.Pointer(common.CodeSystemErr)
+				res.Message = err.Error()
+				return err
 			}
-		}()
+			switch action {
+			case common.ActionSkip:
+				res.State = models.Pointer(models.StateSkipped)
+				res.Code = models.Pointer(common.CodeSkipped)
+				res.Message = "skipped due to rule"
+				return
+			default:
+				// 继续执行
+			}
+			defer func() {
+				// 策略模式下需要当前步骤成功才会触发
+				err = nil
+			}()
+		}
 
-		s.before(ctx, taskName, stepName)
+		s.pre(ctx, taskName, stepName)
 		defer func() {
-			s.after(ctx, taskName, stepName)
+			s.post(ctx, taskName, stepName)
 		}()
 
 		runnerItr, err := runner.New(
@@ -138,17 +133,17 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 			res.Message = fmt.Sprintf("execution failed with code: %d", code)
 			return errors.New(res.Message)
 		}
-		return nil
+		return
 	}
 }
 
-func (s *sStep) before(ctx context.Context, taskName, stepName string) {
-	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "started")
+func (s *sStep) pre(ctx context.Context, taskName, stepName string) {
+	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, "started")
 	return
 }
 
-func (s *sStep) after(ctx context.Context, taskName, stepName string) {
-	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, s.scriptDir, "end")
+func (s *sStep) post(ctx context.Context, taskName, stepName string) {
+	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, "end")
 	return
 }
 
@@ -157,12 +152,12 @@ func (s *sStep) evaluateExprRule() (common.Action, error) {
 	rule, err := s.storage.Rule()
 	if err != nil {
 		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-		return common.ActionBlock, err
+		return common.ActionUnknown, err
 	}
 	action, err := s.storage.Action()
 	if err != nil {
 		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-		return common.ActionBlock, err
+		return common.ActionUnknown, err
 	}
 	if rule == "" || action == "" {
 		logx.Infoln(s.storage.TaskName(), s.storage.Name(), "no rule or no action")
@@ -171,16 +166,16 @@ func (s *sStep) evaluateExprRule() (common.Action, error) {
 	program, err := expr.Compile(rule, s.exprBuiltins()...)
 	if err != nil {
 		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-		return common.ActionBlock, err
+		return common.ActionUnknown, err
 	}
 	result, err := expr.Run(program, nil)
 	if err != nil {
 		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-		return common.ActionBlock, err
+		return common.ActionUnknown, err
 	}
 	matched, ok := result.(bool)
 	if !ok {
-		return common.ActionBlock, fmt.Errorf("rule result is not a boolean")
+		return common.ActionUnknown, fmt.Errorf("rule result is not a boolean")
 	}
 	// 如果不匹配, 继续执行
 	if !matched {

@@ -43,6 +43,17 @@ func (t *sTask) Remove() (err error) {
 	}).Delete(&models.STask{}).Error
 }
 
+func (t *sTask) Kind() (res string, err error) {
+	err = t.Model(&models.STask{}).
+		Select("kind").
+		Where(map[string]interface{}{
+			"name": t.tName,
+		}).
+		Scan(&res).
+		Error
+	return
+}
+
 func (t *sTask) State() (state models.State, err error) {
 	err = t.Model(&models.STask{}).
 		Select("state").
@@ -165,23 +176,12 @@ func (t *sTask) StepStateList(str string) (res map[string]models.State) {
 
 func (t *sTask) StepList(str string) (res models.SSteps) {
 	query := t.Model(&models.SStep{}).
-		Order("id ASC").
 		Where(map[string]interface{}{
 			"task_name": t.tName,
 		})
 	if str != "" {
 		query.Where("name LIKE ?", str)
 	}
-	query.Find(&res)
+	query.Order("id ASC").Find(&res)
 	return
-}
-
-// CheckDependentModel 获取依赖当前步骤的步骤
-func (t *sTask) CheckDependentModel() (res bool) {
-	var count int64
-	t.Table("t_step").Select("count(DISTINCT t_step.name)").
-		Joins("INNER JOIN t_step_depend ON t_step.task_name = t_step_depend.task_name").
-		Where("t_step.task_name = ? AND t_step.action != '' AND t_step.rule != ''", t.tName).
-		Count(&count)
-	return count > 0
 }

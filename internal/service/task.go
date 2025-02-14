@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"regexp"
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -16,6 +16,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
+	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
 	"github.com/xmapst/AutoExecFlow/types"
 )
@@ -75,6 +76,7 @@ func TaskList(req *types.SPageReq) *types.STaskListDetailRes {
 }
 
 func (ts *STaskService) Create(task *types.STaskReq) (err error) {
+	task.Kind = strings.ToLower(task.Kind)
 	// 检查请求内容
 	timeout, err := ts.review(task)
 	if err != nil {
@@ -111,25 +113,18 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 		return err
 	}
 
-	err = ts.reviewStep(task.Async, task.Step)
+	err = ts.reviewStep(task.Kind, task.Step)
 	if err != nil {
 		return err
 	}
 
-	// 使用并行的方式入库
-	var wg sync.WaitGroup
 	for _, step := range task.Step {
-		wg.Add(1)
-		go func(step *types.SStepReq) {
-			defer wg.Done()
-			// save step
-			stepSvc := Step(task.Name, step.Name)
-			if _err := stepSvc.Create(timeout, step); _err != nil {
-				err = multierr.Append(err, fmt.Errorf("save step error: %s", _err))
-			}
-		}(step)
+		// save step
+		stepSvc := Step(task.Name, step.Name)
+		if _err := stepSvc.Create(timeout, step); _err != nil {
+			err = multierr.Append(err, fmt.Errorf("save step error: %s", _err))
+		}
 	}
-	wg.Wait()
 	// 提交任务
 	return queues.PublishTask(task.Node, ts.name)
 }
@@ -164,12 +159,12 @@ func (ts *STaskService) review(task *types.STaskReq) (time.Duration, error) {
 	return timeout, nil
 }
 
-func (ts *STaskService) reviewStep(async bool, steps types.SStepsReq) error {
+func (ts *STaskService) reviewStep(kind string, steps types.SStepsReq) error {
 	// 检查步骤名称是否重复
 	if err := ts.uniqStepsName(steps); err != nil {
 		return err
 	}
-	if !async {
+	if kind != common.KindDag {
 		// 非编排模式,按顺序执行
 		for k := range steps {
 			if k == 0 {
@@ -204,10 +199,10 @@ func (ts *STaskService) uniqStepsName(steps types.SStepsReq) error {
 func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (time.Duration, error) {
 	// save task
 	err := storage.TaskCreate(&models.STask{
+		Kind:    task.Kind,
 		Name:    task.Name,
 		Desc:    task.Desc,
 		Node:    task.Node,
-		Async:   models.Pointer(task.Async),
 		Timeout: timeout,
 		Disable: models.Pointer(task.Disable),
 		STaskUpdate: models.STaskUpdate{
@@ -258,6 +253,7 @@ func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 	}
 
 	data := &types.STaskRes{
+		Kind:    task.Kind,
 		Name:    task.Name,
 		Desc:    task.Desc,
 		Node:    task.Node,
@@ -310,11 +306,11 @@ func (ts *STaskService) Dump() (*types.STaskReq, error) {
 		return nil, err
 	}
 	res := &types.STaskReq{
+		Kind:    task.Kind,
 		Name:    task.Name,
 		Desc:    task.Desc,
 		Node:    task.Node,
 		Timeout: task.Timeout.String(),
-		Async:   *task.Async,
 		Disable: *task.Disable,
 	}
 	for _, env := range storage.Task(ts.name).Env().List() {

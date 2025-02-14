@@ -47,6 +47,8 @@ type IBase interface {
 type ITask interface {
 	IBase
 
+	// Kind 获取类型
+	Kind() (res string, err error)
 	// IsDisable 是否禁用
 	IsDisable() (disable bool)
 	// State 获取状态
@@ -73,8 +75,6 @@ type ITask interface {
 	StepStateList(str string) (res map[string]models.State)
 	// StepList 获取任务下所有步骤
 	StepList(str string) (res models.SSteps)
-	// CheckDependentModel 检查依赖当前步骤的步骤模式
-	CheckDependentModel() (res bool)
 }
 
 type IStep interface {
@@ -107,8 +107,6 @@ type IStep interface {
 	GlobalEnv() (env IEnv)
 	// Depend 依赖接口
 	Depend() (depend IDepend)
-	// CheckDependentModel 检查依赖当前步骤的步骤模式
-	CheckDependentModel() (res bool)
 	// Log 日志接口
 	Log() (log ILog)
 }

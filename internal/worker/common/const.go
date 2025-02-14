@@ -11,8 +11,6 @@ const (
 	ActionUnknown Action = iota
 	// ActionAllow 允许执行
 	ActionAllow
-	// ActionBlock 禁止执行
-	ActionBlock
 	// ActionSkip 跳过执行
 	ActionSkip
 )
@@ -23,8 +21,6 @@ func (a Action) String() string {
 		return "unknown"
 	case ActionAllow:
 		return "allow"
-	case ActionBlock:
-		return "block"
 	case ActionSkip:
 		return "skip"
 	default:
@@ -37,11 +33,14 @@ func ActionConvert(action string) Action {
 	switch action {
 	case "allow":
 		return ActionAllow
-	case "block":
-		return ActionBlock
 	case "skip":
 		return ActionSkip
 	default:
 		return ActionUnknown
 	}
 }
+
+const (
+	KindDag      = "dag"
+	KindStrategy = "strategy"
+)

@@ -23,8 +23,6 @@ func ConvertState(state models.State) types.Code {
 		return types.CodeFailed
 	case models.StateSkipped:
 		return types.CodeSkipped
-	case models.StateBlocked:
-		return types.CodeBlocked
 	default:
 		return types.CodeNoData
 	}

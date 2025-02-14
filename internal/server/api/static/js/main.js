@@ -1,11 +1,12 @@
 let highestZIndex = 1000;
 require.config({ paths: { 'vs': baseUrl+basePath+'/vs' } });
-const taskTpl = `# 描述
+const taskTpl = `# 类型. 空: 串行无策略, strategy: 串行支持策略, dag: 自定义编排
+kind: dag
+# 描述
 desc: 这是一段任务描述
 # 允许节点, 可选, 默认为当前节点
 #node: node-01
 # 异步执行, 可选, 默认并行,自定义编排时需要设置为true
-async: true
 # 禁用, 可选, 默认false
 #disable: false
 # 超时时间, 可选, 默认48小时
@@ -169,7 +170,6 @@ class Utils {
             'timeout': '#FFC107',
             'canceled': '#9B59B6',
             'skipped': '#007BFF',
-            'blacked': '#000000',
             'unknown': '#A9A9A9'
         };
         return statusColorMap[status] || 'gray';

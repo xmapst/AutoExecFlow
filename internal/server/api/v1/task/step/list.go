@@ -97,7 +97,7 @@ func List(c *gin.Context) {
 		}
 		time.Sleep(500 * time.Millisecond)
 		switch currentCode {
-		case types.CodeSuccess, types.CodeFailed, types.CodeSkipped, types.CodeBlocked:
+		case types.CodeSuccess, types.CodeFailed, types.CodeSkipped:
 			return
 		default:
 
