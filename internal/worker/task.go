@@ -29,7 +29,9 @@ type sTask struct {
 
 func newTask(taskName string) (*sTask, error) {
 	startTime := time.Now()
-	defer logx.Debugln(taskName, "耗时", time.Since(startTime))
+	defer func() {
+		logx.Debugln(taskName, "耗时", time.Since(startTime))
+	}()
 
 	t := &sTask{
 		storage:   storage.Task(taskName),
