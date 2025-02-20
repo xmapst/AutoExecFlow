@@ -36,11 +36,11 @@ func (v *Vertex) Name() string {
 
 // Kill 强杀
 func (v *Vertex) Kill() error {
-	if v.ctx.baseCancel == nil {
+	if v.ctx.lifecycleCtx == nil {
 		return ErrContext
 	}
 
-	v.ctx.baseCancel()
+	v.ctx.lifecycleCancel()
 	emitEvent("kill step %s in task %s", v.Name(), v.graph.Name())
 	return nil
 }

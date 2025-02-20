@@ -22,13 +22,13 @@ type sContext struct {
 	state    State  // 现在状态
 	oldState State  // 上一个状态
 
-	// 基础上下文. 控制未执行或执行中强杀
-	baseCtx    context.Context
-	baseCancel context.CancelFunc
+	// 生命周期控制（强杀）
+	lifecycleCtx    context.Context
+	lifecycleCancel context.CancelFunc
 
-	// 主上下文, 支持外部控制(超时,强杀)
-	mainCtx    context.Context
-	mainCancel context.CancelFunc
+	// 主执行流程（超时/外部取消）
+	executionCtx    context.Context
+	executionCancel context.CancelFunc
 
 	// 控制上下文, 控制挂起或解卦
 	controlCtx    context.Context

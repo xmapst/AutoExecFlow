@@ -9,7 +9,7 @@ import (
 )
 
 type IGraph interface {
-	IManager
+	IControl
 
 	AddVertex(v *Vertex) (*Vertex, error)
 	Validator(force bool) error
@@ -32,7 +32,7 @@ func New(name string) IGraph {
 	}
 
 	// 基础上下文
-	g.ctx.baseCtx, g.ctx.baseCancel = context.WithCancel(context.Background())
+	g.ctx.lifecycleCtx, g.ctx.lifecycleCancel = context.WithCancel(context.Background())
 
 	// 加入管理
 	join(fmt.Sprintf(graphPrefix, g.Name()), g)
@@ -47,11 +47,11 @@ func (g *sGraph) Name() string {
 
 // Kill 强杀
 func (g *sGraph) Kill() error {
-	if g.ctx.baseCancel == nil {
+	if g.ctx.lifecycleCtx == nil {
 		return ErrContext
 	}
 
-	g.ctx.baseCancel()
+	g.ctx.lifecycleCancel()
 	remove(fmt.Sprintf(graphPrefix, g.Name()))
 	emitEvent("kill task %s", g.Name())
 	return nil
@@ -127,7 +127,7 @@ func (g *sGraph) AddVertex(v *Vertex) (*Vertex, error) {
 	}
 
 	// 初始化顶点基础上下文
-	v.ctx.baseCtx, v.ctx.baseCancel = context.WithCancel(g.ctx.baseCtx)
+	v.ctx.lifecycleCtx, v.ctx.lifecycleCancel = context.WithCancel(g.ctx.lifecycleCtx)
 
 	// 设置顶点id
 	v.cid = int64(len(g.vertex) + 1)
@@ -148,7 +148,7 @@ func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	defer g.wg.Done()
 	emitEvent("start step %s in task %s", v.Name(), g.Name())
 	defer func() {
-		v.ctx.mainCancel()
+		v.ctx.executionCancel()
 
 		g.ctx.Lock()
 		v.ctx.oldState = v.ctx.state
@@ -168,7 +168,7 @@ func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	if g.State() == StatePaused {
 		emitEvent("step %s paused because task %s is paused", v.Name(), g.Name())
 		select {
-		case <-g.ctx.mainCtx.Done():
+		case <-g.ctx.executionCtx.Done():
 			// 被终止
 			err = ErrForceKill
 			return
@@ -182,11 +182,11 @@ func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	if v.State() == StatePaused {
 		emitEvent("paused step %s in task %s", v.Name(), g.Name())
 		select {
-		case <-g.ctx.mainCtx.Done():
+		case <-g.ctx.executionCtx.Done():
 			// 被终止
 			err = ErrForceKill
 			return
-		case <-v.ctx.mainCtx.Done():
+		case <-v.ctx.executionCtx.Done():
 			// 被终止
 			err = ErrForceKill
 			return
@@ -202,7 +202,7 @@ func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	v.ctx.Unlock()
 
 	// 执行顶点函数
-	if err = v.fn(v.ctx.mainCtx, g.Name(), v.Name()); err != nil {
+	if err = v.fn(v.ctx.executionCtx, g.Name(), v.Name()); err != nil {
 		return
 	}
 
@@ -219,7 +219,7 @@ func (g *sGraph) runVertex(v *Vertex, errCh chan<- error) {
 	// 执行后面的顶点
 	for k := range v.adjs {
 		select {
-		case <-g.ctx.mainCtx.Done():
+		case <-g.ctx.executionCtx.Done():
 			err = ErrForceKill
 			break
 		default:
@@ -275,7 +275,7 @@ func (g *sGraph) Run(ctx context.Context) (err error) {
 	g.initContext(ctx)
 
 	defer func() {
-		g.ctx.mainCancel()
+		g.ctx.executionCancel()
 		g.ctx.Lock()
 		g.ctx.oldState = g.ctx.state
 		g.ctx.state = StateStopped
@@ -295,7 +295,7 @@ func (g *sGraph) Run(ctx context.Context) (err error) {
 					return
 				}
 				err = errors.Join(err, _err)
-			case <-g.ctx.mainCtx.Done():
+			case <-g.ctx.executionCtx.Done():
 				err = ErrForceKill
 				emitEvent("task %s ends because task %s is terminated", g.Name(), g.Name())
 				return
@@ -324,7 +324,7 @@ func (g *sGraph) Run(ctx context.Context) (err error) {
 
 func (g *sGraph) initContext(ctx context.Context) {
 	// 设置图形主上下文
-	g.ctx.mainCtx, g.ctx.mainCancel = g.withCancelOnAny(ctx, g.ctx.baseCtx)
+	g.ctx.executionCtx, g.ctx.executionCancel = g.withCancelOnAny(ctx, g.ctx.lifecycleCtx)
 	// 设置运行中
 	g.ctx.Lock()
 	g.ctx.oldState = g.ctx.state
@@ -333,7 +333,7 @@ func (g *sGraph) initContext(ctx context.Context) {
 
 	// 设置所有顶点主上下文
 	for k := range g.vertex {
-		g.vertex[k].ctx.mainCtx, g.vertex[k].ctx.mainCancel = g.withCancelOnAny(g.ctx.mainCtx, g.vertex[k].ctx.baseCtx)
+		g.vertex[k].ctx.executionCtx, g.vertex[k].ctx.executionCancel = g.withCancelOnAny(g.ctx.executionCtx, g.vertex[k].ctx.lifecycleCtx)
 	}
 }
 
