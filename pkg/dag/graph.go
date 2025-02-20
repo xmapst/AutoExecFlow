@@ -283,7 +283,7 @@ func (g *sGraph) Run(ctx context.Context) (err error) {
 		remove(fmt.Sprintf(graphPrefix, g.Name()))
 	}()
 
-	var chError = make(chan error, 1)
+	var chError = make(chan error, len(g.vertex)) // 根据顶点数量设置容量
 	var done = make(chan struct{})
 
 	go func() {
@@ -360,6 +360,7 @@ func (g *sGraph) reset() {
 		vertex.adjs = []*Vertex{} // 清空邻接节点
 		vertex.ndeps = 0          // 重置依赖计数
 		vertex.root = false       // 重置根节点标志
+		vertex.cid = 0            // 重置cid
 	}
 }
 

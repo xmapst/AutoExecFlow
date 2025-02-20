@@ -8,12 +8,17 @@ import (
 )
 
 var (
-	eventChan  = make(chan string, 15)
+	eventChan  = make(chan string, 100)
 	observable = newEvent(eventChan)
 )
 
 func emitEvent(format string, args ...interface{}) {
-	eventChan <- fmt.Sprintf(format, args...)
+	event := fmt.Sprintf(format, args...)
+	select {
+	case eventChan <- event:
+	default:
+		// 丢弃或处理缓冲区满的情况
+	}
 }
 
 func SubscribeEvent() (EventStream, int64, error) {
