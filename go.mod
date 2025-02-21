@@ -43,7 +43,7 @@ require (
 	github.com/tidwall/sjson v1.2.5
 	github.com/tklauser/ps v0.0.3
 	github.com/traefik/yaegi v0.16.1
-	github.com/xmapst/go-rabbitmq v0.14.2-10
+	github.com/xmapst/go-rabbitmq v0.14.2-12
 	github.com/xmapst/logx v1.0.4
 	github.com/yargevad/filepathx v1.0.0
 	go.uber.org/multierr v1.11.0

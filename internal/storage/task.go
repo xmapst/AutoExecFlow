@@ -159,14 +159,13 @@ func (t *sTask) StepStateList(str string) (res map[string]models.State) {
 	var steps models.SSteps
 	query := t.Model(&models.SStep{}).
 		Select("name, state").
-		Order("id ASC").
 		Where(map[string]interface{}{
 			"task_name": t.tName,
 		})
 	if str != "" {
 		query.Where("name LIKE ?", str)
 	}
-	query.Find(&steps)
+	query.Order("id ASC").Find(&steps)
 	res = make(map[string]models.State, len(steps))
 	for _, v := range steps {
 		res[v.Name] = *v.State

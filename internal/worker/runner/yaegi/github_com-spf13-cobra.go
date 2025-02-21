@@ -26,6 +26,7 @@ func init() {
 		"CompDebugln":                     reflect.ValueOf(cobra.CompDebugln),
 		"CompError":                       reflect.ValueOf(cobra.CompError),
 		"CompErrorln":                     reflect.ValueOf(cobra.CompErrorln),
+		"CompletionWithDesc":              reflect.ValueOf(cobra.CompletionWithDesc),
 		"EnableCaseInsensitive":           reflect.ValueOf(&cobra.EnableCaseInsensitive).Elem(),
 		"EnableCommandSorting":            reflect.ValueOf(&cobra.EnableCommandSorting).Elem(),
 		"EnablePrefixMatching":            reflect.ValueOf(&cobra.EnablePrefixMatching).Elem(),
@@ -65,10 +66,26 @@ func init() {
 
 		// type definitions
 		"Command":            reflect.ValueOf((*cobra.Command)(nil)),
+		"Completion":         reflect.ValueOf((*cobra.Completion)(nil)),
+		"CompletionFunc":     reflect.ValueOf((*cobra.CompletionFunc)(nil)),
 		"CompletionOptions":  reflect.ValueOf((*cobra.CompletionOptions)(nil)),
 		"FParseErrWhitelist": reflect.ValueOf((*cobra.FParseErrWhitelist)(nil)),
 		"Group":              reflect.ValueOf((*cobra.Group)(nil)),
 		"PositionalArgs":     reflect.ValueOf((*cobra.PositionalArgs)(nil)),
 		"ShellCompDirective": reflect.ValueOf((*cobra.ShellCompDirective)(nil)),
+		"SliceValue":         reflect.ValueOf((*cobra.SliceValue)(nil)),
+
+		// interface wrapper definitions
+		"_SliceValue": reflect.ValueOf((*_github_com_spf13_cobra_SliceValue)(nil)),
 	}
+}
+
+// _github_com_spf13_cobra_SliceValue is an interface wrapper for SliceValue type
+type _github_com_spf13_cobra_SliceValue struct {
+	IValue    interface{}
+	WGetSlice func() []string
+}
+
+func (W _github_com_spf13_cobra_SliceValue) GetSlice() []string {
+	return W.WGetSlice()
 }
