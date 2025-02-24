@@ -196,8 +196,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/ncruces/go-sqlite3 v0.23.1 h1:zGAd76q+Tr18z/xKGatUlzBQdjR3J+rexfANUcjAgkY=
 github.com/ncruces/go-sqlite3 v0.23.1/go.mod h1:Xg3FyAZl25HcBSFmcbymdfoTqD7jRnBUmv1jSrbIjdE=
-github.com/ncruces/go-sqlite3/gormlite v0.23.0 h1:NqzJ6rgg+jQn9VcDP4qQmS0CuGiEYaZY8au34+KzLsM=
-github.com/ncruces/go-sqlite3/gormlite v0.23.0/go.mod h1:658gNyXkSUO5t3XpQIEIRUhADGvm276UmeOYTsNoaY0=
+github.com/ncruces/go-sqlite3/gormlite v0.23.1 h1:vnROk1MsEQsb3A0VrrnJx17z7ST62tX9wt7aEAiu4sY=
+github.com/ncruces/go-sqlite3/gormlite v0.23.1/go.mod h1:d0p6WPY9H9PlgdQoe5d3aLAbC3RfU9lsdoP+GusFp9k=
 github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt7M=
 github.com/ncruces/julianday v1.0.0/go.mod h1:Dusn2KvZrrovOMJuOt0TNXL6tB7U2E8kvza5fFc9G7g=
 github.com/nikolalohinski/gonja/v2 v2.3.3 h1:5cTcmz0i/DwJl67US8Rvnb4OkBXB5V5OWd5IIAPPkXw=
