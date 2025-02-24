@@ -26,7 +26,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/kardianos/service v1.2.2
 	github.com/modern-go/reflect2 v1.0.2
-	github.com/ncruces/go-sqlite3 v0.23.0
+	github.com/ncruces/go-sqlite3 v0.23.1
 	github.com/ncruces/go-sqlite3/gormlite v0.23.0
 	github.com/nikolalohinski/gonja/v2 v2.3.3
 	github.com/panjf2000/ants/v2 v2.11.1
@@ -130,7 +130,7 @@ require (
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/tetratelabs/wazero v1.8.2 // indirect
+	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
