@@ -67,7 +67,7 @@ func (s *sStep) vertexFunc() dag.VertexFunc {
 		s.storage.Log().Write(common.ConsoleStart)
 		defer s.storage.Log().Write(common.ConsoleDone)
 
-		if s.kind != common.KindStrategy {
+		if s.kind == common.KindStrategy {
 			// 评估规则, 使用expr
 			var action common.Action
 			action, err = s.evaluateExprRule()
