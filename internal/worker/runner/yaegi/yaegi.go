@@ -14,6 +14,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
+	"github.com/xmapst/AutoExecFlow/internal/worker/runner/yaegi/libs"
 )
 
 type SYaegi struct {
@@ -92,10 +93,10 @@ func (y *SYaegi) createVM(ctx context.Context) (err error) {
 		Stdout: y.output(),
 		Stderr: y.output(),
 	})
-
-	if err = y.interp.Use(Symbols); err != nil {
+	if err = y.interp.Use(libs.Symbols); err != nil {
 		return err
 	}
+	y.interp.ImportUsed()
 
 	content, err := y.storage.Content()
 	if err != nil {
