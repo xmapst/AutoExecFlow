@@ -17,8 +17,8 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/step"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/v1/task/workspace"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // New

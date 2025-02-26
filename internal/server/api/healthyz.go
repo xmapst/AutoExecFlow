@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
-	"github.com/xmapst/AutoExecFlow/types"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 )
 
 // healthyz

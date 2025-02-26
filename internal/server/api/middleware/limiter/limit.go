@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
-	"github.com/xmapst/AutoExecFlow/types"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 )
 
 // key 是 ip+mode+path  value ==>bucket

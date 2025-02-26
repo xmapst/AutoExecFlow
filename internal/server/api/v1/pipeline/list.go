@@ -12,7 +12,7 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
-	"github.com/xmapst/AutoExecFlow/types"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 )
 
 // List

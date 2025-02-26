@@ -14,8 +14,8 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // Get

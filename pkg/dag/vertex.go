@@ -11,7 +11,7 @@ type Vertex struct {
 	ctx   *sContext
 	graph IGraph
 
-	cid   int64      // 临时id
+	cid   int64      // 临时id, 从1开始
 	fn    VertexFunc // 函数
 	adjs  []*Vertex  // 邻接或相邻顶点
 	deps  []*Vertex  // 依赖列表

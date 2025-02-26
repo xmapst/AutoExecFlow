@@ -3,7 +3,7 @@ package models
 import (
 	"sync"
 
-	"github.com/xmapst/AutoExecFlow/internal/utils/snowflake"
+	"github.com/xmapst/AutoExecFlow/pkg/snowflake"
 )
 
 var (

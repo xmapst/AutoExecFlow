@@ -21,10 +21,10 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/server/api"
-	"github.com/xmapst/AutoExecFlow/internal/server/listeners"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker"
+	"github.com/xmapst/AutoExecFlow/pkg/listeners"
 )
 
 type sProgram struct {

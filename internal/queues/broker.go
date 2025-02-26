@@ -19,9 +19,9 @@ var (
 type HandleFn func(data string) error
 
 const (
-	BROKER_INMEMORY = "inmemory"
-	BROKER_AMQP     = "amqp"
-	BROKER_REDIS    = "redis"
+	BrokerInMemory = "inmemory"
+	BrokerAmqp     = "amqp"
+	BrokerRedis    = "redis"
 )
 
 type IBroker interface {
@@ -43,13 +43,13 @@ func New(nodeName, rawURL string) error {
 	}
 	var err error
 	switch before {
-	case BROKER_AMQP:
+	case BrokerAmqp:
 		broker, err = newAmqpBroker(nodeName, rawURL)
 		return err
-	case BROKER_REDIS:
+	case BrokerRedis:
 		broker, err = newRedisBroker(rawURL)
 		return err
-	case BROKER_INMEMORY:
+	case BrokerInMemory:
 		broker = newInMemoryBroker()
 		return nil
 	default:

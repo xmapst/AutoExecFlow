@@ -16,6 +16,7 @@ func init() {
 		"DeregisterReaderHandler": reflect.ValueOf(mysql.DeregisterReaderHandler),
 		"DeregisterServerPubKey":  reflect.ValueOf(mysql.DeregisterServerPubKey),
 		"DeregisterTLSConfig":     reflect.ValueOf(mysql.DeregisterTLSConfig),
+		"EnableCompression":       reflect.ValueOf(mysql.EnableCompression),
 		"ErrBusyBuffer":           reflect.ValueOf(&mysql.ErrBusyBuffer).Elem(),
 		"ErrCleartextPassword":    reflect.ValueOf(&mysql.ErrCleartextPassword).Elem(),
 		"ErrInvalidConn":          reflect.ValueOf(&mysql.ErrInvalidConn).Elem(),

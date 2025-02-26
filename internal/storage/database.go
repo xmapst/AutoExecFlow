@@ -29,9 +29,9 @@ func newDB(rawURL string) (*sDatabase, error) {
 	}
 	var dialector gorm.Dialector
 	switch before {
-	case TYPE_MYSQL:
+	case TypeMysql:
 		dialector = mysql.Open(after)
-	case TYPE_SQLITE:
+	case TypeSqlite:
 		dialector = gormlite.Open(after)
 	default:
 		return nil, errors.New("unsupported storage type")
@@ -66,7 +66,7 @@ func newDB(rawURL string) (*sDatabase, error) {
 
 	d := &sDatabase{DB: gdb}
 
-	if before == TYPE_SQLITE {
+	if before == TypeSqlite {
 		d.initSqlite()
 	}
 

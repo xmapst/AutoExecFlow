@@ -9,8 +9,8 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/pkg/jinja"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 type SPipelineService struct {

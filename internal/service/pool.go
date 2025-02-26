@@ -5,8 +5,8 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/internal/worker"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 type SPoolService struct {

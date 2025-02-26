@@ -6,10 +6,10 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
 	"github.com/xmapst/AutoExecFlow/internal/service"
-	"github.com/xmapst/AutoExecFlow/types"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 )
 
-// PtyWs
+// Websocket
 // @Summary		PTY
 // @Description	Websocket的pty终端
 // @Tags		终端

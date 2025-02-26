@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/xmapst/AutoExecFlow/internal/server/api/base"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/pkg/info"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // version

@@ -9,8 +9,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/xmapst/logx"
 
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/pkg/pty"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 type SPtyService struct {

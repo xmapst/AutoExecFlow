@@ -15,10 +15,10 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
 	"github.com/xmapst/AutoExecFlow/pkg/dag"
-	"github.com/xmapst/AutoExecFlow/types"
 )
 
 // 只允许中文,英文(含大小写),0-9,-_.~字符

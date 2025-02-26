@@ -4,14 +4,14 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/internal/utils/snowflake"
+	"github.com/xmapst/AutoExecFlow/pkg/snowflake"
 )
 
 var storage IStorage
 
 const (
-	TYPE_SQLITE = "sqlite"
-	TYPE_MYSQL  = "mysql"
+	TypeSqlite = "sqlite"
+	TypeMysql  = "mysql"
 )
 
 func New(dataCenterID, nodeID int64, rawURL string) error {

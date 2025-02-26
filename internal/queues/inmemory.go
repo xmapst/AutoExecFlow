@@ -9,7 +9,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/xmapst/logx"
 
-	"github.com/xmapst/AutoExecFlow/internal/utils/wildcard"
+	"github.com/xmapst/AutoExecFlow/pkg/wildcard"
 )
 
 const defaultQueueSize = 2 << 15

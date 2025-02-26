@@ -72,14 +72,14 @@ func (c *SConfig) init() error {
 	if !found {
 		return fmt.Errorf("invalid database url")
 	}
-	if before == storage.TYPE_SQLITE {
+	if before == storage.TypeSqlite {
 		dir := filepath.Join(c.RootDir, "data")
 		if err = utils.EnsureDirExist(dir); err != nil {
 			return fmt.Errorf("failed to ensure directory %s: %v", dir, err)
 		}
 		file := filepath.Join(dir, fmt.Sprintf("%s.db3", utils.ServiceName))
 		logx.Infof("%s file: %s", "data", file)
-		c.DBUrl = fmt.Sprintf("%s://%s", storage.TYPE_SQLITE, file)
+		c.DBUrl = fmt.Sprintf("%s://%s", storage.TypeSqlite, file)
 	}
 
 	var dirs = map[string]string{

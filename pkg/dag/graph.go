@@ -288,18 +288,8 @@ func (g *sGraph) Run(ctx context.Context) (err error) {
 
 	go func() {
 		defer close(done)
-		for {
-			select {
-			case _err, ok := <-chError:
-				if !ok {
-					return
-				}
-				err = errors.Join(err, _err)
-			case <-g.ctx.executionCtx.Done():
-				err = ErrForceKill
-				emitEvent("task %s ends because task %s is terminated", g.Name(), g.Name())
-				return
-			}
+		for _err := range chError {
+			err = errors.Join(err, _err)
 		}
 	}()
 
@@ -360,7 +350,6 @@ func (g *sGraph) reset() {
 		vertex.adjs = []*Vertex{} // 清空邻接节点
 		vertex.ndeps = 0          // 重置依赖计数
 		vertex.root = false       // 重置根节点标志
-		vertex.cid = 0            // 重置cid
 	}
 }
 

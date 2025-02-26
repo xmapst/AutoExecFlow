@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
-	"github.com/xmapst/AutoExecFlow/types"
+	"github.com/xmapst/AutoExecFlow/internal/types"
 )
 
 func ConvertState(state models.State) types.Code {
