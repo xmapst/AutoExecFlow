@@ -27,6 +27,7 @@ require (
 	github.com/imroc/req/v3 v3.49.1
 	github.com/json-iterator/go v1.1.12
 	github.com/kardianos/service v1.2.2
+	github.com/modern-go/reflect2 v1.0.2
 	github.com/ncruces/go-sqlite3 v0.23.3
 	github.com/ncruces/go-sqlite3/gormlite v0.23.1
 	github.com/nikolalohinski/gonja/v2 v2.3.3
@@ -114,7 +115,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.22.2 // indirect

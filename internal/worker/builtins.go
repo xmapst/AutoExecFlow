@@ -7,6 +7,7 @@ func (s *sStep) exprBuiltins() []expr.Option {
 	return []expr.Option{
 		// 预期返回值类型
 		expr.AsBool(),
+		expr.AllowUndefinedVariables(),
 		//expr.Env(map[string]any{
 		//	"storage": s.storage,
 		//}),
