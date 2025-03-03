@@ -6,7 +6,7 @@ all: binary copy-binary
 	@sha256sum bin/AutoExecFlow* > bin/latest.sha256sum
 
 .PHONY: dev
-dev:
+dev: generate
 	@CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o bin/AutoExecFlow cmd/main.go
 
 swag:
