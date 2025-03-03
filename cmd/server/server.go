@@ -64,7 +64,7 @@ func New() *cobra.Command {
 	cmd.Flags().String("log_output", "file", "log output [file,stdout]")
 	cmd.Flags().String("addr", "tcp://0.0.0.0:2376", "listening address.")
 	cmd.Flags().String("log_level", "debug", "log level [debug,info,warn,error]")
-	cmd.Flags().String("db_url", "sqlite://localhost", "database type. [sqlite,mysql]")
+	cmd.Flags().String("db_url", "sqlite://localhost", "database type. [sqlite,mysql,postgres]")
 	cmd.Flags().Duration("exec_timeout", 24*time.Hour, "set the task exec command expire time")
 	cmd.Flags().Int("pool_size", runtime.NumCPU()*2, "set the size of the execution work pool.")
 	cmd.Flags().String("mq_url", "inmemory://localhost", "message queue url. [inmemory,amqp]")

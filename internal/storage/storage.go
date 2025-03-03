@@ -10,8 +10,10 @@ import (
 var storage IStorage
 
 const (
-	TypeSqlite = "sqlite"
-	TypeMysql  = "mysql"
+	TypeSqlite    = "sqlite"
+	TypeMysql     = "mysql"
+	TypePostgres  = "postgres"
+	TypeSqlserver = "sqlserver"
 )
 
 func New(dataCenterID, nodeID int64, rawURL string) error {

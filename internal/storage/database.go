@@ -10,6 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xmapst/logx"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
@@ -30,8 +32,16 @@ func newDB(rawURL string) (*sDatabase, error) {
 	var dialector gorm.Dialector
 	switch before {
 	case TypeMysql:
+		// user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
 		dialector = mysql.Open(after)
+	case TypePostgres:
+		// postgres://username:password@localhost:5432/database_name
+		dialector = postgres.Open(rawURL)
+	case TypeSqlserver:
+		// sqlserver://gorm:LoremIpsum86@localhost:9930?database=gorm
+		dialector = sqlserver.Open(rawURL)
 	case TypeSqlite:
+		// test.db
 		dialector = gormlite.Open(after)
 	default:
 		return nil, errors.New("unsupported storage type")
