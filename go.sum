@@ -246,8 +246,8 @@ github.com/modocache/gover v0.0.0-20171022184752-b58185e213c5/go.mod h1:caMODM3P
 github.com/montanaflynn/stats v0.7.0/go.mod h1:etXPPgVO6n31NxCd9KQUMvCM+ve0ruNzt6R8Bnaayow=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
-github.com/ncruces/go-sqlite3 v0.23.3 h1:RHaQPjd5hPhhVXuS2B4z07rqhV/3SuAsBbDCk23fyMw=
-github.com/ncruces/go-sqlite3 v0.23.3/go.mod h1:WvU8gwMpK1rNG3JqJ7QZGRXNVNeIAwuButtr/Ze3iso=
+github.com/ncruces/go-sqlite3 v0.24.0 h1:Z4jfmzu2NCd4SmyFwLT2OmF3EnTZbqwATvdiuNHNhLA=
+github.com/ncruces/go-sqlite3 v0.24.0/go.mod h1:/Vs8ACZHjJ1SA6E9RZUn3EyB1OP3nDQ4z/ar+0fplTQ=
 github.com/ncruces/go-sqlite3/gormlite v0.23.1 h1:vnROk1MsEQsb3A0VrrnJx17z7ST62tX9wt7aEAiu4sY=
 github.com/ncruces/go-sqlite3/gormlite v0.23.1/go.mod h1:d0p6WPY9H9PlgdQoe5d3aLAbC3RfU9lsdoP+GusFp9k=
 github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt7M=
