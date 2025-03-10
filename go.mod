@@ -24,7 +24,7 @@ require (
 	github.com/go-zookeeper/zk v1.0.4
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/imroc/req/v3 v3.49.1
+	github.com/imroc/req/v3 v3.50.0
 	github.com/json-iterator/go v1.1.12
 	github.com/kardianos/service v1.2.2
 	github.com/modern-go/reflect2 v1.0.2
