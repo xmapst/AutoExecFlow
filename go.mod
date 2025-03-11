@@ -31,7 +31,7 @@ require (
 	github.com/ncruces/go-sqlite3 v0.24.0
 	github.com/ncruces/go-sqlite3/gormlite v0.24.0
 	github.com/nikolalohinski/gonja/v2 v2.3.3
-	github.com/panjf2000/ants/v2 v2.11.1
+	github.com/panjf2000/ants/v2 v2.11.2
 	github.com/pelletier/go-toml/v2 v2.2.3
 	github.com/pires/go-proxyproto v0.8.0
 	github.com/pkg/errors v0.9.1
