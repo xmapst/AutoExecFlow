@@ -5,7 +5,6 @@ import (
 	"sync"
 )
 
-// ICipher 循环移位加解密算法
 type ICipher interface {
 	Encrypt([]byte) []byte
 	Decrypt([]byte) []byte
@@ -13,27 +12,23 @@ type ICipher interface {
 	DecryptReader(io.Reader, io.Writer) error
 }
 
-// cipher represents a Caesar cipher with rotation key
+// Cipher represents a Caesar cipher with rotation key
 type cipher struct {
 	key    []byte // 密钥
 	keyLen int    // 密钥长度
+	shifts []int  // 预计算的移位值（各密钥字节 mod 8）
 }
 
-func New(key []byte) ICipher {
+func New(key []byte) *ICipher {
+	shifts := make([]int, len(key))
+	for i, b := range key {
+		shifts[i] = int(b) % 8
+	}
 	return &cipher{
 		key:    key,
 		keyLen: len(key),
+		shifts: shifts,
 	}
-}
-
-// Encrypt 加密
-func (c *cipher) Encrypt(data []byte) []byte {
-	return c.process(data, true)
-}
-
-// Decrypt 解密
-func (c *cipher) Decrypt(data []byte) []byte {
-	return c.process(data, false)
 }
 
 // EncryptReader 加密
@@ -46,12 +41,26 @@ func (c *cipher) DecryptReader(r io.Reader, w io.Writer) error {
 	return c.stream(r, w, false)
 }
 
+// Encrypt 加密
+func (c *cipher) Encrypt(data []byte) []byte {
+	return c.process(data, true)
+}
+
+// Decrypt 解密
+func (c *cipher) Decrypt(data []byte) []byte {
+	return c.process(data, false)
+}
+
 func (c *cipher) stream(r io.Reader, w io.Writer, encrypt bool) error {
 	if c.key == nil {
 		_, err := io.Copy(w, r)
 		return err
 	}
-	var buf = make([]byte, c.keyLen*15)
+	buf := make([]byte, c.keyLen)
+	if c.keyLen > 1024 {
+		buf = make([]byte, c.keyLen*4)
+	}
+
 	var err error
 	for {
 		var n int
@@ -75,6 +84,7 @@ func (c *cipher) process(data []byte, encrypt bool) []byte {
 	if c.key == nil {
 		return data
 	}
+
 	dataLen := len(data)
 	result := make([]byte, dataLen)
 	var wg sync.WaitGroup
@@ -91,15 +101,9 @@ func (c *cipher) process(data []byte, encrypt bool) []byte {
 			defer wg.Done()
 
 			if encrypt {
-				for j := start; j < end; j++ {
-					result[j] = data[j] ^ c.key[j%c.keyLen]
-				}
-				c.shiftRight(result[start:end])
+				c.encryptChunk(data, result, start, end)
 			} else {
-				c.shiftLeft(data[start:end])
-				for j := start; j < end; j++ {
-					result[j] = data[j] ^ c.key[j%c.keyLen]
-				}
+				c.decryptChunk(data, result, start, end)
 			}
 		}(start, end)
 	}
@@ -107,18 +111,60 @@ func (c *cipher) process(data []byte, encrypt bool) []byte {
 	return result
 }
 
-// 右移
-func (c *cipher) shiftRight(data []byte) {
-	for i := 0; i < len(data); i++ {
-		shift := int(c.key[i%c.keyLen]) % 8
-		data[i] = (data[i] >> shift) | (data[i] << (8 - shift))
+// encryptChunk 加密数据块
+func (c *cipher) encryptChunk(data, result []byte, start, end int) {
+	key, shifts, keyLen := c.key, c.shifts, c.keyLen
+	if keyLen == 1 {
+		// 特化处理单字节密钥
+		keyByte := key[0]
+		shift := shifts[0]
+		for j := start; j < end; j++ {
+			b := data[j] ^ keyByte
+			result[j] = (b >> shift) | (b << (8 - shift))
+		}
+		return
+	}
+
+	keyIndex := start % keyLen
+	for j := start; j < end; j++ {
+		// 异或和循环右移
+		b := data[j] ^ key[keyIndex]
+		shift := shifts[keyIndex]
+		result[j] = (b >> shift) | (b << (8 - shift))
+
+		keyIndex++
+		if keyIndex >= keyLen {
+			keyIndex = 0
+		}
 	}
 }
 
-// 左移
-func (c *cipher) shiftLeft(data []byte) {
-	for i := 0; i < len(data); i++ {
-		shift := int(c.key[i%c.keyLen]) % 8
-		data[i] = (data[i] << shift) | (data[i] >> (8 - shift))
+// decryptChunk 解密数据块
+func (c *cipher) decryptChunk(data, result []byte, start, end int) {
+	key, shifts, keyLen := c.key, c.shifts, c.keyLen
+	if keyLen == 1 {
+		// 特化处理单字节密钥
+		keyByte := key[0]
+		shift := shifts[0]
+		for j := start; j < end; j++ {
+			b := data[j]
+			b = (b << shift) | (b >> (8 - shift))
+			result[j] = b ^ keyByte
+		}
+		return
+	}
+
+	keyIndex := start % keyLen
+	for j := start; j < end; j++ {
+		// 循环左移和异或
+		b := data[j]
+		shift := shifts[keyIndex]
+		b = (b << shift) | (b >> (8 - shift))
+		result[j] = b ^ key[keyIndex]
+
+		keyIndex++
+		if keyIndex >= keyLen {
+			keyIndex = 0
+		}
 	}
 }
