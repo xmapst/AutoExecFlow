@@ -19,7 +19,7 @@ type cipher struct {
 	shifts []int  // 预计算的移位值（各密钥字节 mod 8）
 }
 
-func New(key []byte) *ICipher {
+func New(key []byte) ICipher {
 	shifts := make([]int, len(key))
 	for i, b := range key {
 		shifts[i] = int(b) % 8
