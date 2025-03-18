@@ -1,6 +1,7 @@
 module github.com/xmapst/AutoExecFlow
 
 go 1.23.3
+toolchain go1.24.1
 
 retract [v0.0.1-rc1, v0.0.1-rc99]
 
@@ -60,8 +61,8 @@ require (
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/driver/sqlserver v1.5.4
 	gorm.io/gorm v1.25.12
-	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.32.2
+	k8s.io/api v0.32.3
+	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.2
 )
 
