@@ -12,7 +12,7 @@ require (
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/dustin/go-humanize v1.0.1
 	github.com/elastic/go-freelru v0.16.0
-	github.com/expr-lang/expr v1.16.9
+	github.com/expr-lang/expr v1.17.1
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-contrib/gzip v1.2.2
