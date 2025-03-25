@@ -14,7 +14,7 @@ require (
 	github.com/elastic/go-freelru v0.16.0
 	github.com/expr-lang/expr v1.16.9
 	github.com/fsnotify/fsnotify v1.8.0
-	github.com/gin-contrib/cors v1.7.3
+	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-contrib/gzip v1.2.2
 	github.com/gin-contrib/pprof v1.5.2
 	github.com/gin-gonic/gin v1.10.0
@@ -149,7 +149,7 @@ require (
 	golang.org/x/arch v0.14.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/mod v0.23.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/time v0.10.0 // indirect
