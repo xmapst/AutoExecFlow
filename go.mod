@@ -1,6 +1,7 @@
 module github.com/xmapst/AutoExecFlow
 
 go 1.23.3
+toolchain go1.24.1
 
 retract [v0.0.1-rc1, v0.0.1-rc99]
 
@@ -40,7 +41,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/tklauser/ps v0.0.3
