@@ -1,6 +1,7 @@
 module github.com/xmapst/AutoExecFlow
 
 go 1.23.3
+toolchain go1.24.1
 
 retract [v0.0.1-rc1, v0.0.1-rc99]
 
@@ -12,7 +13,7 @@ require (
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/dustin/go-humanize v1.0.1
 	github.com/elastic/go-freelru v0.16.0
-	github.com/expr-lang/expr v1.17.1
+	github.com/expr-lang/expr v1.17.2
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/gin-contrib/cors v1.7.4
 	github.com/gin-contrib/gzip v1.2.2
