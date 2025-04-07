@@ -1,6 +1,7 @@
 module github.com/xmapst/AutoExecFlow
 
 go 1.23.3
+
 toolchain go1.24.1
 
 retract [v0.0.1-rc1, v0.0.1-rc99]
@@ -55,7 +56,7 @@ require (
 	golang.org/x/sys v0.31.0
 	golang.org/x/term v0.30.0
 	golang.org/x/text v0.23.0
-	google.golang.org/grpc v1.71.0
+	google.golang.org/grpc v1.71.1
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/postgres v1.5.11
