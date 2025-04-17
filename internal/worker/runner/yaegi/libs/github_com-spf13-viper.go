@@ -3,6 +3,7 @@
 package libs
 
 import (
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"reflect"
 )
@@ -27,6 +28,9 @@ func init() {
 		"DebugTo":                  reflect.ValueOf(viper.DebugTo),
 		"DecodeHook":               reflect.ValueOf(viper.DecodeHook),
 		"EnvKeyReplacer":           reflect.ValueOf(viper.EnvKeyReplacer),
+		"ExperimentalBindStruct":   reflect.ValueOf(viper.ExperimentalBindStruct),
+		"ExperimentalFinder":       reflect.ValueOf(viper.ExperimentalFinder),
+		"Finders":                  reflect.ValueOf(viper.Finders),
 		"Get":                      reflect.ValueOf(viper.Get),
 		"GetBool":                  reflect.ValueOf(viper.GetBool),
 		"GetDuration":              reflect.ValueOf(viper.GetDuration),
@@ -47,6 +51,7 @@ func init() {
 		"GetUint16":                reflect.ValueOf(viper.GetUint16),
 		"GetUint32":                reflect.ValueOf(viper.GetUint32),
 		"GetUint64":                reflect.ValueOf(viper.GetUint64),
+		"GetUint8":                 reflect.ValueOf(viper.GetUint8),
 		"GetViper":                 reflect.ValueOf(viper.GetViper),
 		"InConfig":                 reflect.ValueOf(viper.InConfig),
 		"IsSet":                    reflect.ValueOf(viper.IsSet),
@@ -56,6 +61,7 @@ func init() {
 		"MergeInConfig":            reflect.ValueOf(viper.MergeInConfig),
 		"MustBindEnv":              reflect.ValueOf(viper.MustBindEnv),
 		"New":                      reflect.ValueOf(viper.New),
+		"NewCodecRegistry":         reflect.ValueOf(viper.NewCodecRegistry),
 		"NewWithOptions":           reflect.ValueOf(viper.NewWithOptions),
 		"OnConfigChange":           reflect.ValueOf(viper.OnConfigChange),
 		"ReadConfig":               reflect.ValueOf(viper.ReadConfig),
@@ -75,6 +81,7 @@ func init() {
 		"SetEnvKeyReplacer":        reflect.ValueOf(viper.SetEnvKeyReplacer),
 		"SetEnvPrefix":             reflect.ValueOf(viper.SetEnvPrefix),
 		"SetFs":                    reflect.ValueOf(viper.SetFs),
+		"SetOptions":               reflect.ValueOf(viper.SetOptions),
 		"SetTypeByDefaultValue":    reflect.ValueOf(viper.SetTypeByDefaultValue),
 		"Sub":                      reflect.ValueOf(viper.Sub),
 		"SupportedExts":            reflect.ValueOf(&viper.SupportedExts).Elem(),
@@ -84,16 +91,30 @@ func init() {
 		"UnmarshalKey":             reflect.ValueOf(viper.UnmarshalKey),
 		"WatchConfig":              reflect.ValueOf(viper.WatchConfig),
 		"WatchRemoteConfig":        reflect.ValueOf(viper.WatchRemoteConfig),
+		"WithCodecRegistry":        reflect.ValueOf(viper.WithCodecRegistry),
+		"WithDecodeHook":           reflect.ValueOf(viper.WithDecodeHook),
+		"WithDecoderRegistry":      reflect.ValueOf(viper.WithDecoderRegistry),
+		"WithEncoderRegistry":      reflect.ValueOf(viper.WithEncoderRegistry),
+		"WithFinder":               reflect.ValueOf(viper.WithFinder),
 		"WithLogger":               reflect.ValueOf(viper.WithLogger),
 		"WriteConfig":              reflect.ValueOf(viper.WriteConfig),
 		"WriteConfigAs":            reflect.ValueOf(viper.WriteConfigAs),
+		"WriteConfigTo":            reflect.ValueOf(viper.WriteConfigTo),
 
 		// type definitions
+		"Codec":                          reflect.ValueOf((*viper.Codec)(nil)),
+		"CodecRegistry":                  reflect.ValueOf((*viper.CodecRegistry)(nil)),
 		"ConfigFileAlreadyExistsError":   reflect.ValueOf((*viper.ConfigFileAlreadyExistsError)(nil)),
 		"ConfigFileNotFoundError":        reflect.ValueOf((*viper.ConfigFileNotFoundError)(nil)),
 		"ConfigMarshalError":             reflect.ValueOf((*viper.ConfigMarshalError)(nil)),
 		"ConfigParseError":               reflect.ValueOf((*viper.ConfigParseError)(nil)),
+		"Decoder":                        reflect.ValueOf((*viper.Decoder)(nil)),
 		"DecoderConfigOption":            reflect.ValueOf((*viper.DecoderConfigOption)(nil)),
+		"DecoderRegistry":                reflect.ValueOf((*viper.DecoderRegistry)(nil)),
+		"DefaultCodecRegistry":           reflect.ValueOf((*viper.DefaultCodecRegistry)(nil)),
+		"Encoder":                        reflect.ValueOf((*viper.Encoder)(nil)),
+		"EncoderRegistry":                reflect.ValueOf((*viper.EncoderRegistry)(nil)),
+		"Finder":                         reflect.ValueOf((*viper.Finder)(nil)),
 		"FlagValue":                      reflect.ValueOf((*viper.FlagValue)(nil)),
 		"FlagValueSet":                   reflect.ValueOf((*viper.FlagValueSet)(nil)),
 		"Option":                         reflect.ValueOf((*viper.Option)(nil)),
@@ -106,13 +127,97 @@ func init() {
 		"Viper":                          reflect.ValueOf((*viper.Viper)(nil)),
 
 		// interface wrapper definitions
-		"_FlagValue":      reflect.ValueOf((*_github_com_spf13_viper_FlagValue)(nil)),
-		"_FlagValueSet":   reflect.ValueOf((*_github_com_spf13_viper_FlagValueSet)(nil)),
-		"_Logger":         reflect.ValueOf((*_github_com_spf13_viper_Logger)(nil)),
-		"_Option":         reflect.ValueOf((*_github_com_spf13_viper_Option)(nil)),
-		"_RemoteProvider": reflect.ValueOf((*_github_com_spf13_viper_RemoteProvider)(nil)),
-		"_StringReplacer": reflect.ValueOf((*_github_com_spf13_viper_StringReplacer)(nil)),
+		"_Codec":           reflect.ValueOf((*_github_com_spf13_viper_Codec)(nil)),
+		"_CodecRegistry":   reflect.ValueOf((*_github_com_spf13_viper_CodecRegistry)(nil)),
+		"_Decoder":         reflect.ValueOf((*_github_com_spf13_viper_Decoder)(nil)),
+		"_DecoderRegistry": reflect.ValueOf((*_github_com_spf13_viper_DecoderRegistry)(nil)),
+		"_Encoder":         reflect.ValueOf((*_github_com_spf13_viper_Encoder)(nil)),
+		"_EncoderRegistry": reflect.ValueOf((*_github_com_spf13_viper_EncoderRegistry)(nil)),
+		"_Finder":          reflect.ValueOf((*_github_com_spf13_viper_Finder)(nil)),
+		"_FlagValue":       reflect.ValueOf((*_github_com_spf13_viper_FlagValue)(nil)),
+		"_FlagValueSet":    reflect.ValueOf((*_github_com_spf13_viper_FlagValueSet)(nil)),
+		"_Option":          reflect.ValueOf((*_github_com_spf13_viper_Option)(nil)),
+		"_RemoteProvider":  reflect.ValueOf((*_github_com_spf13_viper_RemoteProvider)(nil)),
+		"_StringReplacer":  reflect.ValueOf((*_github_com_spf13_viper_StringReplacer)(nil)),
 	}
+}
+
+// _github_com_spf13_viper_Codec is an interface wrapper for Codec type
+type _github_com_spf13_viper_Codec struct {
+	IValue  interface{}
+	WDecode func(b []byte, v map[string]any) error
+	WEncode func(v map[string]any) ([]byte, error)
+}
+
+func (W _github_com_spf13_viper_Codec) Decode(b []byte, v map[string]any) error {
+	return W.WDecode(b, v)
+}
+func (W _github_com_spf13_viper_Codec) Encode(v map[string]any) ([]byte, error) {
+	return W.WEncode(v)
+}
+
+// _github_com_spf13_viper_CodecRegistry is an interface wrapper for CodecRegistry type
+type _github_com_spf13_viper_CodecRegistry struct {
+	IValue   interface{}
+	WDecoder func(format string) (viper.Decoder, error)
+	WEncoder func(format string) (viper.Encoder, error)
+}
+
+func (W _github_com_spf13_viper_CodecRegistry) Decoder(format string) (viper.Decoder, error) {
+	return W.WDecoder(format)
+}
+func (W _github_com_spf13_viper_CodecRegistry) Encoder(format string) (viper.Encoder, error) {
+	return W.WEncoder(format)
+}
+
+// _github_com_spf13_viper_Decoder is an interface wrapper for Decoder type
+type _github_com_spf13_viper_Decoder struct {
+	IValue  interface{}
+	WDecode func(b []byte, v map[string]any) error
+}
+
+func (W _github_com_spf13_viper_Decoder) Decode(b []byte, v map[string]any) error {
+	return W.WDecode(b, v)
+}
+
+// _github_com_spf13_viper_DecoderRegistry is an interface wrapper for DecoderRegistry type
+type _github_com_spf13_viper_DecoderRegistry struct {
+	IValue   interface{}
+	WDecoder func(format string) (viper.Decoder, error)
+}
+
+func (W _github_com_spf13_viper_DecoderRegistry) Decoder(format string) (viper.Decoder, error) {
+	return W.WDecoder(format)
+}
+
+// _github_com_spf13_viper_Encoder is an interface wrapper for Encoder type
+type _github_com_spf13_viper_Encoder struct {
+	IValue  interface{}
+	WEncode func(v map[string]any) ([]byte, error)
+}
+
+func (W _github_com_spf13_viper_Encoder) Encode(v map[string]any) ([]byte, error) {
+	return W.WEncode(v)
+}
+
+// _github_com_spf13_viper_EncoderRegistry is an interface wrapper for EncoderRegistry type
+type _github_com_spf13_viper_EncoderRegistry struct {
+	IValue   interface{}
+	WEncoder func(format string) (viper.Encoder, error)
+}
+
+func (W _github_com_spf13_viper_EncoderRegistry) Encoder(format string) (viper.Encoder, error) {
+	return W.WEncoder(format)
+}
+
+// _github_com_spf13_viper_Finder is an interface wrapper for Finder type
+type _github_com_spf13_viper_Finder struct {
+	IValue interface{}
+	WFind  func(fsys afero.Fs) ([]string, error)
+}
+
+func (W _github_com_spf13_viper_Finder) Find(fsys afero.Fs) ([]string, error) {
+	return W.WFind(fsys)
 }
 
 // _github_com_spf13_viper_FlagValue is an interface wrapper for FlagValue type
@@ -145,32 +250,6 @@ type _github_com_spf13_viper_FlagValueSet struct {
 
 func (W _github_com_spf13_viper_FlagValueSet) VisitAll(fn func(viper.FlagValue)) {
 	W.WVisitAll(fn)
-}
-
-// _github_com_spf13_viper_Logger is an interface wrapper for Logger type
-type _github_com_spf13_viper_Logger struct {
-	IValue interface{}
-	WDebug func(msg string, keyvals ...any)
-	WError func(msg string, keyvals ...any)
-	WInfo  func(msg string, keyvals ...any)
-	WTrace func(msg string, keyvals ...any)
-	WWarn  func(msg string, keyvals ...any)
-}
-
-func (W _github_com_spf13_viper_Logger) Debug(msg string, keyvals ...any) {
-	W.WDebug(msg, keyvals...)
-}
-func (W _github_com_spf13_viper_Logger) Error(msg string, keyvals ...any) {
-	W.WError(msg, keyvals...)
-}
-func (W _github_com_spf13_viper_Logger) Info(msg string, keyvals ...any) {
-	W.WInfo(msg, keyvals...)
-}
-func (W _github_com_spf13_viper_Logger) Trace(msg string, keyvals ...any) {
-	W.WTrace(msg, keyvals...)
-}
-func (W _github_com_spf13_viper_Logger) Warn(msg string, keyvals ...any) {
-	W.WWarn(msg, keyvals...)
 }
 
 // _github_com_spf13_viper_Option is an interface wrapper for Option type

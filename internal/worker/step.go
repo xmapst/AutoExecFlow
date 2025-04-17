@@ -12,165 +12,217 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
+	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
+	"github.com/xmapst/AutoExecFlow/internal/worker/event"
 	"github.com/xmapst/AutoExecFlow/internal/worker/runner"
-	"github.com/xmapst/AutoExecFlow/pkg/dag"
 )
 
 type sStep struct {
-	storage   storage.IStep
+	// 生命周期控制（强杀）
+	lcCtx    context.Context
+	lcCancel context.CancelFunc
+
+	// 控制上下文, 控制挂起或解卦
+	ctrlCtx    context.Context
+	ctrlCancel context.CancelFunc
+
+	stg       storage.IStep
 	kind      string
+	taskName  string
+	stepName  string
 	workspace string
 	scriptDir string
+	state     int32 // 0: 正常, 1: 挂起
 }
 
-func newStep(storage storage.IStep, kind string, workspace, scriptDir string) dag.VertexFunc {
-	s := &sStep{
-		storage:   storage,
-		kind:      kind,
-		workspace: workspace,
-		scriptDir: scriptDir,
+func (s *sStep) Name() string {
+	return fmt.Sprintf("%s/%s", s.taskName, s.stepName)
+}
+
+func (s *sStep) Dependencies() []string {
+	return s.stg.Depend().List()
+}
+
+func (s *sStep) PreExecution(ctx context.Context, input map[string]any) error {
+	logx.Infoln(s.taskName, s.stepName, s.workspace, "PreExecution")
+	event.SendEventf("%s %s PreExecution", s.taskName, s.stepName)
+	return nil
+}
+
+func (s *sStep) Execute(ctx context.Context, input map[string]any) (map[string]any, error) {
+	if err := s.checkCtx(ctx); err != nil {
+		return nil, err
 	}
-	return s.vertexFunc()
-}
+	logx.Infoln(s.taskName, s.stepName, s.workspace, "Execute")
+	event.SendEventf("%s %s Execute", s.taskName, s.stepName)
+	var err error
+	if err = s.stg.Update(&models.SStepUpdate{
+		State:    models.Pointer(models.StateRunning),
+		OldState: models.Pointer(models.StatePending),
+		Message:  "step is running",
+		STime:    models.Pointer(time.Now()),
+	}); err != nil {
+		logx.Errorln(s.taskName, s.stepName, err)
+		event.SendEventf("%s %s error %v", s.taskName, s.stepName, err)
+		return nil, err
+	}
 
-func (s *sStep) vertexFunc() dag.VertexFunc {
-	// build step
-	return func(ctx context.Context, taskName, stepName string) (err error) {
-		if err = s.storage.Update(&models.SStepUpdate{
-			State:    models.Pointer(models.StateRunning),
-			OldState: models.Pointer(models.StatePending),
-			Message:  "step is running",
-			STime:    models.Pointer(time.Now()),
-		}); err != nil {
-			logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-			return err
-		}
-
-		// proc step
-		var res = new(models.SStepUpdate)
-		defer func() {
-			if _err := recover(); _err != nil {
-				stack := string(debug.Stack())
-				logx.Errorln(stack, _err)
-				res.Code = models.Pointer(common.CodeSystemErr)
-				res.Message = fmt.Sprint(_err)
-			}
-			res.ETime = models.Pointer(time.Now())
-			res.OldState = models.Pointer(models.StateRunning)
-			if _err := s.storage.Update(res); _err != nil {
-				logx.Errorln(_err)
-			}
-		}()
-
-		// 日志写入
-		s.storage.Log().Write(common.ConsoleStart)
-		defer s.storage.Log().Write(common.ConsoleDone)
-
-		if s.kind == common.KindStrategy {
-			// 评估规则, 使用expr
-			var action common.Action
-			action, err = s.evaluateExprRule()
-			if err != nil {
-				logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-				// 写入步骤日志
-				s.storage.Log().Write(err.Error())
-				res.State = models.Pointer(models.StateFailed)
-				res.Code = models.Pointer(common.CodeSystemErr)
-				res.Message = err.Error()
-				return err
-			}
-			switch action {
-			case common.ActionSkip:
-				res.State = models.Pointer(models.StateSkipped)
-				res.Code = models.Pointer(common.CodeSkipped)
-				res.Message = "skipped due to rule"
-				return
-			default:
-				// 继续执行
-			}
-			defer func() {
-				// 策略模式下需要当前步骤成功才会触发
-				err = nil
-			}()
-		}
-
-		s.pre(ctx, taskName, stepName)
-		defer func() {
-			s.post(ctx, taskName, stepName)
-		}()
-
-		runnerItr, err := runner.New(
-			s.storage,
-			s.workspace,
-			s.scriptDir,
-		)
-		if err != nil {
-			logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
-			res.State = models.Pointer(models.StateFailed)
-			res.Message = err.Error()
+	// proc step
+	var res = new(models.SStepUpdate)
+	defer func() {
+		if _err := recover(); _err != nil {
+			stack := string(debug.Stack())
+			logx.Errorln(stack, _err)
 			res.Code = models.Pointer(common.CodeSystemErr)
-			return err
+			res.Message = fmt.Sprint(_err)
 		}
+		res.ETime = models.Pointer(time.Now())
+		res.OldState = models.Pointer(models.StateRunning)
+		if _err := s.stg.Update(res); _err != nil {
+			logx.Errorln(_err)
+		}
+		event.SendEventf("%s %s error %v", s.taskName, s.stepName, res.Message)
+	}()
 
-		defer func() {
-			if cErr := runnerItr.Clear(); cErr != nil {
-				logx.Warnln(cErr)
-			}
-		}()
+	// 日志写入
+	s.stg.Log().Write(common.ConsoleStart)
+	defer s.stg.Log().Write(common.ConsoleDone)
 
-		res.Message = "execution succeed"
-		code, err := runnerItr.Run(ctx)
-		res.Code = models.Pointer(code)
-		res.State = models.Pointer(models.StateStopped)
+	if s.kind == common.KindStrategy {
+		// 评估规则, 使用expr
+		var action common.Action
+		action, err = s.evaluateExprRule()
 		if err != nil {
+			logx.Errorln(s.taskName, s.stepName, err)
+			// 写入步骤日志
+			s.stg.Log().Write(err.Error())
 			res.State = models.Pointer(models.StateFailed)
+			res.Code = models.Pointer(common.CodeSystemErr)
 			res.Message = err.Error()
-			return err
+			return nil, err
 		}
-		if code != 0 {
-			res.State = models.Pointer(models.StateFailed)
-			res.Message = fmt.Sprintf("execution failed with code: %d", code)
-			return errors.New(res.Message)
+		switch action {
+		case common.ActionSkip:
+			res.State = models.Pointer(models.StateSkipped)
+			res.Code = models.Pointer(common.CodeSkipped)
+			res.Message = "skipped due to rule"
+			return nil, nil
+		default:
+			// 继续执行
 		}
-		return
+		defer func() {
+			// 策略模式下需要当前步骤成功才会触发
+			err = nil
+		}()
 	}
+	var _runner runner.IRunner
+	_runner, err = runner.New(
+		s.stg,
+		s.workspace,
+		s.scriptDir,
+	)
+	if err != nil {
+		logx.Errorln(s.taskName, s.stepName, err)
+		res.State = models.Pointer(models.StateFailed)
+		res.Message = err.Error()
+		res.Code = models.Pointer(common.CodeSystemErr)
+		return nil, err
+	}
+
+	defer func() {
+		if cErr := _runner.Clear(); cErr != nil {
+			logx.Warnln(cErr)
+		}
+	}()
+
+	res.Message = "execution succeed"
+	var code int64
+	_ctx, cancel := utils.MergerContext(ctx, s.lcCtx)
+	defer cancel()
+	code, err = _runner.Run(_ctx)
+	res.Code = models.Pointer(code)
+	res.State = models.Pointer(models.StateStopped)
+	if err != nil {
+		res.State = models.Pointer(models.StateFailed)
+		res.Message = err.Error()
+		return nil, err
+	}
+	if code != 0 {
+		res.State = models.Pointer(models.StateFailed)
+		res.Message = fmt.Sprintf("execution failed with code: %d", code)
+		return nil, errors.New(res.Message)
+	}
+	return nil, nil
 }
 
-func (s *sStep) pre(ctx context.Context, taskName, stepName string) {
-	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, "started")
-	return
+func (s *sStep) PostExecution(ctx context.Context, output map[string]any) error {
+	logx.Infoln(s.taskName, s.stepName, s.workspace, "PostExecution")
+	event.SendEventf("%s %s PostExecution", s.taskName, s.stepName)
+	stepManager.Delete(s.Name())
+	return nil
 }
 
-func (s *sStep) post(ctx context.Context, taskName, stepName string) {
-	logx.Infoln(s.storage.TaskName(), s.storage.Name(), s.workspace, "end")
-	return
+func (s *sStep) Stop() {
+	defer func() {
+		if _err := recover(); _err != nil {
+			logx.Errorln(_err)
+		}
+	}()
+	if s.lcCancel != nil {
+		logx.Infoln(s.taskName, s.stepName, s.workspace, "Stop")
+		event.SendEventf("%s %s Stop", s.taskName, s.stepName)
+		s.lcCancel()
+	}
+	stepManager.Delete(s.Name())
+}
+
+func (s *sStep) checkCtx(ctx context.Context) error {
+	// 挂起, 则等待解挂
+	if s.ctrlCtx != nil {
+		// 等待控制信号
+		select {
+		case <-s.ctrlCtx.Done():
+		case <-s.lcCtx.Done():
+			return s.lcCtx.Err()
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if s.lcCtx.Err() != nil {
+		return s.lcCtx.Err()
+	}
+	return nil
 }
 
 func (s *sStep) evaluateExprRule() (common.Action, error) {
 	// 查询规则
-	rule, err := s.storage.Rule()
+	rule, err := s.stg.Rule()
 	if err != nil {
-		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		logx.Errorln(s.taskName, s.stepName, err)
 		return common.ActionUnknown, err
 	}
-	action, err := s.storage.Action()
+	action, err := s.stg.Action()
 	if err != nil {
-		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		logx.Errorln(s.taskName, s.stepName, err)
 		return common.ActionUnknown, err
 	}
 	if rule == "" || action == "" {
-		logx.Infoln(s.storage.TaskName(), s.storage.Name(), "no rule or no action")
+		logx.Infoln(s.taskName, s.stepName, "no rule or no action")
 		return common.ActionAllow, nil
 	}
 	program, err := expr.Compile(rule, s.exprBuiltins()...)
 	if err != nil {
-		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		logx.Errorln(s.taskName, s.stepName, err)
 		return common.ActionUnknown, err
 	}
 	result, err := expr.Run(program, nil)
 	if err != nil {
-		logx.Errorln(s.storage.TaskName(), s.storage.Name(), err)
+		logx.Errorln(s.taskName, s.stepName, err)
 		return common.ActionUnknown, err
 	}
 	matched, ok := result.(bool)

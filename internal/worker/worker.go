@@ -2,6 +2,10 @@ package worker
 
 import (
 	"context"
+	"fmt"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -10,11 +14,15 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
-	"github.com/xmapst/AutoExecFlow/pkg/dag"
+	"github.com/xmapst/AutoExecFlow/internal/worker/event"
 	"github.com/xmapst/AutoExecFlow/pkg/tunny"
 )
 
-var pool = tunny.NewCallback(1)
+var (
+	pool        = tunny.NewCallback(1)
+	taskManager sync.Map
+	stepManager sync.Map
+)
 
 func Start(ctx context.Context) error {
 	if err := queues.SubscribeTask(ctx, config.App.NodeName, func(data string) error {
@@ -25,7 +33,7 @@ func Start(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		return pool.Submit(t.run)
+		return pool.Submit(t.Execute)
 	}); err != nil {
 		return err
 	}
@@ -53,7 +61,7 @@ func Start(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
-	event, id, err := dag.SubscribeEvent()
+	_event, id, err := event.SubscribeEvent()
 	if err != nil {
 		return err
 	}
@@ -61,9 +69,9 @@ func Start(ctx context.Context) error {
 		for {
 			select {
 			case <-ctx.Done():
-				dag.UnSubscribeEvent(id)
+				event.UnSubscribeEvent(id)
 				return
-			case e := <-event:
+			case e := <-_event:
 				_ = queues.PublishEvent(e)
 			}
 		}
@@ -77,23 +85,31 @@ func managerTask(taskName, action, duration string) error {
 		return err
 	}
 
-	manager, err := dag.GraphManager(taskName)
-	if err != nil {
-		return err
+	value, ok := taskManager.Load(taskName)
+	if !ok {
+		return errors.New("task not found")
 	}
+	task, ok := value.(*sTask)
 	switch action {
 	case "kill":
-		err = manager.Kill()
-		if err == nil {
-			return storage.Task(taskName).Update(&models.STaskUpdate{
-				State:    models.Pointer(models.StateFailed),
-				OldState: t.State,
-				Message:  "has been killed",
-			})
-		}
+		task.Stop()
+		return storage.Task(taskName).Update(&models.STaskUpdate{
+			State:    models.Pointer(models.StateFailed),
+			OldState: t.State,
+			Message:  "has been killed",
+		})
 	case "pause":
-		if manager.State() != dag.StatePaused {
-			_ = manager.Pause(duration)
+		if *t.State == models.StateRunning {
+			return errors.New("step is running")
+		}
+		if atomic.CompareAndSwapInt32(&task.state, 0, 1) {
+			var d time.Duration
+			d, err = time.ParseDuration(duration)
+			if err == nil && d > 0 {
+				task.ctrlCtx, task.ctrlCancel = context.WithTimeout(context.Background(), d)
+			} else {
+				task.ctrlCtx, task.ctrlCancel = context.WithCancel(context.Background())
+			}
 			return storage.Task(taskName).Update(&models.STaskUpdate{
 				State:    models.Pointer(models.StatePaused),
 				OldState: t.State,
@@ -101,8 +117,10 @@ func managerTask(taskName, action, duration string) error {
 			})
 		}
 	case "resume":
-		if manager.State() == dag.StatePaused {
-			manager.Resume()
+		if atomic.CompareAndSwapInt32(&task.state, 1, 0) {
+			if task.ctrlCancel != nil {
+				task.ctrlCancel()
+			}
 			return storage.Task(taskName).Update(&models.STaskUpdate{
 				State:    t.OldState,
 				OldState: t.State,
@@ -114,9 +132,13 @@ func managerTask(taskName, action, duration string) error {
 }
 
 func managerStep(taskName, stepName, action, duration string) error {
-	manager, err := dag.VertexManager(taskName, stepName)
-	if err != nil {
-		return err
+	value, ok := stepManager.Load(fmt.Sprintf("%s/%s", taskName, stepName))
+	if !ok {
+		return errors.New("step not found")
+	}
+	step, ok := value.(*sStep)
+	if !ok {
+		return errors.New("step not found")
 	}
 	s, err := storage.Task(taskName).Step(stepName).Get()
 	if err != nil {
@@ -124,20 +146,24 @@ func managerStep(taskName, stepName, action, duration string) error {
 	}
 	switch action {
 	case "kill":
-		err = manager.Kill()
-		if err == nil {
-			return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
-				State:    models.Pointer(models.StateFailed),
-				OldState: s.State,
-				Message:  "has been killed",
-			})
-		}
+		step.Stop()
+		return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
+			State:    models.Pointer(models.StateFailed),
+			OldState: s.State,
+			Message:  "has been killed",
+		})
 	case "pause":
 		if *s.State == models.StateRunning {
-			return dag.ErrRunning
+			return errors.New("step is running")
 		}
-		if manager.State() != dag.StatePaused {
-			_ = manager.Pause(duration)
+		if atomic.CompareAndSwapInt32(&step.state, 0, 1) {
+			var d time.Duration
+			d, err = time.ParseDuration(duration)
+			if err == nil && d > 0 {
+				step.ctrlCtx, step.ctrlCancel = context.WithTimeout(context.Background(), d)
+			} else {
+				step.ctrlCtx, step.ctrlCancel = context.WithCancel(context.Background())
+			}
 			return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
 				State:    models.Pointer(models.StatePaused),
 				OldState: s.State,
@@ -145,8 +171,10 @@ func managerStep(taskName, stepName, action, duration string) error {
 			})
 		}
 	case "resume":
-		if manager.State() == dag.StatePaused {
-			manager.Resume()
+		if atomic.CompareAndSwapInt32(&step.state, 1, 0) {
+			if step.ctrlCancel != nil {
+				step.ctrlCancel()
+			}
 			return storage.Task(taskName).Step(stepName).Update(&models.SStepUpdate{
 				State:    s.OldState,
 				OldState: s.State,

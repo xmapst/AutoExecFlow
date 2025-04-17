@@ -1,4 +1,4 @@
-package dag
+package event
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ var (
 	observable = newEvent(eventChan)
 )
 
-func emitEvent(format string, args ...interface{}) {
+func SendEventf(format string, args ...interface{}) {
 	event := fmt.Sprintf(format, args...)
 	select {
 	case eventChan <- event:

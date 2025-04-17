@@ -11,6 +11,7 @@ func init() {
 	Symbols["github.com/go-sql-driver/mysql/mysql"] = map[string]reflect.Value{
 		// function, constant and variable definitions
 		"BeforeConnect":           reflect.ValueOf(mysql.BeforeConnect),
+		"Charset":                 reflect.ValueOf(mysql.Charset),
 		"DeregisterDialContext":   reflect.ValueOf(mysql.DeregisterDialContext),
 		"DeregisterLocalFile":     reflect.ValueOf(mysql.DeregisterLocalFile),
 		"DeregisterReaderHandler": reflect.ValueOf(mysql.DeregisterReaderHandler),

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -99,4 +100,21 @@ func SplitByInvisibleChar(str string) []string {
 
 func ContainsInvisibleChar(str string) bool {
 	return strings.Contains(str, "\uFEFF")
+}
+
+func MergerContext(parent context.Context, extras ...context.Context) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancelCause(parent)
+	var stopFuncs []func() bool
+	for _, extra := range extras {
+		stop := context.AfterFunc(extra, func() {
+			cancel(extra.Err())
+		})
+		stopFuncs = append(stopFuncs, stop)
+	}
+	return ctx, func() {
+		cancel(nil)
+		for _, stop := range stopFuncs {
+			stop()
+		}
+	}
 }

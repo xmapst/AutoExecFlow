@@ -18,7 +18,6 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/types"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker/common"
-	"github.com/xmapst/AutoExecFlow/pkg/dag"
 )
 
 // 只允许中文,英文(含大小写),0-9,-_.~字符
@@ -82,11 +81,6 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 	if err != nil {
 		logx.Errorln(err)
 		return err
-	}
-
-	// 检查任务是否在运行
-	if _, err = dag.GraphManager(task.Name); err == nil {
-		return errors.New("task is running")
 	}
 
 	var db = storage.Task(task.Name)
