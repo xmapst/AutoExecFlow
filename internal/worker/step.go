@@ -82,7 +82,7 @@ func (s *sStep) Execute(ctx context.Context, input map[string]any) (map[string]a
 		if _err := s.stg.Update(res); _err != nil {
 			logx.Errorln(_err)
 		}
-		event.SendEventf("%s %s error %v", s.taskName, s.stepName, res.Message)
+		event.SendEventf("%s %s %v", s.taskName, s.stepName, res.Message)
 	}()
 
 	// 日志写入
