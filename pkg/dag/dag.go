@@ -21,26 +21,28 @@ func New(tasks map[string]Task) (*Dagcuter, error) {
 	if HasCycle(tasks) {
 		return nil, fmt.Errorf("circular dependency detected")
 	}
-	return &Dagcuter{
+	dag := &Dagcuter{
 		mu:         new(sync.Mutex),
 		wg:         new(sync.WaitGroup),
 		results:    new(sync.Map),
 		inDegrees:  make(map[string]int),
 		dependents: make(map[string][]string),
 		Tasks:      tasks,
-	}, nil
+	}
+
+	for name, task := range dag.Tasks {
+		dag.inDegrees[name] = len(task.Dependencies())
+		for _, dep := range task.Dependencies() {
+			dag.dependents[dep] = append(dag.dependents[dep], name)
+		}
+	}
+
+	return dag, nil
 }
 
 func (d *Dagcuter) Execute(ctx context.Context) (map[string]map[string]any, error) {
 	defer d.results.Clear()
 	errCh := make(chan error, 1)
-
-	for name, task := range d.Tasks {
-		d.inDegrees[name] = len(task.Dependencies())
-		for _, dep := range task.Dependencies() {
-			d.dependents[dep] = append(d.dependents[dep], name)
-		}
-	}
 
 	for name, deg := range d.inDegrees {
 		if deg == 0 {
@@ -135,4 +137,34 @@ func (d *Dagcuter) ExecutionOrder() string {
 		_, _ = fmt.Fprintf(&sb, "%d. %s\n", i+1, step)
 	}
 	return sb.String()
+}
+
+// PrintGraph 输出链式依赖
+func (d *Dagcuter) PrintGraph() {
+	// 1. 找到所有根节点（入度为 0）
+	var roots []string
+	for name, deg := range d.inDegrees {
+		if deg == 0 {
+			roots = append(roots, name)
+		}
+	}
+	// 2. 分别从每个根节点开始打印
+	for _, root := range roots {
+		fmt.Println(root)        // 先打印根
+		d.printChain(root, "  ") // 从根的下一层开始缩进两格
+		fmt.Println()            // 不同根之间空行
+	}
+}
+
+// printChain 递归打印子依赖，
+// name: 当前节点；
+// prefix: 当前缩进前缀（已经包含了箭头前需要的空格）
+func (d *Dagcuter) printChain(name, prefix string) {
+	children := d.dependents[name]
+	for _, child := range children {
+		// 打印箭头和子节点
+		fmt.Printf("%s└─> %s\n", prefix, child)
+		// 递归打印子节点的子依赖，缩进再多四格
+		d.printChain(child, prefix+"    ")
+	}
 }
