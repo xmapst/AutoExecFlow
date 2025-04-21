@@ -119,6 +119,9 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 			err = multierr.Append(err, fmt.Errorf("save step error: %s", _err))
 		}
 	}
+	if err != nil {
+		return err
+	}
 	// 提交任务
 	return queues.PublishTask(task.Node, ts.name)
 }
