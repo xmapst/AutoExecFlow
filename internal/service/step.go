@@ -335,7 +335,7 @@ func (ss *SStepService) handleFinalState(code types.Code) stateHandlerFn {
 		if code == types.CodeFailed {
 			errMsg = fmt.Errorf("exit code: %d", step.Code)
 			if step.Message != "" {
-				errMsg = fmt.Errorf(step.Message)
+				errMsg = errors.New(step.Message)
 			}
 		}
 		err = ws.WriteJSON(base.WithData(res).WithCode(code).WithError(errMsg))

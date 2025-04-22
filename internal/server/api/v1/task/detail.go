@@ -1,7 +1,6 @@
 package task
 
 import (
-	"fmt"
 	"io"
 	"reflect"
 	"time"
@@ -39,7 +38,7 @@ func Detail(c *gin.Context) {
 		c.Request.Header.Set(types.XTaskState, task.State)
 		c.Header(types.XTaskState, task.State)
 
-		base.Send(c, base.WithData(task).WithCode(code).WithError(fmt.Errorf(task.Message)))
+		base.Send(c, base.WithData(task).WithCode(code).WithError(errors.New(task.Message)))
 		return
 	}
 	ticker := time.NewTicker(30 * time.Second) // 每30秒发送心跳

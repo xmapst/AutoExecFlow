@@ -1,7 +1,6 @@
 package step
 
 import (
-	"fmt"
 	"io"
 	"reflect"
 	"time"
@@ -43,7 +42,7 @@ func Detail(c *gin.Context) {
 			return
 		}
 
-		base.Send(c, base.WithData(step).WithCode(code).WithError(fmt.Errorf(step.Message)))
+		base.Send(c, base.WithData(step).WithCode(code).WithError(errors.New(step.Message)))
 		return
 	}
 	ticker := time.NewTicker(30 * time.Second) // 每30秒发送心跳
