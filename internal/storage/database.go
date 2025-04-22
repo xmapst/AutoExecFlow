@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/ncruces/go-sqlite3/embed"
-	"github.com/ncruces/go-sqlite3/gormlite"
+	"github.com/glebarez/sqlite"
+	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
 	"github.com/xmapst/logx"
 	"gorm.io/driver/mysql"
@@ -42,7 +42,7 @@ func newDB(rawURL string) (*sDatabase, error) {
 		dialector = sqlserver.Open(rawURL)
 	case TypeSqlite:
 		// test.db
-		dialector = gormlite.Open(after)
+		dialector = sqlite.Open(after)
 	default:
 		return nil, errors.New("unsupported storage type")
 	}
@@ -73,6 +73,10 @@ func newDB(rawURL string) (*sDatabase, error) {
 	}
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
+
+	_ = gdb.Use(&caches.Caches{Conf: &caches.Config{
+		Easer: true,
+	}})
 
 	d := &sDatabase{DB: gdb}
 
