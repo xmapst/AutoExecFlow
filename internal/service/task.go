@@ -79,7 +79,7 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 	// 检查请求内容
 	timeout, err := ts.review(task)
 	if err != nil {
-		logx.Errorln(err)
+		logx.Errorln("task review", ts.name, err)
 		return err
 	}
 
@@ -87,6 +87,7 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 	// 检查全局
 	state, err := db.State()
 	if err != nil {
+		logx.Errorln("task state", ts.name, err)
 		return err
 	}
 	if state != models.StateStopped && state != models.StateSkipped && state != models.StateUnknown && state != models.StateFailed {
@@ -104,11 +105,13 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 	}()
 
 	if timeout, err = ts.saveTask(timeout, task); err != nil {
+		logx.Errorln("task save", ts.name, err)
 		return err
 	}
 
 	err = ts.reviewStep(task.Kind, task.Step)
 	if err != nil {
+		logx.Errorln("task review step", ts.name, err)
 		return err
 	}
 
@@ -116,10 +119,12 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 		// save step
 		stepSvc := Step(task.Name, step.Name)
 		if _err := stepSvc.Create(timeout, step); _err != nil {
+			logx.Errorln("task create step", task.Name, step.Name, err)
 			err = multierr.Append(err, fmt.Errorf("save step error: %s", _err))
 		}
 	}
 	if err != nil {
+		logx.Errorln("task create", ts.name, err)
 		return err
 	}
 	// 提交任务
@@ -151,6 +156,7 @@ func (ts *STaskService) review(task *types.STaskReq) (time.Duration, error) {
 	}
 	timeout, err := time.ParseDuration(task.Timeout)
 	if err != nil {
+		logx.Errorln("task review", ts.name, err)
 		timeout = config.App.ExecTimeOut
 	}
 	return timeout, nil
@@ -159,6 +165,7 @@ func (ts *STaskService) review(task *types.STaskReq) (time.Duration, error) {
 func (ts *STaskService) reviewStep(kind string, steps types.SStepsReq) error {
 	// 检查步骤名称是否重复
 	if err := ts.uniqStepsName(steps); err != nil {
+		logx.Errorln("task review step", ts.name, err)
 		return err
 	}
 	if kind != common.KindDag {
@@ -209,6 +216,7 @@ func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (t
 		},
 	})
 	if err != nil {
+		logx.Errorln("task save", ts.name, err)
 		return timeout, fmt.Errorf("save task error: %s", err)
 	}
 
@@ -221,6 +229,7 @@ func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (t
 		})
 	}
 	if err = storage.Task(task.Name).Env().Insert(envs...); err != nil {
+		logx.Errorln("task save envs", ts.name, err)
 		return timeout, fmt.Errorf("save task env error: %s", err)
 	}
 	return timeout, nil
@@ -229,13 +238,13 @@ func (ts *STaskService) saveTask(timeout time.Duration, task *types.STaskReq) (t
 func (ts *STaskService) Delete() error {
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
-		logx.Errorln(err)
-		return err
+		logx.Errorln("task delete", ts.name, err)
+		return errors.New("task not found")
 	}
 	// 尝试强杀任务
 	err = queues.PublishManager(task.Node, utils.JoinWithInvisibleChar(ts.name, "kill", "0"))
 	if err != nil {
-		logx.Errorln(err)
+		logx.Errorln("task delete", ts.name, "kill error", err)
 		return err
 	}
 	return storage.Task(ts.name).ClearAll()
@@ -245,8 +254,8 @@ func (ts *STaskService) Detail() (types.Code, *types.STaskRes, error) {
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
-		logx.Errorln(err)
-		return types.CodeFailed, nil, err
+		logx.Errorln("task detail", ts.name, err)
+		return types.CodeFailed, nil, errors.New("task not found")
 	}
 
 	data := &types.STaskRes{
@@ -288,8 +297,8 @@ func (ts *STaskService) StepCount() (res int64) {
 func (ts *STaskService) Manager(action string, duration string) error {
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
-		logx.Errorln(err)
-		return err
+		logx.Errorln("task manager", ts.name, err)
+		return errors.New("task not found")
 	}
 	if *task.State != models.StateRunning && *task.State != models.StatePending && *task.State != models.StatePaused {
 		return errors.New("task is no running")
@@ -300,7 +309,8 @@ func (ts *STaskService) Manager(action string, duration string) error {
 func (ts *STaskService) Dump() (*types.STaskReq, error) {
 	task, err := storage.Task(ts.name).Get()
 	if err != nil {
-		return nil, err
+		logx.Errorln("task dump", ts.name, err)
+		return nil, errors.New("task not found")
 	}
 	res := &types.STaskReq{
 		Kind:    task.Kind,
@@ -342,6 +352,7 @@ func (ts *STaskService) Steps() (code types.Code, data types.SStepsRes, err erro
 	db := storage.Task(ts.name)
 	task, err := db.Get()
 	if err != nil {
+		logx.Errorln("task get steps", ts.name, err)
 		return types.CodeNoData, nil, err
 	}
 

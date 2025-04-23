@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin/binding"
+	"github.com/pkg/errors"
 	"github.com/segmentio/ksuid"
+	"github.com/xmapst/logx"
 
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/storage/models"
@@ -56,7 +58,8 @@ func (p *SPipelineService) Delete() error {
 func (p *SPipelineService) Detail() (*types.SPipelineRes, error) {
 	res, err := storage.Pipeline(p.name).Get()
 	if err != nil {
-		return nil, err
+		logx.Errorln("detail pipeline", p.name, err)
+		return nil, errors.New("pipeline not found")
 	}
 	return &types.SPipelineRes{
 		Name:    res.Name,
@@ -123,7 +126,8 @@ func (p *SPipelineService) BuildList(req *types.SPageReq) *types.SPipelineBuildL
 func (p *SPipelineService) BuildDetail(name string) (types.Code, *types.SPipelineBuildRes, error) {
 	build, err := storage.Pipeline(p.name).Build().Get(name)
 	if err != nil {
-		return types.CodeFailed, nil, err
+		logx.Errorln("get pipeline build", p.name, err)
+		return types.CodeFailed, nil, errors.New("pipeline not found")
 	}
 	return ConvertState(*build.State), &types.SPipelineBuildRes{
 		PipelineName: build.PipelineName,
@@ -145,11 +149,13 @@ func (p *SPipelineService) BuildDelete(name string) error {
 func (p *SPipelineService) BuildCreate(req *types.SPipelineBuildReq) (name string, err error) {
 	jsonData, err := json.Marshal(req.Params)
 	if err != nil {
+		logx.Errorln("pipeline build create", p.name, err)
 		return
 	}
 	name = fmt.Sprintf("PpipeL%s", ksuid.New().String())
 	err = p.buildRun(name, req.Params)
 	if err != nil {
+		logx.Errorln("pipeline build create", p.name, err)
 		return
 	}
 	err = storage.Pipeline(p.name).Build().Insert(&models.SPipelineBuild{
@@ -157,6 +163,7 @@ func (p *SPipelineService) BuildCreate(req *types.SPipelineBuildReq) (name strin
 		Params:   string(jsonData),
 	})
 	if err != nil {
+		logx.Errorln("pipeline build create", p.name, err)
 		return
 	}
 	return
@@ -166,7 +173,8 @@ func (p *SPipelineService) buildRun(name string, param map[string]any) error {
 	// 获取流水线
 	pipeline, err := storage.Pipeline(p.name).Get()
 	if err != nil {
-		return err
+		logx.Errorln("pipeline build run", p.name, err)
+		return errors.New("pipeline not found")
 	}
 
 	var content string
@@ -174,6 +182,7 @@ func (p *SPipelineService) buildRun(name string, param map[string]any) error {
 	case "jinja2":
 		content, err = jinja.Parse(pipeline.Content, param)
 		if err != nil {
+			logx.Errorln("pipeline build run", p.name, err)
 			return err
 		}
 	default:
@@ -183,6 +192,7 @@ func (p *SPipelineService) buildRun(name string, param map[string]any) error {
 	var taskReq = new(types.STaskReq)
 	err = binding.YAML.BindBody([]byte(content), taskReq)
 	if err != nil {
+		logx.Errorln("pipeline build run", p.name, err)
 		return err
 	}
 	defer func() {
@@ -194,6 +204,7 @@ func (p *SPipelineService) buildRun(name string, param map[string]any) error {
 	taskReq.Name = name
 	err = Task(p.name).Create(taskReq)
 	if err != nil {
+		logx.Errorln("pipeline build run", p.name, err)
 		return err
 	}
 	return nil
@@ -202,12 +213,14 @@ func (p *SPipelineService) buildRun(name string, param map[string]any) error {
 func (p *SPipelineService) BuildReRun(name string) error {
 	build, err := storage.Pipeline(p.name).Build().Get(name)
 	if err != nil {
-		return err
+		logx.Errorln("pipeline build rerun", p.name, err)
+		return errors.New("pipeline not found")
 	}
 	var param = make(map[string]any)
 	if build.Params != "" {
 		err = json.Unmarshal([]byte(build.Params), &param)
 		if err != nil {
+			logx.Errorln("pipeline build rerun", p.name, err)
 			return err
 		}
 	}

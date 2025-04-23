@@ -38,13 +38,14 @@ func (ss *SStepService) Create(globalTimeout time.Duration, step *types.SStepReq
 	}
 	timeout, err := ss.review(step)
 	if err != nil {
-		logx.Errorln(err)
+		logx.Errorln("step review", ss.taskName, ss.stepName, err)
 		return err
 	}
 	if timeout <= 0 || timeout > globalTimeout {
 		timeout = globalTimeout
 	}
 	if err = ss.saveStep(timeout, step); err != nil {
+		logx.Errorln("step save", ss.taskName, ss.stepName, err)
 		return err
 	}
 	return nil
@@ -105,6 +106,7 @@ func (ss *SStepService) saveStep(timeout time.Duration, step *types.SStepReq) (e
 		},
 	})
 	if err != nil {
+		logx.Errorln("step save", ss.taskName, ss.stepName, err)
 		return fmt.Errorf("save step error: %s", err)
 	}
 	// save step env
@@ -116,11 +118,13 @@ func (ss *SStepService) saveStep(timeout time.Duration, step *types.SStepReq) (e
 		})
 	}
 	if err = stepStorage.Env().Insert(envs...); err != nil {
+		logx.Errorln("step save envs", ss.taskName, ss.stepName, err)
 		return fmt.Errorf("save step env error: %s", err)
 	}
 	// save step depend
 	err = stepStorage.Depend().Insert(step.Depends...)
 	if err != nil {
+		logx.Errorln("step save depends", ss.taskName, ss.stepName, err)
 		return fmt.Errorf("save step depend error: %s", err)
 	}
 	return
@@ -130,8 +134,8 @@ func (ss *SStepService) Detail() (types.Code, *types.SStepRes, error) {
 	stepStorage := storage.Task(ss.taskName).Step(ss.stepName)
 	step, err := stepStorage.Get()
 	if err != nil {
-		logx.Errorln(err)
-		return types.CodeFailed, nil, err
+		logx.Errorln("step detail", ss.taskName, ss.stepName, err)
+		return types.CodeFailed, nil, errors.New("step not found")
 	}
 	data := &types.SStepRes{
 		Name:    step.Name,
@@ -164,16 +168,16 @@ func (ss *SStepService) Detail() (types.Code, *types.SStepRes, error) {
 func (ss *SStepService) Manager(action string, duration string) error {
 	task, err := storage.Task(ss.taskName).Get()
 	if err != nil {
-		logx.Errorln(err)
-		return err
+		logx.Errorln("step manager", ss.taskName, ss.stepName, err)
+		return errors.New("task not found")
 	}
 	if *task.State != models.StateRunning && *task.State != models.StatePending && *task.State != models.StatePaused {
 		return errors.New("task is no running")
 	}
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
-		logx.Errorln(err)
-		return err
+		logx.Errorln("step manager", ss.taskName, ss.stepName, err)
+		return errors.New("step not found")
 	}
 	if *step.State != models.StateRunning && *step.State != models.StatePending && *step.State != models.StatePaused {
 		return errors.New("step is no running")
@@ -188,7 +192,8 @@ func (ss *SStepService) Delete() error {
 func (ss *SStepService) Log() (types.Code, types.SStepLogsRes, error) {
 	step, err := storage.Task(ss.taskName).Step(ss.stepName).Get()
 	if err != nil {
-		return types.CodeFailed, nil, err
+		logx.Errorln("step log", ss.taskName, ss.stepName, err)
+		return types.CodeFailed, nil, errors.New("step not found")
 	}
 	switch *step.State {
 	case models.StatePending:
@@ -242,7 +247,8 @@ func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error
 	db := storage.Task(ss.taskName).Step(ss.stepName)
 	step, err := db.Get()
 	if err != nil {
-		return err
+		logx.Errorln("step logstream", ss.taskName, ss.stepName, err)
+		return errors.New("step not found")
 	}
 
 	var latestLine int64
@@ -275,9 +281,10 @@ func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error
 		// Stop, Failed 推送后结束.
 
 		if handler, exists := handlers[*step.State]; exists {
-			shouldContinue, err := handler(ws, &latestLine)
+			var shouldContinue bool
+			shouldContinue, err = handler(ws, &latestLine)
 			if err != nil {
-				logx.Errorln(err)
+				logx.Errorln("step logstream", ss.taskName, ss.stepName, err)
 				return err
 			}
 			if !shouldContinue {
@@ -287,10 +294,10 @@ func (ss *SStepService) LogStream(ctx context.Context, ws *websocket.Conn) error
 			return errors.New("unhandled step state")
 		}
 
-		var err error
 		step, err = db.Get()
 		if err != nil {
-			return err
+			logx.Errorln("step logstream", ss.taskName, ss.stepName, err)
+			return errors.New("step not found")
 		}
 		time.Sleep(300 * time.Millisecond)
 	}
@@ -315,6 +322,7 @@ func (ss *SStepService) handleRunningState(ws *websocket.Conn, latestLine *int64
 	res, done := ss.log(latestLine)
 	err := ws.WriteJSON(base.WithData(res).WithCode(types.CodeRunning).WithError(errors.New("in progress")))
 	if err != nil {
+		logx.Errorln("step logstream", ss.taskName, ss.stepName, err)
 		return false, err
 	}
 	if done {
@@ -328,7 +336,8 @@ func (ss *SStepService) handleFinalState(code types.Code) stateHandlerFn {
 		db := storage.Task(ss.taskName).Step(ss.stepName)
 		step, err := db.Get()
 		if err != nil {
-			return false, err
+			logx.Errorln("step logstream", ss.taskName, ss.stepName, err)
+			return false, errors.New("step not found")
 		}
 		res, _ := ss.log(latestLine)
 		var errMsg error
@@ -340,6 +349,7 @@ func (ss *SStepService) handleFinalState(code types.Code) stateHandlerFn {
 		}
 		err = ws.WriteJSON(base.WithData(res).WithCode(code).WithError(errMsg))
 		if err != nil {
+			logx.Errorln("step logstream", ss.taskName, ss.stepName, err)
 			return false, err
 		}
 		return false, nil

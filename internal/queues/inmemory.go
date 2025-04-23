@@ -48,7 +48,7 @@ func (d *sMemDirect) publish(data string) {
 	}
 	select {
 	case d.ch <- data:
-		logx.Infof("published message to subscriber direct queue %s", d.name)
+		logx.Debugf("published message to subscriber direct queue %s", d.name)
 	default:
 		logx.Warnln("subscriber direct queue full, dropping message")
 	}
@@ -149,7 +149,7 @@ func (t *sMemTopic) publish(event string) {
 		case <-sub.ctx.Done():
 			continue
 		case sub.ch <- event:
-			logx.Infof("published message to subscriber topic queue %s cname %s", t.name, sub.cname)
+			logx.Debugf("published message to subscriber topic queue %s cname %s", t.name, sub.cname)
 		default:
 			logx.Warnln("subscriber topic queue full, dropping message")
 		}
