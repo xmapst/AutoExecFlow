@@ -81,7 +81,7 @@ func (d *Dagcuter) runTask(ctx context.Context, name string, errCh chan error) {
 	output, err := d.executeTask(ctx, name, task, inputs)
 	if err != nil {
 		select {
-		case errCh <- fmt.Errorf("run %s failed: %w", name, err):
+		case errCh <- err:
 		default:
 		}
 		return
