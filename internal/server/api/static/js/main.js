@@ -1405,6 +1405,7 @@ class TaskTable {
         this.rowsPerPage = 15;
         this.tasks = [];
         this.totalPage = 0;
+        this.previousTasks = [];
 
         this.init();
     }
@@ -1422,15 +1423,15 @@ class TaskTable {
             this.totalPage = res.data.page.total;
             this.currentPage = res.data.page.current;
             this.rowsPerPage = res.data.page.size;
-            this.renderTaskTable();
+            this._updateTable();
             this.updateTaskPagination();
-            return;
+        }else {
+            // 置空表格, 显示无数据, 页码置为0
+            this.tasks = [];
+            this.totalPage = 1;
+            this._updateTable();
+            this.updateTaskPagination();
         }
-        // 置空表格, 显示无数据, 页码置为0
-        this.tasks = [];
-        this.totalPage = 1;
-        this.renderTaskTable();
-        this.updateTaskPagination();
     }
 
     // 通过 WebSocket 请求任务数据
@@ -1442,63 +1443,121 @@ class TaskTable {
         this.webSocketManager.send(request);
     }
 
-    // 动态渲染表格
-    renderTaskTable() {
+    /** 增量渲染表格 */
+    _updateTable() {
         const tableBody = document.querySelector("#task-table tbody");
-        tableBody.innerHTML = "";
+        const oldMap = new Map(this.previousTasks.map(t => [t.name, t]));
+        const newMap = new Map(this.tasks.map(t => [t.name, t]));
 
-        if (!this.tasks || this.tasks.length === 0) {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td colspan="7"><div style="display:flex;justify-content:center;align-items:center;">暂无数据</div></td>`;
-            tableBody.appendChild(row);
-            return
-        }
-        this.tasks.forEach(task => {
-            const row = document.createElement("tr");
-            const color = Utils.getStatusColor(task.state || 'unknown');
-            row.innerHTML = `
-                    <td id="task-${task.name+'-name'}">${task.name}</td>
-                    <td id="task-${task.name+'-count'}">${task.count}</td>
-                    <td id="task-${task.name+'-message'}" class="message" title=""></td>
-                    <td id="task-${task.name+'-start'}">${task.time.start ? task.time.start : '---'}</td>
-                    <td id="task-${task.name+'-end'}">${task.time.end ? task.time.end : '---'}</td>
-                    <td id="task-${task.name+'-state'}"><div style="background-color: ${color}; border-radius: 6px; padding: 5px 10px;">${task.state}</div></td>
-                    <td id="task-${task.name+'-actions'}">
-                        <div id="task-dropdown" class="dropdown">
-                            <button class="dropbtn">Actions</button>
-                            <div class="dropdown-content">
-                                <a id="detail-task" href="#">详情</a>
-                                <a id="dump-task" href="#">导出</a>
-                                ${task.state === 'running' ? '<a id="kill-task" href="#">强杀</a>' : ''}
-                                <a id="delete-task" href="#">删除</a>
-                            </div>
-                        </div>
-                    </td>
-                `;
-            tableBody.appendChild(row);
-            let msgDocument = document.getElementById('task-'+task.name + '-message');
-            if (!msgDocument) {
-                msgDocument = document.createElement('div');
-                msgDocument.id = task.name + '-message';
-            }
-            if (task.message) {
-                msgDocument.innerText = task.message;
-                msgDocument.setAttribute('title', task.message);
-                if (task.message.length > 150) {
-                    msgDocument.innerText = task.message.substring(0, 150) + '...';
-                }
-            }
-            row.querySelector("#detail-task").addEventListener("click", () => this.showTaskCard(task.name));
-            row.querySelector("#dump-task").addEventListener("click", () => this.dumpTask(task));
-            if (row.querySelector("#kill-task") !== null) {
-                row.querySelector("#kill-task").addEventListener("click", () => Utils.taskManager(task.name, 'kill'));
-            }
-            if (row.querySelector("#delete-task") !== null) {
-                row.querySelector("#delete-task").addEventListener("click", () => this.deleteTask(task));
+        // 1. 删除已移除的行
+        this.previousTasks.forEach(task => {
+            if (!newMap.has(task.name)) {
+                const row = tableBody.querySelector(`tr[data-name="${task.name}"]`);
+                row && row.remove();
             }
         });
 
-        document.getElementById("task-page-info").textContent = `第${this.currentPage}页__共${this.totalPage}页`;
+        // 2. 新增新出现的行
+        this.tasks.forEach(task => {
+            if (!oldMap.has(task.name)) {
+                this._createRow(task, tableBody);
+            }
+        });
+
+        // 3. 更新已有行的变更字段
+        this.tasks.forEach(task => {
+            if (!oldMap.has(task.name)) return; // 新增已在前面处理
+            const old = oldMap.get(task.name);
+            const row = tableBody.querySelector(`tr[data-name="${task.name}"]`);
+            if (!row) return;
+
+            // state
+            if (task.state !== old.state) {
+                // 如果 state 发生变化，则强刷整行
+                row.remove();
+                this._createRow(task, tableBody);
+                return;
+            }
+
+            // count
+            if (task.count !== old.count) {
+                row.querySelector(".col-count").innerText = task.count;
+            }
+            // start
+            if ((task.time.start||"") !== (old.time.start||"")) {
+                row.querySelector(".col-start").innerText = task.time.start || '---';
+            }
+            // end
+            if ((task.time.end||"") !== (old.time.end||"")) {
+                row.querySelector(".col-end").innerText = task.time.end || '---';
+            }
+            // message
+            if ((task.message||"") !== (old.message||"")) {
+                const msgEl = row.querySelector(".col-message");
+                const full = task.message || "";
+                msgEl.innerText = full.length > 150
+                    ? full.slice(0,150) + '...'
+                    : full;
+                msgEl.title = full;
+            }
+        });
+
+        // 4. 更新分页信息
+        document.getElementById("task-page-info").textContent =
+            `第${this.currentPage}页__共${this.totalPage}页`;
+
+        // 5. 缓存新数据
+        this.previousTasks = JSON.parse(JSON.stringify(this.tasks));
+    }
+
+    /** 创建新行并绑定事件 */
+    _createRow(task, tableBody) {
+        const row = document.createElement("tr");
+        row.setAttribute("data-name", task.name);
+
+        const color = Utils.getStatusColor(task.state || 'unknown');
+        const fullMsg = task.message || "";
+        const dispMsg = fullMsg.length > 150
+            ? fullMsg.slice(0,150) + '...'
+            : fullMsg;
+
+        row.innerHTML = `
+          <td class="col-name">${task.name}</td>
+          <td class="col-count">${task.count}</td>
+          <td class="col-message message" title="${fullMsg}">${dispMsg}</td>
+          <td class="col-start">${task.time.start || '---'}</td>
+          <td class="col-end">${task.time.end || '---'}</td>
+          <td class="col-state">
+            <div style="background-color: ${color};
+                        border-radius: 6px; padding: 5px 10px;">
+              ${task.state}
+            </div>
+          </td>
+          <td class="col-actions">
+            <div class="dropdown">
+              <button class="dropbtn">Actions</button>
+              <div class="dropdown-content">
+                <a class="detail-task" href="#">详情</a>
+                <a class="dump-task" href="#">导出</a>
+                ${task.state === 'running' ? '<a class="kill-task" href="#">强杀</a>' : ''}
+                <a class="delete-task" href="#">删除</a>
+              </div>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(row);
+
+        // 绑定操作事件
+        row.querySelector(".detail-task")
+            .addEventListener("click", () => this.showTaskCard(task.name));
+        row.querySelector(".dump-task")
+            .addEventListener("click", () => this.dumpTask(task));
+        const killBtn = row.querySelector(".kill-task");
+        if (killBtn) killBtn.addEventListener("click", () =>
+            Utils.taskManager(task.name, 'kill')
+        );
+        row.querySelector(".delete-task")
+            .addEventListener("click", () => this.deleteTask(task));
     }
 
     // 更新分页
