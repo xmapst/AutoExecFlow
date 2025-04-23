@@ -81,7 +81,7 @@ func (d *Dagcuter) runTask(ctx context.Context, name string, errCh chan error) {
 	output, err := d.executeTask(ctx, name, task, inputs)
 	if err != nil {
 		select {
-		case errCh <- fmt.Errorf("task %s failed: %w", name, err):
+		case errCh <- fmt.Errorf("run %s failed: %w", name, err):
 		default:
 		}
 		return
@@ -105,14 +105,14 @@ func (d *Dagcuter) runTask(ctx context.Context, name string, errCh chan error) {
 
 func (d *Dagcuter) executeTask(ctx context.Context, name string, task Task, inputs map[string]any) (map[string]any, error) {
 	if err := task.PreExecution(ctx, inputs); err != nil {
-		return nil, fmt.Errorf("pre execution task %s failed: %w", name, err)
+		return nil, fmt.Errorf("pre execution %s failed: %w", name, err)
 	}
 	output, err := task.Execute(ctx, inputs)
 	if err != nil {
-		return nil, fmt.Errorf("task %s failed: %w", name, err)
+		return nil, fmt.Errorf("execution %s failed: %w", name, err)
 	}
 	if err = task.PostExecution(ctx, output); err != nil {
-		return nil, fmt.Errorf("post execution task %s failed: %w", name, err)
+		return nil, fmt.Errorf("post execution %s failed: %w", name, err)
 	}
 	return output, nil
 }
