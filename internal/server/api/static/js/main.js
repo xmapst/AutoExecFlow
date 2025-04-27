@@ -4,6 +4,8 @@ const taskTpl = `# 类型. 空: 串行无策略, strategy: 串行支持策略, d
 kind: dag
 # 描述
 desc: 这是一段任务描述
+# 延后执行
+#delayed: 2025-04-27T15:04:05Z
 # 允许节点, 可选, 默认为当前节点
 #node: node-01
 # 禁用, 可选, 默认false
@@ -1975,7 +1977,7 @@ class EventListener {
         eventContainer.appendChild(messageElement);
 
         // 保留最后9条消息，删除最早的
-        if (eventContainer.children.length > 9) {
+        if (eventContainer.children.length > 15) {
             eventContainer.removeChild(eventContainer.firstChild);
         }
     }

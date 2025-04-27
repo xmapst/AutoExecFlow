@@ -4,6 +4,7 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/xmapst/logx"
@@ -16,6 +17,7 @@ const longText = `An API for cross-platform custom orchestration of execution st
 Based on DAG, it implements the scheduling function of sequential execution of dependent steps and concurrent execution of non-dependent steps.`
 
 func main() {
+	time.Local = time.UTC
 	cmd := &cobra.Command{
 		Use:   os.Args[0],
 		Short: "Operating system remote execution interface",

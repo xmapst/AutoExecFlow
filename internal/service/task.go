@@ -128,10 +128,9 @@ func (ts *STaskService) Create(task *types.STaskReq) (err error) {
 		return err
 	}
 	// 提交任务
-	//if !task.ExecutionTime.IsZero() {
-	//	// 当前时间与task.ExecutionTime时间差
-	//	return queues.PublishTaskDelayed(task.Node, ts.name, task.ExecutionTime.Sub(time.Now()))
-	//}
+	if !task.Delayed.IsZero() {
+		return queues.PublishTaskDelayed(task.Node, ts.name, task.Delayed.Sub(time.Now().UTC()))
+	}
 	return queues.PublishTask(task.Node, ts.name)
 }
 

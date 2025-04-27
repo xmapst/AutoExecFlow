@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 type STaskCreateRes struct {
 	Name  string `json:"name" yaml:"name"`
 	Count int64  `json:"count,omitempty" yaml:"count,omitempty"`
@@ -27,6 +29,7 @@ type STaskRes struct {
 }
 
 type STaskReq struct {
+	Delayed time.Time `json:"delayed,omitempty" form:"delayed" yaml:"delayed,omitempty"`
 	Kind    string    `json:"kind,omitempty" form:"kind" yaml:"kind,omitempty"`
 	Name    string    `json:"name,omitempty" form:"name" yaml:"name,omitempty"`
 	Desc    string    `json:"desc,omitempty" form:"desc" yaml:"desc,omitempty"`
