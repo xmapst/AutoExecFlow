@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/segmentio/ksuid"
 	"github.com/xmapst/logx"
 
+	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/wildcard"
 )
 
@@ -210,10 +212,18 @@ func (t *sMemTopic) close() {
 	}
 }
 
+type delayed struct {
+	node  string
+	data  string
+	timer *time.Timer
+}
+
 type sMemoryBroker struct {
 	directs   sync.Map
 	topics    sync.Map
 	terminate atomic.Bool
+
+	delayed sync.Map
 }
 
 func newInMemoryBroker() *sMemoryBroker {
@@ -224,6 +234,30 @@ func (m *sMemoryBroker) PublishTask(node string, data string) error {
 	routingKey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
 	d, _ := m.directs.LoadOrStore(routingKey, newMemDirect(routingKey))
 	d.(*sMemDirect).publish(data)
+	return nil
+}
+
+func (m *sMemoryBroker) PublishTaskDelayed(node string, data string, delay time.Duration) error {
+	key := utils.MD5(fmt.Sprintf("%s_%s_%s", taskRoutingKey, node, data))
+	t := time.AfterFunc(delay, func() {
+		err := m.PublishTask(node, data)
+		if err != nil {
+			logx.Errorln("error publishing delayed task:", err)
+		}
+
+		value, loaded := m.delayed.LoadAndDelete(key)
+		if !loaded {
+			return
+		}
+		if t, ok := value.(*delayed); ok {
+			t.timer.Stop()
+		}
+	})
+	m.delayed.Store(key, &delayed{
+		node:  node,
+		data:  data,
+		timer: t,
+	})
 	return nil
 }
 
@@ -273,6 +307,13 @@ func (m *sMemoryBroker) Shutdown(ctx context.Context) {
 	if !m.terminate.CompareAndSwap(false, true) {
 		return
 	}
+
+	m.delayed.Range(func(key, value any) bool {
+		if t, ok := value.(*delayed); ok {
+			t.timer.Stop()
+		}
+		return true
+	})
 
 	var wg sync.WaitGroup
 	m.directs.Range(func(_, value any) bool {

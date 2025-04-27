@@ -2,6 +2,8 @@ package utils
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"strings"
@@ -117,4 +119,10 @@ func MergerContext(parent context.Context, extras ...context.Context) (context.C
 			stop()
 		}
 	}
+}
+
+func MD5(text string) string {
+	algorithm := md5.New()
+	algorithm.Write([]byte(text))
+	return hex.EncodeToString(algorithm.Sum(nil))
 }

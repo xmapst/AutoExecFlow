@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/xmapst/go-rabbitmq"
@@ -21,6 +22,7 @@ var (
 type sAmqpBroker struct {
 	nodeName string
 	conn     *rabbitmq.Conn
+	channel  *rabbitmq.Channel
 	// 防止相同生产者重复创建
 	publisherMap map[string]*rabbitmq.Publisher
 	// 防止相同消费者重复创建
@@ -49,6 +51,13 @@ func newAmqpBroker(nodeName, rawURL string) (*sAmqpBroker, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	a.channel, err = rabbitmq.NewChannel(a.conn, rabbitmq.WithChannelOptionsLogger(logx.GetSubLogger()))
+	if err != nil {
+		logx.Errorln(err)
+		return nil, err
+	}
+
 	err = a.newDirectPublisher()
 	if err != nil {
 		return nil, err
@@ -57,12 +66,34 @@ func newAmqpBroker(nodeName, rawURL string) (*sAmqpBroker, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return a, nil
 }
 
 func (a *sAmqpBroker) PublishTask(node string, data string) error {
 	rkey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
 	return a.publishDirect(rkey, data)
+}
+
+func (a *sAmqpBroker) PublishTaskDelayed(node string, data string, delay time.Duration) error {
+	rkey := fmt.Sprintf("%s_%s", taskRoutingKey, node)
+	delayedQueue := rkey + ".delayed"
+	_, err := a.channel.QueueDeclareSafe(
+		delayedQueue, true, false, false, false,
+		amqp091.Table{
+			"x-dead-letter-exchange":    directExchangeName,
+			"x-dead-letter-routing-key": rkey,
+		})
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	err = a.channel.QueueBindSafe(delayedQueue, delayedQueue, directExchangeName, false, amqp091.Table{})
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	return a.publish(directExchangeName, delayedQueue, data, fmt.Sprintf("%.f", delay.Seconds()))
 }
 
 func (a *sAmqpBroker) SubscribeTask(ctx context.Context, node string, handler HandleFn) error {
@@ -202,14 +233,14 @@ func (a *sAmqpBroker) subscribe(ctx context.Context, consumer *rabbitmq.Consumer
 }
 
 func (a *sAmqpBroker) publishDirect(rkey, data string) error {
-	return a.publish(directExchangeName, rkey, data)
+	return a.publish(directExchangeName, rkey, data, "")
 }
 
 func (a *sAmqpBroker) publishTopic(rkey, data string) error {
-	return a.publish(topicExchangeName, rkey, data)
+	return a.publish(topicExchangeName, rkey, data, "")
 }
 
-func (a *sAmqpBroker) publish(ename, rkey, data string) error {
+func (a *sAmqpBroker) publish(ename, rkey, data, expiration string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	publisher, ok := a.publisherMap[ename]
@@ -217,11 +248,17 @@ func (a *sAmqpBroker) publish(ename, rkey, data string) error {
 		return fmt.Errorf("exchange %s publisher not found", ename)
 	}
 	logx.Infof("published message to exchange %s routingKey %s", ename, rkey)
-	return publisher.Publish(
-		[]byte(data), []string{rkey},
+	ops := []func(*rabbitmq.PublishOptions){
 		rabbitmq.WithPublishOptionsExchange(ename),    // 交换机名称
 		rabbitmq.WithPublishOptionsMandatory,          // 强制发布
 		rabbitmq.WithPublishOptionsPersistentDelivery, // 立即发布
+	}
+	if expiration != "" {
+		ops = append(ops, rabbitmq.WithPublishOptionsExpiration(expiration))
+	}
+	return publisher.Publish(
+		[]byte(data), []string{rkey},
+		ops...,
 	)
 }
 

@@ -3,6 +3,7 @@ package queues
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -27,6 +28,7 @@ const (
 type IBroker interface {
 	PublishEvent(data string) error
 	PublishTask(node string, data string) error
+	PublishTaskDelayed(node string, data string, delay time.Duration) error
 	PublishManager(node string, data string) error
 
 	SubscribeEvent(ctx context.Context, handler HandleFn) error
@@ -59,6 +61,10 @@ func New(nodeName, rawURL string) error {
 
 func PublishTask(name string, data string) error {
 	return broker.PublishTask(name, data)
+}
+
+func PublishTaskDelayed(name string, data string, delay time.Duration) error {
+	return broker.PublishTaskDelayed(name, data, delay)
 }
 
 func SubscribeTask(ctx context.Context, name string, handler HandleFn) error {
