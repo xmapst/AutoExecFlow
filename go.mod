@@ -64,7 +64,7 @@ require (
 	gorm.io/driver/sqlserver v1.5.4
 	gorm.io/gorm v1.26.1
 	k8s.io/api v0.33.0
-	k8s.io/apimachinery v0.33.0
+	k8s.io/apimachinery v0.33.1
 	k8s.io/client-go v0.33.0
 )
 
