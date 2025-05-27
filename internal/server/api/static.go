@@ -46,7 +46,7 @@ func staticHandler(relativePath string) gin.HandlerFunc {
 		if mimeType != "" {
 			c.Header("Content-Type", mimeType)
 		}
-		if path == "index.html" {
+		if strings.HasSuffix(path, ".html") {
 			content = bytes.ReplaceAll(content, []byte("BASE_PATH"), []byte(relativePath))
 		}
 		c.Status(200)

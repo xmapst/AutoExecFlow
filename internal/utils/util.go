@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -125,4 +127,33 @@ func MD5(text string) string {
 	algorithm := md5.New()
 	algorithm.Write([]byte(text))
 	return hex.EncodeToString(algorithm.Sum(nil))
+}
+
+func CopyFile(src, dst string) error {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	if err = os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+		return fmt.Errorf("failed to create directory for %s: %s", dst, err)
+	}
+
+	destination, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, sourceFileStat.Mode())
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	return err
 }

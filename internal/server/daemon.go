@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"path"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -21,6 +22,7 @@ import (
 	"github.com/xmapst/AutoExecFlow/internal/config"
 	"github.com/xmapst/AutoExecFlow/internal/queues"
 	"github.com/xmapst/AutoExecFlow/internal/server/api"
+	"github.com/xmapst/AutoExecFlow/internal/server/tus"
 	"github.com/xmapst/AutoExecFlow/internal/storage"
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/internal/worker"
@@ -112,11 +114,10 @@ func (p *sProgram) startAPI() error {
 	// 首次激活事件监听
 	ctx, cancel := context.WithCancel(p.ctx)
 	defer cancel()
-	err := queues.SubscribeEvent(ctx, func(data string) error {
+	if err := queues.SubscribeEvent(ctx, func(data string) error {
 		logx.Debugln(data)
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		logx.Errorln(err)
 		return err
 	}
@@ -126,8 +127,27 @@ func (p *sProgram) startAPI() error {
 func (p *sProgram) startServer() error {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
+	handler, err := api.New(config.App.RelativePath)
+	if err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	var filesPath = path.Join(config.App.RelativePath, "/api/v1/files/")
+	if err = tus.Init(config.App.WorkSpace(), filesPath); err != nil {
+		logx.Errorln(err)
+		return err
+	}
+	handler.Any(strings.TrimSuffix(filesPath, "/"), gin.WrapH(tus.TunServer))
+	handler.Any(path.Join(filesPath, "/*any"), gin.WrapH(tus.TunServer))
+
 	p.http = &http.Server{
-		Handler: api.New(config.App.RelativePath),
+		Handler:           handler,
+		ReadHeaderTimeout: 120 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    15 << 20, // 15MB
+		BaseContext: func(_ net.Listener) context.Context {
+			return p.ctx
+		},
 	}
 
 	_ = retry.Do(

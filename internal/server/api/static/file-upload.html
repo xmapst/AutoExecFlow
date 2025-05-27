@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>File Upload</title>
+    <link href="BASE_PATH/css/bootstrap-combined.min.css" rel="stylesheet" />
+    <script src="BASE_PATH/js/tus.js"></script>
+    <style>
+        body {
+            padding-top: 40px;
+        }
+
+        .progress {
+            height: 32px;
+        }
+
+        a.btn {
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>File Upload</h1>
+
+    <br />
+
+    <table>
+        <tr>
+            <td>
+                <label for="taskid"> TaskID: </label>
+            </td>
+            <td>
+                <input type="text" id="taskid" name="taskid" value="taskname" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="chunksize"> Chunk size (bytes): </label>
+            </td>
+            <td>
+                <input type="number" id="chunksize" name="chunksize" value="10485760" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="paralleluploads"> Parallel upload requests: </label>
+            </td>
+            <td>
+                <input type="number" id="paralleluploads" name="paralleluploads" value="15" />
+            </td>
+        </tr>
+    </table>
+
+    <br />
+
+    <input type="file" />
+
+    <br />
+    <br />
+
+    <div class="row">
+        <div class="span8">
+            <div class="progress progress-striped progress-success">
+                <div class="bar" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="span4">
+            <button class="btn stop" id="toggle-btn">开始上传</button>
+        </div>
+    </div>
+
+    <hr />
+    <h3>Uploads</h3>
+    <p id="upload-list"></p>
+</div>
+</body>
+<script>
+    let upload = null
+    let uploadIsRunning = false
+    const toggleBtn = document.querySelector('#toggle-btn')
+    const input = document.querySelector('input[type=file]')
+    const progress = document.querySelector('.progress')
+    const progressBar = progress.querySelector('.bar')
+    const alertBox = document.querySelector('#support-alert')
+    const uploadList = document.querySelector('#upload-list')
+    const taskidInput = document.querySelector('#taskid');
+    const chunkInput = document.querySelector('#chunksize')
+    const parallelInput = document.querySelector('#paralleluploads')
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    const port = window.location.port || (protocol === 'https:' ? '443' : '80');
+    const endpoint = `${protocol}//${hostname}${port ? ':' + port : ''}BASE_PATH/api/v1/files/`;
+
+    function reset() {
+        input.value = ''
+        toggleBtn.textContent = '开始上传'
+        upload = null
+        uploadIsRunning = false
+    }
+
+    function askToResumeUpload(previousUploads, currentUpload) {
+        if (previousUploads.length === 0) return
+
+        let text = '您之前曾尝试上传此文件:\n\n'
+        previousUploads.forEach((previousUpload, index) => {
+            text += `[${index}] ${previousUpload.creationTime}\n`
+        })
+        text +=
+            '\n输入相应的数字以恢复上传，或按“取消”开始新的上传'
+
+        const answer = prompt(text)
+        const index = Number.parseInt(answer, 10)
+
+        if (!Number.isNaN(index) && previousUploads[index]) {
+            currentUpload.resumeFromPreviousUpload(previousUploads[index])
+        }
+    }
+
+    function startUpload() {
+        const file = input.files[0]
+        // Only continue if a file has actually been selected.
+        // IE will trigger a change event even if we reset the input element
+        // using reset() and we do not want to blow up later.
+        if (!file) {
+            return
+        }
+
+        let chunkSize = Number.parseInt(chunkInput.value, 10)
+        if (Number.isNaN(chunkSize)) {
+            chunkSize = Number.POSITIVE_INFINITY
+        }
+
+        let parallelUploads = Number.parseInt(parallelInput.value, 10)
+        if (Number.isNaN(parallelUploads)) {
+            parallelUploads = 1
+        }
+
+        toggleBtn.textContent = '暂停上传'
+
+        const options = {
+            endpoint: endpoint,                 // 端点地址
+            chunkSize: chunkSize,               // 分块大小
+            addRequestId: true,                 // 添加请求ID
+            uploadDataDuringCreation: true,     // 边创建边上传
+            removeFingerprintOnSuccess: true,   // 成功后删除指纹
+            retryDelays: [0, 1000, 3000, 5000], // 重试延迟
+            parallelUploads: parallelUploads,   // 并行上传
+            metadata: {                         // 元数据
+                filename: file.name,            // 文件名
+                filetype: file.type,            // 文件类型
+                taskid: taskidInput.value.toString(), // 任务ID
+            },
+            metadataForPartialUploads: {         // 部分上传元数据
+                taskid: taskidInput.value.toString(), // 任务ID
+            },
+            onError: function (error) {
+                if (error.originalRequest) {
+                    if (window.confirm(`失败原因: ${error}\n您想重试吗?`)) {
+                        upload.start()
+                        uploadIsRunning = true
+                        return
+                    }
+                } else {
+                    window.alert(`失败原因: ${error}`)
+                }
+
+                reset()
+            },
+            onProgress: function(bytesUploaded, bytesTotal) {
+                const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2)
+                progressBar.style.width = `${percentage}%`
+            },
+            onSuccess: function () {
+                const anchor = document.createElement('a')
+                anchor.textContent = `下载 ${upload.file.name} (${upload.file.size} 字节)`
+                anchor.href = upload.url
+                anchor.className = 'btn btn-success'
+                uploadList.appendChild(anchor)
+                progressBar.style.width = `0%`
+                reset()
+            },
+        }
+
+        upload = new tus.Upload(file, options)
+        upload.findPreviousUploads().then((previousUploads) => {
+            askToResumeUpload(previousUploads, upload)
+
+            upload.start()
+            uploadIsRunning = true
+        })
+    }
+
+    if (!tus.isSupported) {
+        alertBox.classList.remove('hidden')
+    }
+
+    if (!toggleBtn) {
+        throw new Error('此页面上未找到切换按钮。正在中止上传演示。 ')
+    }
+
+    toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault()
+
+        if (upload) {
+            if (uploadIsRunning) {
+                upload.abort()
+                toggleBtn.textContent = '恢复上传'
+                uploadIsRunning = false
+            } else {
+                upload.start()
+                toggleBtn.textContent = '暂停上传'
+                uploadIsRunning = true
+            }
+        } else if (input.files.length > 0) {
+            startUpload()
+        } else {
+            input.click()
+        }
+    })
+
+    input.addEventListener('change', startUpload)
+</script>
+</html>

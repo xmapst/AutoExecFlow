@@ -36,7 +36,7 @@ import (
 // @contact.url		https://github.com/xmapst/AutoExecFlow/issues
 // @license.name	GPL-3.0
 // @license.url		https://github.com/xmapst/AutoExecFlow/blob/main/LICENSE
-func New(relativePath string) *gin.Engine {
+func New(relativePath string) (*gin.Engine, error) {
 	router := gin.New()
 	router.Use(
 		zap.Logger,
@@ -61,51 +61,51 @@ func New(relativePath string) *gin.Engine {
 	// swagger
 	//docs.SwaggerInfo.BasePath = relativePath
 	//baseGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	api := baseGroup.Group("/api")
+	apiV1 := baseGroup.Group("/api/v1")
 	// V1
 	{
 		// event
-		api.GET("/v1/event", event.Stream)
+		apiV1.GET("/event", event.Stream)
 
 		// pipeline
-		api.GET("/v1/pipeline", pipeline.List)
-		api.POST("/v1/pipeline", pipeline.Post)
-		api.POST("/v1/pipeline/:pipeline", pipeline.Update)
-		api.GET("/v1/pipeline/:pipeline", pipeline.Detail)
-		api.DELETE("/v1/pipeline/:pipeline", pipeline.Delete)
+		apiV1.GET("/pipeline", pipeline.List)
+		apiV1.POST("/pipeline", pipeline.Post)
+		apiV1.POST("/pipeline/:pipeline", pipeline.Update)
+		apiV1.GET("/pipeline/:pipeline", pipeline.Detail)
+		apiV1.DELETE("/pipeline/:pipeline", pipeline.Delete)
 
 		// build
-		api.GET("/v1/pipeline/:pipeline/build", build.List)
-		api.POST("/v1/pipeline/:pipeline/build", build.Post)
-		api.GET("/v1/pipeline/:pipeline/build/:build", build.Detail)
-		api.POST("/v1/pipeline/:pipeline/build/:build", build.ReRun)
-		api.DELETE("/v1/pipeline/:pipeline/build/:build", build.Delete)
+		apiV1.GET("/pipeline/:pipeline/build", build.List)
+		apiV1.POST("/pipeline/:pipeline/build", build.Post)
+		apiV1.GET("/pipeline/:pipeline/build/:build", build.Detail)
+		apiV1.POST("/pipeline/:pipeline/build/:build", build.ReRun)
+		apiV1.DELETE("/pipeline/:pipeline/build/:build", build.Delete)
 
 		// task
-		api.GET("/v1/task", task.List)
-		api.POST("/v1/task", task.Post)
-		api.GET("/v1/task/:task", task.Detail)
-		api.PUT("/v1/task/:task", task.Manager)
-		api.DELETE("/v1/task/:task", task.Delete)
-		api.GET("/v1/task/:task/dump", task.Dump)
+		apiV1.GET("/task", task.List)
+		apiV1.POST("/task", task.Post)
+		apiV1.GET("/task/:task", task.Detail)
+		apiV1.PUT("/task/:task", task.Manager)
+		apiV1.DELETE("/task/:task", task.Delete)
+		apiV1.GET("/task/:task/dump", task.Dump)
 
 		// workspace
-		api.GET("/v1/task/:task/workspace", workspace.Get)
-		api.DELETE("/v1/task/:task/workspace", workspace.Delete)
-		api.POST("/v1/task/:task/workspace", workspace.Post)
+		apiV1.GET("/task/:task/workspace", workspace.Get)
+		apiV1.DELETE("/task/:task/workspace", workspace.Delete)
+		apiV1.POST("/task/:task/workspace", workspace.Post)
 
 		// step
-		api.GET("/v1/task/:task/step", step.List)
-		api.GET("/v1/task/:task/step/:step", step.Detail)
-		api.PUT("/v1/task/:task/step/:step", step.Manager)
-		api.GET("/v1/task/:task/step/:step/log", step.Log)
+		apiV1.GET("/task/:task/step", step.List)
+		apiV1.GET("/task/:task/step/:step", step.Detail)
+		apiV1.PUT("/task/:task/step/:step", step.Manager)
+		apiV1.GET("/task/:task/step/:step/log", step.Log)
 
 		// worker pool
-		api.GET("/v1/pool", pool.Detail)
-		api.POST("/v1/pool", pool.Post)
+		apiV1.GET("/pool", pool.Detail)
+		apiV1.POST("/pool", pool.Post)
 
 		// pty
-		api.GET("/v1/pty", pty.Websocket)
+		apiV1.GET("/pty", pty.Websocket)
 	}
 
 	// no method
@@ -115,5 +115,5 @@ func New(relativePath string) *gin.Engine {
 
 	// no route
 	router.NoRoute(staticHandler(relativePath))
-	return router
+	return router, nil
 }
