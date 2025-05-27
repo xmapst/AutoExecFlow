@@ -70,6 +70,18 @@ func init() {
 		"FTAggregateQuery":               reflect.ValueOf(redis.FTAggregateQuery),
 		"FTSearchQuery":                  reflect.ValueOf(redis.FTSearchQuery),
 		"First":                          reflect.ValueOf(redis.First),
+		"HGetEXExpirationEX":             reflect.ValueOf(redis.HGetEXExpirationEX),
+		"HGetEXExpirationEXAT":           reflect.ValueOf(redis.HGetEXExpirationEXAT),
+		"HGetEXExpirationPERSIST":        reflect.ValueOf(redis.HGetEXExpirationPERSIST),
+		"HGetEXExpirationPX":             reflect.ValueOf(redis.HGetEXExpirationPX),
+		"HGetEXExpirationPXAT":           reflect.ValueOf(redis.HGetEXExpirationPXAT),
+		"HSetEXExpirationEX":             reflect.ValueOf(redis.HSetEXExpirationEX),
+		"HSetEXExpirationEXAT":           reflect.ValueOf(redis.HSetEXExpirationEXAT),
+		"HSetEXExpirationKEEPTTL":        reflect.ValueOf(redis.HSetEXExpirationKEEPTTL),
+		"HSetEXExpirationPX":             reflect.ValueOf(redis.HSetEXExpirationPX),
+		"HSetEXExpirationPXAT":           reflect.ValueOf(redis.HSetEXExpirationPXAT),
+		"HSetEXFNX":                      reflect.ValueOf(redis.HSetEXFNX),
+		"HSetEXFXX":                      reflect.ValueOf(redis.HSetEXFXX),
 		"HasErrorPrefix":                 reflect.ValueOf(redis.HasErrorPrefix),
 		"Invalid":                        reflect.ValueOf(redis.Invalid),
 		"KeepTTL":                        reflect.ValueOf(constant.MakeFromLiteral("-1", token.INT, 0)),
@@ -211,6 +223,7 @@ func init() {
 		"WithLibraryVersion":             reflect.ValueOf(redis.WithLibraryVersion),
 
 		// type definitions
+		"ACLCatArgs":                 reflect.ValueOf((*redis.ACLCatArgs)(nil)),
 		"ACLCmdable":                 reflect.ValueOf((*redis.ACLCmdable)(nil)),
 		"ACLLogCmd":                  reflect.ValueOf((*redis.ACLLogCmd)(nil)),
 		"ACLLogEntry":                reflect.ValueOf((*redis.ACLLogEntry)(nil)),
@@ -302,7 +315,6 @@ func init() {
 		"FunctionStats":              reflect.ValueOf((*redis.FunctionStats)(nil)),
 		"FunctionStatsCmd":           reflect.ValueOf((*redis.FunctionStatsCmd)(nil)),
 		"GCStats":                    reflect.ValueOf((*redis.GCStats)(nil)),
-		"GearsCmdable":               reflect.ValueOf((*redis.GearsCmdable)(nil)),
 		"GenericCmdable":             reflect.ValueOf((*redis.GenericCmdable)(nil)),
 		"GeoCmdable":                 reflect.ValueOf((*redis.GeoCmdable)(nil)),
 		"GeoLocation":                reflect.ValueOf((*redis.GeoLocation)(nil)),
@@ -315,6 +327,11 @@ func init() {
 		"GeoSearchQuery":             reflect.ValueOf((*redis.GeoSearchQuery)(nil)),
 		"GeoSearchStoreQuery":        reflect.ValueOf((*redis.GeoSearchStoreQuery)(nil)),
 		"HExpireArgs":                reflect.ValueOf((*redis.HExpireArgs)(nil)),
+		"HGetEXExpirationType":       reflect.ValueOf((*redis.HGetEXExpirationType)(nil)),
+		"HGetEXOptions":              reflect.ValueOf((*redis.HGetEXOptions)(nil)),
+		"HSetEXCondition":            reflect.ValueOf((*redis.HSetEXCondition)(nil)),
+		"HSetEXExpirationType":       reflect.ValueOf((*redis.HSetEXExpirationType)(nil)),
+		"HSetEXOptions":              reflect.ValueOf((*redis.HSetEXOptions)(nil)),
 		"HashCmdable":                reflect.ValueOf((*redis.HashCmdable)(nil)),
 		"Hook":                       reflect.ValueOf((*redis.Hook)(nil)),
 		"HyperLogLogCmdable":         reflect.ValueOf((*redis.HyperLogLogCmdable)(nil)),
@@ -408,9 +425,6 @@ func init() {
 		"TDigestInfo":                reflect.ValueOf((*redis.TDigestInfo)(nil)),
 		"TDigestInfoCmd":             reflect.ValueOf((*redis.TDigestInfoCmd)(nil)),
 		"TDigestMergeOptions":        reflect.ValueOf((*redis.TDigestMergeOptions)(nil)),
-		"TFCallOptions":              reflect.ValueOf((*redis.TFCallOptions)(nil)),
-		"TFunctionListOptions":       reflect.ValueOf((*redis.TFunctionListOptions)(nil)),
-		"TFunctionLoadOptions":       reflect.ValueOf((*redis.TFunctionLoadOptions)(nil)),
 		"TSAlterOptions":             reflect.ValueOf((*redis.TSAlterOptions)(nil)),
 		"TSCreateRuleOptions":        reflect.ValueOf((*redis.TSCreateRuleOptions)(nil)),
 		"TSGetOptions":               reflect.ValueOf((*redis.TSGetOptions)(nil)),
@@ -478,7 +492,6 @@ func init() {
 		"_Cmder":                     reflect.ValueOf((*_github_com_redis_go_redis_v9_Cmder)(nil)),
 		"_ConsistentHash":            reflect.ValueOf((*_github_com_redis_go_redis_v9_ConsistentHash)(nil)),
 		"_Error":                     reflect.ValueOf((*_github_com_redis_go_redis_v9_Error)(nil)),
-		"_GearsCmdable":              reflect.ValueOf((*_github_com_redis_go_redis_v9_GearsCmdable)(nil)),
 		"_GenericCmdable":            reflect.ValueOf((*_github_com_redis_go_redis_v9_GenericCmdable)(nil)),
 		"_GeoCmdable":                reflect.ValueOf((*_github_com_redis_go_redis_v9_GeoCmdable)(nil)),
 		"_HashCmdable":               reflect.ValueOf((*_github_com_redis_go_redis_v9_HashCmdable)(nil)),
@@ -507,19 +520,39 @@ func init() {
 // _github_com_redis_go_redis_v9_ACLCmdable is an interface wrapper for ACLCmdable type
 type _github_com_redis_go_redis_v9_ACLCmdable struct {
 	IValue       interface{}
+	WACLCat      func(ctx context.Context) *redis.StringSliceCmd
+	WACLCatArgs  func(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd
+	WACLDelUser  func(ctx context.Context, username string) *redis.IntCmd
 	WACLDryRun   func(ctx context.Context, username string, command ...interface{}) *redis.StringCmd
+	WACLList     func(ctx context.Context) *redis.StringSliceCmd
 	WACLLog      func(ctx context.Context, count int64) *redis.ACLLogCmd
 	WACLLogReset func(ctx context.Context) *redis.StatusCmd
+	WACLSetUser  func(ctx context.Context, username string, rules ...string) *redis.StatusCmd
 }
 
+func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLCat(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLCat(ctx)
+}
+func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLCatArgs(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd {
+	return W.WACLCatArgs(ctx, options)
+}
+func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLDelUser(ctx context.Context, username string) *redis.IntCmd {
+	return W.WACLDelUser(ctx, username)
+}
 func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLDryRun(ctx context.Context, username string, command ...interface{}) *redis.StringCmd {
 	return W.WACLDryRun(ctx, username, command...)
+}
+func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLList(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLList(ctx)
 }
 func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLLog(ctx context.Context, count int64) *redis.ACLLogCmd {
 	return W.WACLLog(ctx, count)
 }
 func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLLogReset(ctx context.Context) *redis.StatusCmd {
 	return W.WACLLogReset(ctx)
+}
+func (W _github_com_redis_go_redis_v9_ACLCmdable) ACLSetUser(ctx context.Context, username string, rules ...string) *redis.StatusCmd {
+	return W.WACLSetUser(ctx, username, rules...)
 }
 
 // _github_com_redis_go_redis_v9_BitMapCmdable is an interface wrapper for BitMapCmdable type
@@ -588,6 +621,7 @@ type _github_com_redis_go_redis_v9_ClusterCmdable struct {
 	WClusterKeySlot             func(ctx context.Context, key string) *redis.IntCmd
 	WClusterLinks               func(ctx context.Context) *redis.ClusterLinksCmd
 	WClusterMeet                func(ctx context.Context, host string, port string) *redis.StatusCmd
+	WClusterMyID                func(ctx context.Context) *redis.StringCmd
 	WClusterMyShardID           func(ctx context.Context) *redis.StringCmd
 	WClusterNodes               func(ctx context.Context) *redis.StringCmd
 	WClusterReplicate           func(ctx context.Context, nodeID string) *redis.StatusCmd
@@ -640,6 +674,9 @@ func (W _github_com_redis_go_redis_v9_ClusterCmdable) ClusterLinks(ctx context.C
 func (W _github_com_redis_go_redis_v9_ClusterCmdable) ClusterMeet(ctx context.Context, host string, port string) *redis.StatusCmd {
 	return W.WClusterMeet(ctx, host, port)
 }
+func (W _github_com_redis_go_redis_v9_ClusterCmdable) ClusterMyID(ctx context.Context) *redis.StringCmd {
+	return W.WClusterMyID(ctx)
+}
 func (W _github_com_redis_go_redis_v9_ClusterCmdable) ClusterMyShardID(ctx context.Context) *redis.StringCmd {
 	return W.WClusterMyShardID(ctx)
 }
@@ -677,9 +714,14 @@ func (W _github_com_redis_go_redis_v9_ClusterCmdable) ReadWrite(ctx context.Cont
 // _github_com_redis_go_redis_v9_Cmdable is an interface wrapper for Cmdable type
 type _github_com_redis_go_redis_v9_Cmdable struct {
 	IValue                        interface{}
+	WACLCat                       func(ctx context.Context) *redis.StringSliceCmd
+	WACLCatArgs                   func(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd
+	WACLDelUser                   func(ctx context.Context, username string) *redis.IntCmd
 	WACLDryRun                    func(ctx context.Context, username string, command ...interface{}) *redis.StringCmd
+	WACLList                      func(ctx context.Context) *redis.StringSliceCmd
 	WACLLog                       func(ctx context.Context, count int64) *redis.ACLLogCmd
 	WACLLogReset                  func(ctx context.Context) *redis.StatusCmd
+	WACLSetUser                   func(ctx context.Context, username string, rules ...string) *redis.StatusCmd
 	WAppend                       func(ctx context.Context, key string, value string) *redis.IntCmd
 	WBFAdd                        func(ctx context.Context, key string, element interface{}) *redis.BoolCmd
 	WBFCard                       func(ctx context.Context, key string) *redis.IntCmd
@@ -765,6 +807,7 @@ type _github_com_redis_go_redis_v9_Cmdable struct {
 	WClusterKeySlot               func(ctx context.Context, key string) *redis.IntCmd
 	WClusterLinks                 func(ctx context.Context) *redis.ClusterLinksCmd
 	WClusterMeet                  func(ctx context.Context, host string, port string) *redis.StatusCmd
+	WClusterMyID                  func(ctx context.Context) *redis.StringCmd
 	WClusterMyShardID             func(ctx context.Context) *redis.StringCmd
 	WClusterNodes                 func(ctx context.Context) *redis.StringCmd
 	WClusterReplicate             func(ctx context.Context, nodeID string) *redis.StatusCmd
@@ -873,6 +916,9 @@ type _github_com_redis_go_redis_v9_Cmdable struct {
 	WHExpireWithArgs              func(ctx context.Context, key string, expiration time.Duration, expirationArgs redis.HExpireArgs, fields ...string) *redis.IntSliceCmd
 	WHGet                         func(ctx context.Context, key string, field string) *redis.StringCmd
 	WHGetAll                      func(ctx context.Context, key string) *redis.MapStringStringCmd
+	WHGetDel                      func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEX                       func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEXWithArgs               func(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd
 	WHIncrBy                      func(ctx context.Context, key string, field string, incr int64) *redis.IntCmd
 	WHIncrByFloat                 func(ctx context.Context, key string, field string, incr float64) *redis.FloatCmd
 	WHKeys                        func(ctx context.Context, key string) *redis.StringSliceCmd
@@ -891,7 +937,10 @@ type _github_com_redis_go_redis_v9_Cmdable struct {
 	WHScan                        func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHScanNoValues                func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHSet                         func(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
+	WHSetEX                       func(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd
+	WHSetEXWithArgs               func(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd
 	WHSetNX                       func(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd
+	WHStrLen                      func(ctx context.Context, key string, field string) *redis.IntCmd
 	WHTTL                         func(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd
 	WHVals                        func(ctx context.Context, key string) *redis.StringSliceCmd
 	WIncr                         func(ctx context.Context, key string) *redis.IntCmd
@@ -1046,15 +1095,6 @@ type _github_com_redis_go_redis_v9_Cmdable struct {
 	WTDigestReset                 func(ctx context.Context, key string) *redis.StatusCmd
 	WTDigestRevRank               func(ctx context.Context, key string, values ...float64) *redis.IntSliceCmd
 	WTDigestTrimmedMean           func(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd
-	WTFCall                       func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNC                  func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNCArgs              func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFCallArgs                   func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFunctionDelete              func(ctx context.Context, libName string) *redis.StatusCmd
-	WTFunctionList                func(ctx context.Context) *redis.MapStringInterfaceSliceCmd
-	WTFunctionListArgs            func(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd
-	WTFunctionLoad                func(ctx context.Context, lib string) *redis.StatusCmd
-	WTFunctionLoadArgs            func(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd
 	WTSAdd                        func(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd
 	WTSAddWithArgs                func(ctx context.Context, key string, timestamp interface{}, value float64, options *redis.TSOptions) *redis.IntCmd
 	WTSAlter                      func(ctx context.Context, key string, options *redis.TSAlterOptions) *redis.StatusCmd
@@ -1183,14 +1223,29 @@ type _github_com_redis_go_redis_v9_Cmdable struct {
 	WZUnionWithScores             func(ctx context.Context, store redis.ZStore) *redis.ZSliceCmd
 }
 
+func (W _github_com_redis_go_redis_v9_Cmdable) ACLCat(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLCat(ctx)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) ACLCatArgs(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd {
+	return W.WACLCatArgs(ctx, options)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) ACLDelUser(ctx context.Context, username string) *redis.IntCmd {
+	return W.WACLDelUser(ctx, username)
+}
 func (W _github_com_redis_go_redis_v9_Cmdable) ACLDryRun(ctx context.Context, username string, command ...interface{}) *redis.StringCmd {
 	return W.WACLDryRun(ctx, username, command...)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) ACLList(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLList(ctx)
 }
 func (W _github_com_redis_go_redis_v9_Cmdable) ACLLog(ctx context.Context, count int64) *redis.ACLLogCmd {
 	return W.WACLLog(ctx, count)
 }
 func (W _github_com_redis_go_redis_v9_Cmdable) ACLLogReset(ctx context.Context) *redis.StatusCmd {
 	return W.WACLLogReset(ctx)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) ACLSetUser(ctx context.Context, username string, rules ...string) *redis.StatusCmd {
+	return W.WACLSetUser(ctx, username, rules...)
 }
 func (W _github_com_redis_go_redis_v9_Cmdable) Append(ctx context.Context, key string, value string) *redis.IntCmd {
 	return W.WAppend(ctx, key, value)
@@ -1446,6 +1501,9 @@ func (W _github_com_redis_go_redis_v9_Cmdable) ClusterLinks(ctx context.Context)
 }
 func (W _github_com_redis_go_redis_v9_Cmdable) ClusterMeet(ctx context.Context, host string, port string) *redis.StatusCmd {
 	return W.WClusterMeet(ctx, host, port)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) ClusterMyID(ctx context.Context) *redis.StringCmd {
+	return W.WClusterMyID(ctx)
 }
 func (W _github_com_redis_go_redis_v9_Cmdable) ClusterMyShardID(ctx context.Context) *redis.StringCmd {
 	return W.WClusterMyShardID(ctx)
@@ -1771,6 +1829,15 @@ func (W _github_com_redis_go_redis_v9_Cmdable) HGet(ctx context.Context, key str
 func (W _github_com_redis_go_redis_v9_Cmdable) HGetAll(ctx context.Context, key string) *redis.MapStringStringCmd {
 	return W.WHGetAll(ctx, key)
 }
+func (W _github_com_redis_go_redis_v9_Cmdable) HGetDel(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetDel(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) HGetEX(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEX(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) HGetEXWithArgs(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEXWithArgs(ctx, key, options, fields...)
+}
 func (W _github_com_redis_go_redis_v9_Cmdable) HIncrBy(ctx context.Context, key string, field string, incr int64) *redis.IntCmd {
 	return W.WHIncrBy(ctx, key, field, incr)
 }
@@ -1825,8 +1892,17 @@ func (W _github_com_redis_go_redis_v9_Cmdable) HScanNoValues(ctx context.Context
 func (W _github_com_redis_go_redis_v9_Cmdable) HSet(ctx context.Context, key string, values ...interface{}) *redis.IntCmd {
 	return W.WHSet(ctx, key, values...)
 }
+func (W _github_com_redis_go_redis_v9_Cmdable) HSetEX(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEX(ctx, key, fieldsAndValues...)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) HSetEXWithArgs(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEXWithArgs(ctx, key, options, fieldsAndValues...)
+}
 func (W _github_com_redis_go_redis_v9_Cmdable) HSetNX(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd {
 	return W.WHSetNX(ctx, key, field, value)
+}
+func (W _github_com_redis_go_redis_v9_Cmdable) HStrLen(ctx context.Context, key string, field string) *redis.IntCmd {
+	return W.WHStrLen(ctx, key, field)
 }
 func (W _github_com_redis_go_redis_v9_Cmdable) HTTL(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd {
 	return W.WHTTL(ctx, key, fields...)
@@ -2290,33 +2366,6 @@ func (W _github_com_redis_go_redis_v9_Cmdable) TDigestRevRank(ctx context.Contex
 func (W _github_com_redis_go_redis_v9_Cmdable) TDigestTrimmedMean(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd {
 	return W.WTDigestTrimmedMean(ctx, key, lowCutQuantile, highCutQuantile)
 }
-func (W _github_com_redis_go_redis_v9_Cmdable) TFCall(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCall(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFCallASYNC(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCallASYNC(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFCallASYNCArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallASYNCArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFCallArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFunctionDelete(ctx context.Context, libName string) *redis.StatusCmd {
-	return W.WTFunctionDelete(ctx, libName)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFunctionList(ctx context.Context) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionList(ctx)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFunctionListArgs(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionListArgs(ctx, options)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFunctionLoad(ctx context.Context, lib string) *redis.StatusCmd {
-	return W.WTFunctionLoad(ctx, lib)
-}
-func (W _github_com_redis_go_redis_v9_Cmdable) TFunctionLoadArgs(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd {
-	return W.WTFunctionLoadArgs(ctx, lib, options)
-}
 func (W _github_com_redis_go_redis_v9_Cmdable) TSAdd(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd {
 	return W.WTSAdd(ctx, key, timestamp, value)
 }
@@ -2757,48 +2806,6 @@ func (W _github_com_redis_go_redis_v9_Error) RedisError() {
 	W.WRedisError()
 }
 
-// _github_com_redis_go_redis_v9_GearsCmdable is an interface wrapper for GearsCmdable type
-type _github_com_redis_go_redis_v9_GearsCmdable struct {
-	IValue             interface{}
-	WTFCall            func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNC       func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNCArgs   func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFCallArgs        func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFunctionDelete   func(ctx context.Context, libName string) *redis.StatusCmd
-	WTFunctionList     func(ctx context.Context) *redis.MapStringInterfaceSliceCmd
-	WTFunctionListArgs func(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd
-	WTFunctionLoad     func(ctx context.Context, lib string) *redis.StatusCmd
-	WTFunctionLoadArgs func(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd
-}
-
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFCall(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCall(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFCallASYNC(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCallASYNC(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFCallASYNCArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallASYNCArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFCallArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFunctionDelete(ctx context.Context, libName string) *redis.StatusCmd {
-	return W.WTFunctionDelete(ctx, libName)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFunctionList(ctx context.Context) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionList(ctx)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFunctionListArgs(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionListArgs(ctx, options)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFunctionLoad(ctx context.Context, lib string) *redis.StatusCmd {
-	return W.WTFunctionLoad(ctx, lib)
-}
-func (W _github_com_redis_go_redis_v9_GearsCmdable) TFunctionLoadArgs(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd {
-	return W.WTFunctionLoadArgs(ctx, lib, options)
-}
-
 // _github_com_redis_go_redis_v9_GenericCmdable is an interface wrapper for GenericCmdable type
 type _github_com_redis_go_redis_v9_GenericCmdable struct {
 	IValue          interface{}
@@ -3015,6 +3022,9 @@ type _github_com_redis_go_redis_v9_HashCmdable struct {
 	WHExpireWithArgs      func(ctx context.Context, key string, expiration time.Duration, expirationArgs redis.HExpireArgs, fields ...string) *redis.IntSliceCmd
 	WHGet                 func(ctx context.Context, key string, field string) *redis.StringCmd
 	WHGetAll              func(ctx context.Context, key string) *redis.MapStringStringCmd
+	WHGetDel              func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEX               func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEXWithArgs       func(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd
 	WHIncrBy              func(ctx context.Context, key string, field string, incr int64) *redis.IntCmd
 	WHIncrByFloat         func(ctx context.Context, key string, field string, incr float64) *redis.FloatCmd
 	WHKeys                func(ctx context.Context, key string) *redis.StringSliceCmd
@@ -3033,7 +3043,10 @@ type _github_com_redis_go_redis_v9_HashCmdable struct {
 	WHScan                func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHScanNoValues        func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHSet                 func(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
+	WHSetEX               func(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd
+	WHSetEXWithArgs       func(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd
 	WHSetNX               func(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd
+	WHStrLen              func(ctx context.Context, key string, field string) *redis.IntCmd
 	WHTTL                 func(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd
 	WHVals                func(ctx context.Context, key string) *redis.StringSliceCmd
 }
@@ -3064,6 +3077,15 @@ func (W _github_com_redis_go_redis_v9_HashCmdable) HGet(ctx context.Context, key
 }
 func (W _github_com_redis_go_redis_v9_HashCmdable) HGetAll(ctx context.Context, key string) *redis.MapStringStringCmd {
 	return W.WHGetAll(ctx, key)
+}
+func (W _github_com_redis_go_redis_v9_HashCmdable) HGetDel(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetDel(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_HashCmdable) HGetEX(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEX(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_HashCmdable) HGetEXWithArgs(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEXWithArgs(ctx, key, options, fields...)
 }
 func (W _github_com_redis_go_redis_v9_HashCmdable) HIncrBy(ctx context.Context, key string, field string, incr int64) *redis.IntCmd {
 	return W.WHIncrBy(ctx, key, field, incr)
@@ -3119,8 +3141,17 @@ func (W _github_com_redis_go_redis_v9_HashCmdable) HScanNoValues(ctx context.Con
 func (W _github_com_redis_go_redis_v9_HashCmdable) HSet(ctx context.Context, key string, values ...interface{}) *redis.IntCmd {
 	return W.WHSet(ctx, key, values...)
 }
+func (W _github_com_redis_go_redis_v9_HashCmdable) HSetEX(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEX(ctx, key, fieldsAndValues...)
+}
+func (W _github_com_redis_go_redis_v9_HashCmdable) HSetEXWithArgs(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEXWithArgs(ctx, key, options, fieldsAndValues...)
+}
 func (W _github_com_redis_go_redis_v9_HashCmdable) HSetNX(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd {
 	return W.WHSetNX(ctx, key, field, value)
+}
+func (W _github_com_redis_go_redis_v9_HashCmdable) HStrLen(ctx context.Context, key string, field string) *redis.IntCmd {
+	return W.WHStrLen(ctx, key, field)
 }
 func (W _github_com_redis_go_redis_v9_HashCmdable) HTTL(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd {
 	return W.WHTTL(ctx, key, fields...)
@@ -3410,9 +3441,14 @@ func (W _github_com_redis_go_redis_v9_ListCmdable) RPushX(ctx context.Context, k
 // _github_com_redis_go_redis_v9_Pipeliner is an interface wrapper for Pipeliner type
 type _github_com_redis_go_redis_v9_Pipeliner struct {
 	IValue                        interface{}
+	WACLCat                       func(ctx context.Context) *redis.StringSliceCmd
+	WACLCatArgs                   func(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd
+	WACLDelUser                   func(ctx context.Context, username string) *redis.IntCmd
 	WACLDryRun                    func(ctx context.Context, username string, command ...interface{}) *redis.StringCmd
+	WACLList                      func(ctx context.Context) *redis.StringSliceCmd
 	WACLLog                       func(ctx context.Context, count int64) *redis.ACLLogCmd
 	WACLLogReset                  func(ctx context.Context) *redis.StatusCmd
+	WACLSetUser                   func(ctx context.Context, username string, rules ...string) *redis.StatusCmd
 	WAppend                       func(ctx context.Context, key string, value string) *redis.IntCmd
 	WAuth                         func(ctx context.Context, password string) *redis.StatusCmd
 	WAuthACL                      func(ctx context.Context, username string, password string) *redis.StatusCmd
@@ -3502,6 +3538,7 @@ type _github_com_redis_go_redis_v9_Pipeliner struct {
 	WClusterKeySlot               func(ctx context.Context, key string) *redis.IntCmd
 	WClusterLinks                 func(ctx context.Context) *redis.ClusterLinksCmd
 	WClusterMeet                  func(ctx context.Context, host string, port string) *redis.StatusCmd
+	WClusterMyID                  func(ctx context.Context) *redis.StringCmd
 	WClusterMyShardID             func(ctx context.Context) *redis.StringCmd
 	WClusterNodes                 func(ctx context.Context) *redis.StringCmd
 	WClusterReplicate             func(ctx context.Context, nodeID string) *redis.StatusCmd
@@ -3613,6 +3650,9 @@ type _github_com_redis_go_redis_v9_Pipeliner struct {
 	WHExpireWithArgs              func(ctx context.Context, key string, expiration time.Duration, expirationArgs redis.HExpireArgs, fields ...string) *redis.IntSliceCmd
 	WHGet                         func(ctx context.Context, key string, field string) *redis.StringCmd
 	WHGetAll                      func(ctx context.Context, key string) *redis.MapStringStringCmd
+	WHGetDel                      func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEX                       func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEXWithArgs               func(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd
 	WHIncrBy                      func(ctx context.Context, key string, field string, incr int64) *redis.IntCmd
 	WHIncrByFloat                 func(ctx context.Context, key string, field string, incr float64) *redis.FloatCmd
 	WHKeys                        func(ctx context.Context, key string) *redis.StringSliceCmd
@@ -3631,7 +3671,10 @@ type _github_com_redis_go_redis_v9_Pipeliner struct {
 	WHScan                        func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHScanNoValues                func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHSet                         func(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
+	WHSetEX                       func(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd
+	WHSetEXWithArgs               func(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd
 	WHSetNX                       func(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd
+	WHStrLen                      func(ctx context.Context, key string, field string) *redis.IntCmd
 	WHTTL                         func(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd
 	WHVals                        func(ctx context.Context, key string) *redis.StringSliceCmd
 	WHello                        func(ctx context.Context, ver int, username string, password string, clientName string) *redis.MapStringInterfaceCmd
@@ -3791,15 +3834,6 @@ type _github_com_redis_go_redis_v9_Pipeliner struct {
 	WTDigestReset                 func(ctx context.Context, key string) *redis.StatusCmd
 	WTDigestRevRank               func(ctx context.Context, key string, values ...float64) *redis.IntSliceCmd
 	WTDigestTrimmedMean           func(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd
-	WTFCall                       func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNC                  func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNCArgs              func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFCallArgs                   func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFunctionDelete              func(ctx context.Context, libName string) *redis.StatusCmd
-	WTFunctionList                func(ctx context.Context) *redis.MapStringInterfaceSliceCmd
-	WTFunctionListArgs            func(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd
-	WTFunctionLoad                func(ctx context.Context, lib string) *redis.StatusCmd
-	WTFunctionLoadArgs            func(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd
 	WTSAdd                        func(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd
 	WTSAddWithArgs                func(ctx context.Context, key string, timestamp interface{}, value float64, options *redis.TSOptions) *redis.IntCmd
 	WTSAlter                      func(ctx context.Context, key string, options *redis.TSAlterOptions) *redis.StatusCmd
@@ -3928,14 +3962,29 @@ type _github_com_redis_go_redis_v9_Pipeliner struct {
 	WZUnionWithScores             func(ctx context.Context, store redis.ZStore) *redis.ZSliceCmd
 }
 
+func (W _github_com_redis_go_redis_v9_Pipeliner) ACLCat(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLCat(ctx)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) ACLCatArgs(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd {
+	return W.WACLCatArgs(ctx, options)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) ACLDelUser(ctx context.Context, username string) *redis.IntCmd {
+	return W.WACLDelUser(ctx, username)
+}
 func (W _github_com_redis_go_redis_v9_Pipeliner) ACLDryRun(ctx context.Context, username string, command ...interface{}) *redis.StringCmd {
 	return W.WACLDryRun(ctx, username, command...)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) ACLList(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLList(ctx)
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) ACLLog(ctx context.Context, count int64) *redis.ACLLogCmd {
 	return W.WACLLog(ctx, count)
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) ACLLogReset(ctx context.Context) *redis.StatusCmd {
 	return W.WACLLogReset(ctx)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) ACLSetUser(ctx context.Context, username string, rules ...string) *redis.StatusCmd {
+	return W.WACLSetUser(ctx, username, rules...)
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) Append(ctx context.Context, key string, value string) *redis.IntCmd {
 	return W.WAppend(ctx, key, value)
@@ -4203,6 +4252,9 @@ func (W _github_com_redis_go_redis_v9_Pipeliner) ClusterLinks(ctx context.Contex
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) ClusterMeet(ctx context.Context, host string, port string) *redis.StatusCmd {
 	return W.WClusterMeet(ctx, host, port)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) ClusterMyID(ctx context.Context) *redis.StringCmd {
+	return W.WClusterMyID(ctx)
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) ClusterMyShardID(ctx context.Context) *redis.StringCmd {
 	return W.WClusterMyShardID(ctx)
@@ -4537,6 +4589,15 @@ func (W _github_com_redis_go_redis_v9_Pipeliner) HGet(ctx context.Context, key s
 func (W _github_com_redis_go_redis_v9_Pipeliner) HGetAll(ctx context.Context, key string) *redis.MapStringStringCmd {
 	return W.WHGetAll(ctx, key)
 }
+func (W _github_com_redis_go_redis_v9_Pipeliner) HGetDel(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetDel(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) HGetEX(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEX(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) HGetEXWithArgs(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEXWithArgs(ctx, key, options, fields...)
+}
 func (W _github_com_redis_go_redis_v9_Pipeliner) HIncrBy(ctx context.Context, key string, field string, incr int64) *redis.IntCmd {
 	return W.WHIncrBy(ctx, key, field, incr)
 }
@@ -4591,8 +4652,17 @@ func (W _github_com_redis_go_redis_v9_Pipeliner) HScanNoValues(ctx context.Conte
 func (W _github_com_redis_go_redis_v9_Pipeliner) HSet(ctx context.Context, key string, values ...interface{}) *redis.IntCmd {
 	return W.WHSet(ctx, key, values...)
 }
+func (W _github_com_redis_go_redis_v9_Pipeliner) HSetEX(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEX(ctx, key, fieldsAndValues...)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) HSetEXWithArgs(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEXWithArgs(ctx, key, options, fieldsAndValues...)
+}
 func (W _github_com_redis_go_redis_v9_Pipeliner) HSetNX(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd {
 	return W.WHSetNX(ctx, key, field, value)
+}
+func (W _github_com_redis_go_redis_v9_Pipeliner) HStrLen(ctx context.Context, key string, field string) *redis.IntCmd {
+	return W.WHStrLen(ctx, key, field)
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) HTTL(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd {
 	return W.WHTTL(ctx, key, fields...)
@@ -5070,33 +5140,6 @@ func (W _github_com_redis_go_redis_v9_Pipeliner) TDigestRevRank(ctx context.Cont
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) TDigestTrimmedMean(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd {
 	return W.WTDigestTrimmedMean(ctx, key, lowCutQuantile, highCutQuantile)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFCall(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCall(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFCallASYNC(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCallASYNC(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFCallASYNCArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallASYNCArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFCallArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFunctionDelete(ctx context.Context, libName string) *redis.StatusCmd {
-	return W.WTFunctionDelete(ctx, libName)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFunctionList(ctx context.Context) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionList(ctx)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFunctionListArgs(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionListArgs(ctx, options)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFunctionLoad(ctx context.Context, lib string) *redis.StatusCmd {
-	return W.WTFunctionLoad(ctx, lib)
-}
-func (W _github_com_redis_go_redis_v9_Pipeliner) TFunctionLoadArgs(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd {
-	return W.WTFunctionLoadArgs(ctx, lib, options)
 }
 func (W _github_com_redis_go_redis_v9_Pipeliner) TSAdd(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd {
 	return W.WTSAdd(ctx, key, timestamp, value)
@@ -6336,9 +6379,14 @@ func (W _github_com_redis_go_redis_v9_SortedSetCmdable) ZUnionWithScores(ctx con
 // _github_com_redis_go_redis_v9_StatefulCmdable is an interface wrapper for StatefulCmdable type
 type _github_com_redis_go_redis_v9_StatefulCmdable struct {
 	IValue                        interface{}
+	WACLCat                       func(ctx context.Context) *redis.StringSliceCmd
+	WACLCatArgs                   func(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd
+	WACLDelUser                   func(ctx context.Context, username string) *redis.IntCmd
 	WACLDryRun                    func(ctx context.Context, username string, command ...interface{}) *redis.StringCmd
+	WACLList                      func(ctx context.Context) *redis.StringSliceCmd
 	WACLLog                       func(ctx context.Context, count int64) *redis.ACLLogCmd
 	WACLLogReset                  func(ctx context.Context) *redis.StatusCmd
+	WACLSetUser                   func(ctx context.Context, username string, rules ...string) *redis.StatusCmd
 	WAppend                       func(ctx context.Context, key string, value string) *redis.IntCmd
 	WAuth                         func(ctx context.Context, password string) *redis.StatusCmd
 	WAuthACL                      func(ctx context.Context, username string, password string) *redis.StatusCmd
@@ -6428,6 +6476,7 @@ type _github_com_redis_go_redis_v9_StatefulCmdable struct {
 	WClusterKeySlot               func(ctx context.Context, key string) *redis.IntCmd
 	WClusterLinks                 func(ctx context.Context) *redis.ClusterLinksCmd
 	WClusterMeet                  func(ctx context.Context, host string, port string) *redis.StatusCmd
+	WClusterMyID                  func(ctx context.Context) *redis.StringCmd
 	WClusterMyShardID             func(ctx context.Context) *redis.StringCmd
 	WClusterNodes                 func(ctx context.Context) *redis.StringCmd
 	WClusterReplicate             func(ctx context.Context, nodeID string) *redis.StatusCmd
@@ -6536,6 +6585,9 @@ type _github_com_redis_go_redis_v9_StatefulCmdable struct {
 	WHExpireWithArgs              func(ctx context.Context, key string, expiration time.Duration, expirationArgs redis.HExpireArgs, fields ...string) *redis.IntSliceCmd
 	WHGet                         func(ctx context.Context, key string, field string) *redis.StringCmd
 	WHGetAll                      func(ctx context.Context, key string) *redis.MapStringStringCmd
+	WHGetDel                      func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEX                       func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEXWithArgs               func(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd
 	WHIncrBy                      func(ctx context.Context, key string, field string, incr int64) *redis.IntCmd
 	WHIncrByFloat                 func(ctx context.Context, key string, field string, incr float64) *redis.FloatCmd
 	WHKeys                        func(ctx context.Context, key string) *redis.StringSliceCmd
@@ -6554,7 +6606,10 @@ type _github_com_redis_go_redis_v9_StatefulCmdable struct {
 	WHScan                        func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHScanNoValues                func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHSet                         func(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
+	WHSetEX                       func(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd
+	WHSetEXWithArgs               func(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd
 	WHSetNX                       func(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd
+	WHStrLen                      func(ctx context.Context, key string, field string) *redis.IntCmd
 	WHTTL                         func(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd
 	WHVals                        func(ctx context.Context, key string) *redis.StringSliceCmd
 	WHello                        func(ctx context.Context, ver int, username string, password string, clientName string) *redis.MapStringInterfaceCmd
@@ -6712,15 +6767,6 @@ type _github_com_redis_go_redis_v9_StatefulCmdable struct {
 	WTDigestReset                 func(ctx context.Context, key string) *redis.StatusCmd
 	WTDigestRevRank               func(ctx context.Context, key string, values ...float64) *redis.IntSliceCmd
 	WTDigestTrimmedMean           func(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd
-	WTFCall                       func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNC                  func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNCArgs              func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFCallArgs                   func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFunctionDelete              func(ctx context.Context, libName string) *redis.StatusCmd
-	WTFunctionList                func(ctx context.Context) *redis.MapStringInterfaceSliceCmd
-	WTFunctionListArgs            func(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd
-	WTFunctionLoad                func(ctx context.Context, lib string) *redis.StatusCmd
-	WTFunctionLoadArgs            func(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd
 	WTSAdd                        func(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd
 	WTSAddWithArgs                func(ctx context.Context, key string, timestamp interface{}, value float64, options *redis.TSOptions) *redis.IntCmd
 	WTSAlter                      func(ctx context.Context, key string, options *redis.TSAlterOptions) *redis.StatusCmd
@@ -6849,14 +6895,29 @@ type _github_com_redis_go_redis_v9_StatefulCmdable struct {
 	WZUnionWithScores             func(ctx context.Context, store redis.ZStore) *redis.ZSliceCmd
 }
 
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLCat(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLCat(ctx)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLCatArgs(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd {
+	return W.WACLCatArgs(ctx, options)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLDelUser(ctx context.Context, username string) *redis.IntCmd {
+	return W.WACLDelUser(ctx, username)
+}
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLDryRun(ctx context.Context, username string, command ...interface{}) *redis.StringCmd {
 	return W.WACLDryRun(ctx, username, command...)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLList(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLList(ctx)
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLLog(ctx context.Context, count int64) *redis.ACLLogCmd {
 	return W.WACLLog(ctx, count)
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLLogReset(ctx context.Context) *redis.StatusCmd {
 	return W.WACLLogReset(ctx)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) ACLSetUser(ctx context.Context, username string, rules ...string) *redis.StatusCmd {
+	return W.WACLSetUser(ctx, username, rules...)
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) Append(ctx context.Context, key string, value string) *redis.IntCmd {
 	return W.WAppend(ctx, key, value)
@@ -7124,6 +7185,9 @@ func (W _github_com_redis_go_redis_v9_StatefulCmdable) ClusterLinks(ctx context.
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) ClusterMeet(ctx context.Context, host string, port string) *redis.StatusCmd {
 	return W.WClusterMeet(ctx, host, port)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) ClusterMyID(ctx context.Context) *redis.StringCmd {
+	return W.WClusterMyID(ctx)
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) ClusterMyShardID(ctx context.Context) *redis.StringCmd {
 	return W.WClusterMyShardID(ctx)
@@ -7449,6 +7513,15 @@ func (W _github_com_redis_go_redis_v9_StatefulCmdable) HGet(ctx context.Context,
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) HGetAll(ctx context.Context, key string) *redis.MapStringStringCmd {
 	return W.WHGetAll(ctx, key)
 }
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) HGetDel(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetDel(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) HGetEX(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEX(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) HGetEXWithArgs(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEXWithArgs(ctx, key, options, fields...)
+}
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) HIncrBy(ctx context.Context, key string, field string, incr int64) *redis.IntCmd {
 	return W.WHIncrBy(ctx, key, field, incr)
 }
@@ -7503,8 +7576,17 @@ func (W _github_com_redis_go_redis_v9_StatefulCmdable) HScanNoValues(ctx context
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) HSet(ctx context.Context, key string, values ...interface{}) *redis.IntCmd {
 	return W.WHSet(ctx, key, values...)
 }
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) HSetEX(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEX(ctx, key, fieldsAndValues...)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) HSetEXWithArgs(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEXWithArgs(ctx, key, options, fieldsAndValues...)
+}
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) HSetNX(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd {
 	return W.WHSetNX(ctx, key, field, value)
+}
+func (W _github_com_redis_go_redis_v9_StatefulCmdable) HStrLen(ctx context.Context, key string, field string) *redis.IntCmd {
+	return W.WHStrLen(ctx, key, field)
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) HTTL(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd {
 	return W.WHTTL(ctx, key, fields...)
@@ -7976,33 +8058,6 @@ func (W _github_com_redis_go_redis_v9_StatefulCmdable) TDigestRevRank(ctx contex
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) TDigestTrimmedMean(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd {
 	return W.WTDigestTrimmedMean(ctx, key, lowCutQuantile, highCutQuantile)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFCall(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCall(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFCallASYNC(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCallASYNC(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFCallASYNCArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallASYNCArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFCallArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFunctionDelete(ctx context.Context, libName string) *redis.StatusCmd {
-	return W.WTFunctionDelete(ctx, libName)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFunctionList(ctx context.Context) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionList(ctx)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFunctionListArgs(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionListArgs(ctx, options)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFunctionLoad(ctx context.Context, lib string) *redis.StatusCmd {
-	return W.WTFunctionLoad(ctx, lib)
-}
-func (W _github_com_redis_go_redis_v9_StatefulCmdable) TFunctionLoadArgs(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd {
-	return W.WTFunctionLoadArgs(ctx, lib, options)
 }
 func (W _github_com_redis_go_redis_v9_StatefulCmdable) TSAdd(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd {
 	return W.WTSAdd(ctx, key, timestamp, value)
@@ -8732,9 +8787,14 @@ func (W _github_com_redis_go_redis_v9_TimeseriesCmdable) TSRevRangeWithArgs(ctx 
 // _github_com_redis_go_redis_v9_UniversalClient is an interface wrapper for UniversalClient type
 type _github_com_redis_go_redis_v9_UniversalClient struct {
 	IValue                        interface{}
+	WACLCat                       func(ctx context.Context) *redis.StringSliceCmd
+	WACLCatArgs                   func(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd
+	WACLDelUser                   func(ctx context.Context, username string) *redis.IntCmd
 	WACLDryRun                    func(ctx context.Context, username string, command ...interface{}) *redis.StringCmd
+	WACLList                      func(ctx context.Context) *redis.StringSliceCmd
 	WACLLog                       func(ctx context.Context, count int64) *redis.ACLLogCmd
 	WACLLogReset                  func(ctx context.Context) *redis.StatusCmd
+	WACLSetUser                   func(ctx context.Context, username string, rules ...string) *redis.StatusCmd
 	WAddHook                      func(a0 redis.Hook)
 	WAppend                       func(ctx context.Context, key string, value string) *redis.IntCmd
 	WBFAdd                        func(ctx context.Context, key string, element interface{}) *redis.BoolCmd
@@ -8822,6 +8882,7 @@ type _github_com_redis_go_redis_v9_UniversalClient struct {
 	WClusterKeySlot               func(ctx context.Context, key string) *redis.IntCmd
 	WClusterLinks                 func(ctx context.Context) *redis.ClusterLinksCmd
 	WClusterMeet                  func(ctx context.Context, host string, port string) *redis.StatusCmd
+	WClusterMyID                  func(ctx context.Context) *redis.StringCmd
 	WClusterMyShardID             func(ctx context.Context) *redis.StringCmd
 	WClusterNodes                 func(ctx context.Context) *redis.StringCmd
 	WClusterReplicate             func(ctx context.Context, nodeID string) *redis.StatusCmd
@@ -8931,6 +8992,9 @@ type _github_com_redis_go_redis_v9_UniversalClient struct {
 	WHExpireWithArgs              func(ctx context.Context, key string, expiration time.Duration, expirationArgs redis.HExpireArgs, fields ...string) *redis.IntSliceCmd
 	WHGet                         func(ctx context.Context, key string, field string) *redis.StringCmd
 	WHGetAll                      func(ctx context.Context, key string) *redis.MapStringStringCmd
+	WHGetDel                      func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEX                       func(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd
+	WHGetEXWithArgs               func(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd
 	WHIncrBy                      func(ctx context.Context, key string, field string, incr int64) *redis.IntCmd
 	WHIncrByFloat                 func(ctx context.Context, key string, field string, incr float64) *redis.FloatCmd
 	WHKeys                        func(ctx context.Context, key string) *redis.StringSliceCmd
@@ -8949,7 +9013,10 @@ type _github_com_redis_go_redis_v9_UniversalClient struct {
 	WHScan                        func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHScanNoValues                func(ctx context.Context, key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	WHSet                         func(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
+	WHSetEX                       func(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd
+	WHSetEXWithArgs               func(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd
 	WHSetNX                       func(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd
+	WHStrLen                      func(ctx context.Context, key string, field string) *redis.IntCmd
 	WHTTL                         func(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd
 	WHVals                        func(ctx context.Context, key string) *redis.StringSliceCmd
 	WIncr                         func(ctx context.Context, key string) *redis.IntCmd
@@ -9109,15 +9176,6 @@ type _github_com_redis_go_redis_v9_UniversalClient struct {
 	WTDigestReset                 func(ctx context.Context, key string) *redis.StatusCmd
 	WTDigestRevRank               func(ctx context.Context, key string, values ...float64) *redis.IntSliceCmd
 	WTDigestTrimmedMean           func(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd
-	WTFCall                       func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNC                  func(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd
-	WTFCallASYNCArgs              func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFCallArgs                   func(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd
-	WTFunctionDelete              func(ctx context.Context, libName string) *redis.StatusCmd
-	WTFunctionList                func(ctx context.Context) *redis.MapStringInterfaceSliceCmd
-	WTFunctionListArgs            func(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd
-	WTFunctionLoad                func(ctx context.Context, lib string) *redis.StatusCmd
-	WTFunctionLoadArgs            func(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd
 	WTSAdd                        func(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd
 	WTSAddWithArgs                func(ctx context.Context, key string, timestamp interface{}, value float64, options *redis.TSOptions) *redis.IntCmd
 	WTSAlter                      func(ctx context.Context, key string, options *redis.TSAlterOptions) *redis.StatusCmd
@@ -9247,14 +9305,29 @@ type _github_com_redis_go_redis_v9_UniversalClient struct {
 	WZUnionWithScores             func(ctx context.Context, store redis.ZStore) *redis.ZSliceCmd
 }
 
+func (W _github_com_redis_go_redis_v9_UniversalClient) ACLCat(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLCat(ctx)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) ACLCatArgs(ctx context.Context, options *redis.ACLCatArgs) *redis.StringSliceCmd {
+	return W.WACLCatArgs(ctx, options)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) ACLDelUser(ctx context.Context, username string) *redis.IntCmd {
+	return W.WACLDelUser(ctx, username)
+}
 func (W _github_com_redis_go_redis_v9_UniversalClient) ACLDryRun(ctx context.Context, username string, command ...interface{}) *redis.StringCmd {
 	return W.WACLDryRun(ctx, username, command...)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) ACLList(ctx context.Context) *redis.StringSliceCmd {
+	return W.WACLList(ctx)
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) ACLLog(ctx context.Context, count int64) *redis.ACLLogCmd {
 	return W.WACLLog(ctx, count)
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) ACLLogReset(ctx context.Context) *redis.StatusCmd {
 	return W.WACLLogReset(ctx)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) ACLSetUser(ctx context.Context, username string, rules ...string) *redis.StatusCmd {
+	return W.WACLSetUser(ctx, username, rules...)
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) AddHook(a0 redis.Hook) {
 	W.WAddHook(a0)
@@ -9516,6 +9589,9 @@ func (W _github_com_redis_go_redis_v9_UniversalClient) ClusterLinks(ctx context.
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) ClusterMeet(ctx context.Context, host string, port string) *redis.StatusCmd {
 	return W.WClusterMeet(ctx, host, port)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) ClusterMyID(ctx context.Context) *redis.StringCmd {
+	return W.WClusterMyID(ctx)
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) ClusterMyShardID(ctx context.Context) *redis.StringCmd {
 	return W.WClusterMyShardID(ctx)
@@ -9844,6 +9920,15 @@ func (W _github_com_redis_go_redis_v9_UniversalClient) HGet(ctx context.Context,
 func (W _github_com_redis_go_redis_v9_UniversalClient) HGetAll(ctx context.Context, key string) *redis.MapStringStringCmd {
 	return W.WHGetAll(ctx, key)
 }
+func (W _github_com_redis_go_redis_v9_UniversalClient) HGetDel(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetDel(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) HGetEX(ctx context.Context, key string, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEX(ctx, key, fields...)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) HGetEXWithArgs(ctx context.Context, key string, options *redis.HGetEXOptions, fields ...string) *redis.StringSliceCmd {
+	return W.WHGetEXWithArgs(ctx, key, options, fields...)
+}
 func (W _github_com_redis_go_redis_v9_UniversalClient) HIncrBy(ctx context.Context, key string, field string, incr int64) *redis.IntCmd {
 	return W.WHIncrBy(ctx, key, field, incr)
 }
@@ -9898,8 +9983,17 @@ func (W _github_com_redis_go_redis_v9_UniversalClient) HScanNoValues(ctx context
 func (W _github_com_redis_go_redis_v9_UniversalClient) HSet(ctx context.Context, key string, values ...interface{}) *redis.IntCmd {
 	return W.WHSet(ctx, key, values...)
 }
+func (W _github_com_redis_go_redis_v9_UniversalClient) HSetEX(ctx context.Context, key string, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEX(ctx, key, fieldsAndValues...)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) HSetEXWithArgs(ctx context.Context, key string, options *redis.HSetEXOptions, fieldsAndValues ...string) *redis.IntCmd {
+	return W.WHSetEXWithArgs(ctx, key, options, fieldsAndValues...)
+}
 func (W _github_com_redis_go_redis_v9_UniversalClient) HSetNX(ctx context.Context, key string, field string, value interface{}) *redis.BoolCmd {
 	return W.WHSetNX(ctx, key, field, value)
+}
+func (W _github_com_redis_go_redis_v9_UniversalClient) HStrLen(ctx context.Context, key string, field string) *redis.IntCmd {
+	return W.WHStrLen(ctx, key, field)
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) HTTL(ctx context.Context, key string, fields ...string) *redis.IntSliceCmd {
 	return W.WHTTL(ctx, key, fields...)
@@ -10377,33 +10471,6 @@ func (W _github_com_redis_go_redis_v9_UniversalClient) TDigestRevRank(ctx contex
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) TDigestTrimmedMean(ctx context.Context, key string, lowCutQuantile float64, highCutQuantile float64) *redis.FloatCmd {
 	return W.WTDigestTrimmedMean(ctx, key, lowCutQuantile, highCutQuantile)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFCall(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCall(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFCallASYNC(ctx context.Context, libName string, funcName string, numKeys int) *redis.Cmd {
-	return W.WTFCallASYNC(ctx, libName, funcName, numKeys)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFCallASYNCArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallASYNCArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFCallArgs(ctx context.Context, libName string, funcName string, numKeys int, options *redis.TFCallOptions) *redis.Cmd {
-	return W.WTFCallArgs(ctx, libName, funcName, numKeys, options)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFunctionDelete(ctx context.Context, libName string) *redis.StatusCmd {
-	return W.WTFunctionDelete(ctx, libName)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFunctionList(ctx context.Context) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionList(ctx)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFunctionListArgs(ctx context.Context, options *redis.TFunctionListOptions) *redis.MapStringInterfaceSliceCmd {
-	return W.WTFunctionListArgs(ctx, options)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFunctionLoad(ctx context.Context, lib string) *redis.StatusCmd {
-	return W.WTFunctionLoad(ctx, lib)
-}
-func (W _github_com_redis_go_redis_v9_UniversalClient) TFunctionLoadArgs(ctx context.Context, lib string, options *redis.TFunctionLoadOptions) *redis.StatusCmd {
-	return W.WTFunctionLoadArgs(ctx, lib, options)
 }
 func (W _github_com_redis_go_redis_v9_UniversalClient) TSAdd(ctx context.Context, key string, timestamp interface{}, value float64) *redis.IntCmd {
 	return W.WTSAdd(ctx, key, timestamp, value)
