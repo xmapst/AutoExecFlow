@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io"
 	"mime"
 	"net/http"
 	"regexp"
@@ -186,21 +185,11 @@ func (s *STusx) handlePost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unsupported Media Type", http.StatusUnsupportedMediaType)
 			return
 		}
-
-		// 修复校验和验证
-		var reader io.Reader
-		reader, err = s.wrapWithChecksum(r, r.Body)
+		var written int64
+		written, err = s.wrapWithChecksum(r, upload, 0)
 		if err != nil {
 			s.logger.Errorf("Error parsing upload info: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		var written int64
-		written, err = upload.WriteChunk(r.Context(), 0, reader)
-		if err != nil {
-			s.logger.Errorf("Error writing chunk: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -329,15 +318,8 @@ func (s *STusx) handlePatch(w http.ResponseWriter, r *http.Request, uploadID str
 		return
 	}
 
-	// 修复校验和验证
-	reader, err := s.wrapWithChecksum(r, r.Body)
-	if err != nil {
-		s.logger.Errorf("Error parsing upload info: %v", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	written, err := upload.WriteChunk(r.Context(), offset, reader)
+	var written int64
+	written, err = s.wrapWithChecksum(r, upload, offset)
 	if err != nil {
 		s.logger.Errorf("Error writing chunk: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -460,16 +442,16 @@ func (s *STusx) handleOptions(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (s *STusx) wrapWithChecksum(r *http.Request, body io.Reader) (io.Reader, error) {
+func (s *STusx) wrapWithChecksum(r *http.Request, upload storage.IUpload, offset int64) (written int64, err error) {
 	checksumHeader := r.Header.Get(types.HeaderUploadChecksum)
 	if checksumHeader == "" {
-		return body, nil // 没有校验和要求
+		return upload.WriteChunk(r.Context(), offset, r.Body)
 	}
 
 	parts := strings.SplitN(checksumHeader, " ", 2)
 	if len(parts) != 2 {
 		s.logger.Errorf("Invalid checksum header format: %v", checksumHeader)
-		return nil, fmt.Errorf("invalid checksum header format")
+		return 0, fmt.Errorf("invalid checksum header format")
 	}
 
 	algorithm := parts[0]
@@ -485,10 +467,23 @@ func (s *STusx) wrapWithChecksum(r *http.Request, body io.Reader) (io.Reader, er
 	}
 	if !supported {
 		s.logger.Errorf("Algorithm not supported: %v", algorithm)
-		return nil, fmt.Errorf("algorithm not supported %s", algorithm)
+		return 0, fmt.Errorf("algorithm not supported %s", algorithm)
+	}
+	sumReader, err := NewShaSumReader(algorithm, r.Body)
+	if err != nil {
+		return 0, err
 	}
 
-	return NewStreamingChecksumReader(body, algorithm, expectedChecksum)
+	defer func() {
+		calculatedSum := sumReader.ChecksumBase64()
+		if calculatedSum != expectedChecksum {
+			s.logger.Errorf("checksum mismatch: %v", expectedChecksum)
+			err = fmt.Errorf("checksum verification failed: expected %s, got %s",
+				expectedChecksum, calculatedSum)
+		}
+	}()
+
+	return upload.WriteChunk(r.Context(), 0, r.Body)
 }
 
 func (s *STusx) parseUploadInfo(r *http.Request) (info types.FileInfo, err error) {

@@ -47,6 +47,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
+	github.com/tjfoc/gmsm v1.4.1
 	github.com/tklauser/ps v0.0.3
 	github.com/traefik/yaegi v0.16.1
 	github.com/xmapst/go-rabbitmq v0.14.2-12
@@ -54,6 +55,7 @@ require (
 	github.com/yargevad/filepathx v1.0.0
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.37.0
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
 	golang.org/x/sys v0.33.0
 	golang.org/x/term v0.32.0
@@ -150,7 +152,6 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/mock v0.5.1 // indirect
 	golang.org/x/arch v0.16.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/oauth2 v0.29.0 // indirect

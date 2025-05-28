@@ -6,68 +6,108 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"hash"
 	"io"
+	"strings"
+
+	"github.com/tjfoc/gmsm/sm3"
+	"golang.org/x/crypto/sha3"
 )
 
-// StreamingChecksumReader 流式校验和验证器
-type StreamingChecksumReader struct {
-	reader      io.Reader
-	hasher      hash.Hash
-	expectedSum string
-	algorithm   string
-	validated   bool
-	eof         bool
+type HashProvider struct {
+	hasher hash.Hash
 }
 
-func NewStreamingChecksumReader(reader io.Reader, algorithm, expectedChecksum string) (*StreamingChecksumReader, error) {
-	var hasher hash.Hash
-	switch algorithm {
-	case "sha1":
-		hasher = sha1.New()
-	case "sha256":
-		hasher = sha256.New()
-	case "sha512":
-		hasher = sha512.New()
+func (hp *HashProvider) Checksum() []byte {
+	return hp.hasher.Sum(nil)
+}
+
+func (hp *HashProvider) ChecksumHEX() string {
+	return hex.EncodeToString(hp.Checksum())
+}
+
+func (hp *HashProvider) ChecksumBase64() string {
+	return base64.StdEncoding.EncodeToString(hp.Checksum())
+}
+
+func NewHash(algorithm string) (hash.Hash, error) {
+	switch strings.ToLower(algorithm) {
 	case "md5":
-		hasher = md5.New()
+		return md5.New(), nil
+	case "sha1":
+		return sha1.New(), nil
+	case "sha256":
+		return sha256.New(), nil
+	case "sha512":
+		return sha512.New(), nil
+	case "sha224":
+		return sha256.New224(), nil
+	case "sha384":
+		return sha512.New384(), nil
+	case "sha3-256":
+		return sha3.New256(), nil
+	case "sm3":
+		return sm3.New(), nil
 	default:
 		return nil, fmt.Errorf("unsupported algorithm: %s", algorithm)
 	}
+}
 
-	return &StreamingChecksumReader{
-		reader:      reader,
-		hasher:      hasher,
-		expectedSum: expectedChecksum,
-		algorithm:   algorithm,
+// ShaSumWriter 流式写时计算文件校验和
+type ShaSumWriter struct {
+	io.Writer
+	*HashProvider
+}
+
+func NewShaSumWriter(writer io.Writer, algorithm string) (*ShaSumWriter, error) {
+	hasher, err := NewHash(algorithm)
+	if err != nil {
+		return nil, err
+	}
+	return &ShaSumWriter{
+		Writer:       writer,
+		HashProvider: &HashProvider{hasher},
 	}, nil
 }
 
-func (scr *StreamingChecksumReader) Read(p []byte) (int, error) {
-	n, err := scr.reader.Read(p)
-	if n > 0 {
-		// 边读边计算哈希
-		scr.hasher.Write(p[:n])
+func (ssw *ShaSumWriter) Write(p []byte) (int, error) {
+	n, err := ssw.Writer.Write(p)
+	if err != nil {
+		return n, err
 	}
 
-	// 当读取完成时验证校验和
-	if err == io.EOF && !scr.validated {
-		scr.eof = true
-		if validateErr := scr.validateChecksum(); validateErr != nil {
-			return n, validateErr // 返回校验和错误
-		}
-		scr.validated = true
+	if _, err = ssw.hasher.Write(p[:n]); err != nil {
+		return n, err
 	}
 
-	return n, err
+	return n, nil
 }
 
-func (scr *StreamingChecksumReader) validateChecksum() error {
-	calculatedSum := base64.StdEncoding.EncodeToString(scr.hasher.Sum(nil))
-	if calculatedSum != scr.expectedSum {
-		return fmt.Errorf("checksum verification failed: expected %s, got %s",
-			scr.expectedSum, calculatedSum)
+// ShaSumReader 流式读时计算文件校验和
+type ShaSumReader struct {
+	io.Reader
+	*HashProvider
+}
+
+func NewShaSumReader(algorithm string, reader io.Reader) (*ShaSumReader, error) {
+	hasher, err := NewHash(algorithm)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return &ShaSumReader{
+		Reader:       reader,
+		HashProvider: &HashProvider{hasher},
+	}, nil
+}
+
+func (ssr *ShaSumReader) Read(p []byte) (int, error) {
+	n, err := ssr.Reader.Read(p)
+	if n > 0 {
+		if _, err = ssr.hasher.Write(p[:n]); err != nil {
+			return n, err
+		}
+	}
+	return n, err
 }
