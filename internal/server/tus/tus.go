@@ -28,6 +28,7 @@ func Init(uploadDir, relativePath, redisUrl string) error {
 		_locker, err = redislocker.New(redisUrl)
 		if err != nil {
 			logx.Errorln(err)
+			return err
 		}
 	} else {
 		_locker = memorylocker.New()

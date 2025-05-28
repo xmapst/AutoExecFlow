@@ -68,7 +68,7 @@ func New() *cobra.Command {
 	cmd.Flags().Duration("exec_timeout", 24*time.Hour, "set the task exec command expire time")
 	cmd.Flags().Int("pool_size", runtime.NumCPU()*2, "set the size of the execution work pool.")
 	cmd.Flags().String("mq_url", "inmemory://localhost", "message queue url. [inmemory,amqp]")
-	cmd.Flags().String("redis_url", "redis://:yourpassword@localhost:6379/0", "redis url.")
+	cmd.Flags().String("redis_url", "", "redis url.")
 	cmd.Flags().String("self_url", "https://oss.yfdou.com/tools/AutoExecFlow", "self Update URL")
 	_ = viper.BindPFlags(cmd.Flags())
 
