@@ -30,6 +30,7 @@ type SConfig struct {
 	RootDir       string        `mapstructure:"ROOT_DIR"`
 	DBUrl         string        `mapstructure:"DB_URL"`
 	MQUrl         string        `mapstructure:"MQ_URL"`
+	RedisUrl      string        `mapstructure:"REDIS_URL"`
 	SelfUpdateURL string        `mapstructure:"SELF_URL"`
 	LogOutput     string        `mapstructure:"LOG_OUTPUT"`
 	LogLevel      string        `mapstructure:"LOG_LEVEL"`

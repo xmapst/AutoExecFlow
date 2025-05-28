@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/xmapst/AutoExecFlow/pkg/tus/locker"
+	"github.com/xmapst/AutoExecFlow/pkg/tus/storage"
 	"github.com/xmapst/AutoExecFlow/pkg/tus/types"
 )
 
@@ -19,10 +21,10 @@ var defaultDirectoryPerm = os.FileMode(0754)
 
 type SFileStore struct {
 	Dir    string
-	locker types.ILocker
+	locker locker.ILocker
 }
 
-func New(dir string, locker types.ILocker) (*SFileStore, error) {
+func New(dir string, locker locker.ILocker) (*SFileStore, error) {
 	_ = os.MkdirAll(dir, defaultDirectoryPerm)
 	return &SFileStore{
 		Dir:    dir,
@@ -38,7 +40,7 @@ func (store *SFileStore) binPath(id string) string {
 	return filepath.Join(store.Dir, id)
 }
 
-func (store *SFileStore) NewUpload(ctx context.Context, info types.FileInfo) (types.IUpload, error) {
+func (store *SFileStore) NewUpload(ctx context.Context, info types.FileInfo) (storage.IUpload, error) {
 	if info.ID == "" {
 		info.ID = types.Uid()
 	}
@@ -69,7 +71,7 @@ func (store *SFileStore) NewUpload(ctx context.Context, info types.FileInfo) (ty
 	return upload, nil
 }
 
-func (store *SFileStore) GetUpload(ctx context.Context, id string) (types.IUpload, error) {
+func (store *SFileStore) GetUpload(ctx context.Context, id string) (storage.IUpload, error) {
 	upload := &sFileUpload{
 		infoPath: store.infoPath(id),
 		binPath:  store.binPath(id),
@@ -97,8 +99,8 @@ func (store *SFileStore) GetUpload(ctx context.Context, id string) (types.IUploa
 }
 
 type sFileUpload struct {
-	infoLock types.ILock
-	binLock  types.ILock
+	infoLock locker.ILock
+	binLock  locker.ILock
 	info     types.FileInfo
 	infoPath string
 	binPath  string
@@ -190,7 +192,7 @@ func (upload *sFileUpload) WriteChunk(ctx context.Context, offset int64, src io.
 	return n, upload.writeInfo(ctx)
 }
 
-func (upload *sFileUpload) ConcatUploads(ctx context.Context, uploads []types.IUpload) (err error) {
+func (upload *sFileUpload) ConcatUploads(ctx context.Context, uploads []storage.IUpload) (err error) {
 	if err = upload.binLock.Lock(ctx); err != nil {
 		return err
 	}

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xmapst/AutoExecFlow/pkg/tus/storage"
 	"github.com/xmapst/AutoExecFlow/pkg/tus/types"
 )
 
@@ -24,8 +25,8 @@ type STusx struct {
 	config        *SConfig
 	basePath      string
 	isBasePathAbs bool
-	logger        types.ILogger
-	storage       types.IStorage
+	logger        ILogger
+	storage       storage.IStorage
 	events        *sMemoryBroker
 	extensions    []string
 	algorithms    []string
@@ -207,9 +208,9 @@ func (s *STusx) handlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if info.IsFinal {
-		var partialUploads []types.IUpload
+		var partialUploads []storage.IUpload
 		for _, partialID := range info.PartialIDs {
-			var partialUpload types.IUpload
+			var partialUpload storage.IUpload
 			partialUpload, err = s.storage.GetUpload(r.Context(), partialID)
 			if err != nil {
 				s.logger.Errorf("Error getting partial upload: %v", err)

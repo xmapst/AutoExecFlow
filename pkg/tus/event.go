@@ -18,12 +18,12 @@ type subscriber struct {
 
 type topic struct {
 	name   string
-	logger types.ILogger
+	logger ILogger
 	subs   []*subscriber
 	mu     sync.RWMutex
 }
 
-func newTopic(name string, logger types.ILogger) *topic {
+func newTopic(name string, logger ILogger) *topic {
 	return &topic{
 		name:   name,
 		logger: logger,
@@ -95,11 +95,11 @@ func (t *topic) close() {
 }
 
 type sMemoryBroker struct {
-	logger types.ILogger
+	logger ILogger
 	topics sync.Map
 }
 
-func newMemoryBroker(logger types.ILogger) *sMemoryBroker {
+func newMemoryBroker(logger ILogger) *sMemoryBroker {
 	return &sMemoryBroker{logger: logger}
 }
 

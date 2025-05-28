@@ -5,7 +5,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/xmapst/AutoExecFlow/pkg/tus/types"
+	"github.com/xmapst/AutoExecFlow/pkg/tus/locker"
 )
 
 // MemoryLocker persists locks using memory and therefore allowing a simple and
@@ -27,7 +27,7 @@ func New() *MemoryLocker {
 	}
 }
 
-func (locker *MemoryLocker) NewLock(id string) (types.ILock, error) {
+func (locker *MemoryLocker) NewLock(id string) (locker.ILock, error) {
 	return memoryLock{locker, id}, nil
 }
 

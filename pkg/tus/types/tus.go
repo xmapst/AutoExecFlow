@@ -28,38 +28,6 @@ const (
 	HeaderChecksumAlgorithm  = "Tus-Checksum-Algorithm"
 )
 
-type ILogger interface {
-	Printf(format string, args ...interface{})
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-}
-
-type ILocker interface {
-	// NewLock creates a new unlocked lock object for the given upload ID.
-	NewLock(id string) (ILock, error)
-}
-
-type ILock interface {
-	Lock(ctx context.Context) error
-	Unlock()
-}
-
-type IStorage interface {
-	NewUpload(ctx context.Context, info FileInfo) (upload IUpload, err error)
-	GetUpload(ctx context.Context, id string) (upload IUpload, err error)
-}
-
-type IUpload interface {
-	GetInfo(ctx context.Context) (FileInfo, error)
-	GetReader(ctx context.Context) (io.ReadCloser, error)
-	WriteChunk(ctx context.Context, offset int64, src io.Reader) (int64, error)
-	ConcatUploads(ctx context.Context, partialUploads []IUpload) error
-	ServeContent(ctx context.Context, w http.ResponseWriter, r *http.Request) error
-	Terminate(ctx context.Context) error
-}
-
 type FileInfoChanges struct {
 	ID       string
 	MetaData map[string]string

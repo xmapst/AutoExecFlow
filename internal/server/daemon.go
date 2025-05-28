@@ -133,7 +133,7 @@ func (p *sProgram) startServer() error {
 		return err
 	}
 	var filesPath = path.Join(config.App.RelativePath, "/api/v1/files/")
-	if err = tus.Init(config.App.WorkSpace(), filesPath); err != nil {
+	if err = tus.Init(config.App.WorkSpace(), filesPath, config.App.RedisUrl); err != nil {
 		logx.Errorln(err)
 		return err
 	}

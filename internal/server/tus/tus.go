@@ -12,18 +12,30 @@ import (
 
 	"github.com/xmapst/AutoExecFlow/internal/utils"
 	"github.com/xmapst/AutoExecFlow/pkg/tus"
+	"github.com/xmapst/AutoExecFlow/pkg/tus/locker"
 	memorylocker "github.com/xmapst/AutoExecFlow/pkg/tus/locker/memory"
+	redislocker "github.com/xmapst/AutoExecFlow/pkg/tus/locker/redis"
 	filestore "github.com/xmapst/AutoExecFlow/pkg/tus/storage/file"
 	"github.com/xmapst/AutoExecFlow/pkg/tus/types"
 )
 
 var TunServer *tus.STusx
 
-func Init(uploadDir, relativePath string) error {
-	locker := memorylocker.New()
-	store, err := filestore.New(filepath.Join(os.TempDir(), ".tusd"), locker)
+func Init(uploadDir, relativePath, redisUrl string) error {
+	var _locker locker.ILocker
+	if redisUrl != "" {
+		var err error
+		_locker, err = redislocker.New(redisUrl)
+		if err != nil {
+			logx.Errorln(err)
+		}
+	} else {
+		_locker = memorylocker.New()
+	}
+	store, err := filestore.New(filepath.Join(os.TempDir(), ".tusd"), _locker)
 	if err != nil {
 		logx.Errorln(err)
+		return err
 	}
 	TunServer, err = tus.New(&tus.SConfig{
 		BasePath: relativePath,

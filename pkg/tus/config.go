@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/xmapst/AutoExecFlow/pkg/tus/storage"
 	"github.com/xmapst/AutoExecFlow/pkg/tus/types"
 )
 
@@ -11,8 +12,8 @@ type SConfig struct {
 	MaxSize                    int64
 	BasePath                   string
 	isAbs                      bool
-	Store                      types.IStorage
-	Logger                     types.ILogger
+	Store                      storage.IStorage
+	Logger                     ILogger
 	PreUploadCreateCallback    func(hook types.HookEvent) (types.HTTPResponse, types.FileInfoChanges, error)
 	PreFinishResponseCallback  func(hook types.HookEvent) (types.HTTPResponse, error)
 	PreUploadTerminateCallback func(hook types.HookEvent) (types.HTTPResponse, error)
