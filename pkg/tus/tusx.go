@@ -235,19 +235,14 @@ func (s *STusx) handlePost(w http.ResponseWriter, r *http.Request) {
 func (s *STusx) handleHead(w http.ResponseWriter, r *http.Request, uploadID string) {
 	upload, err := s.storage.GetUpload(r.Context(), uploadID)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "expired") {
-			s.logger.Errorf("Error getting upload: %v", err)
-			http.Error(w, "Not found", http.StatusNotFound)
-		} else {
-			s.logger.Errorf("Error getting upload: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		s.logger.Errorf("Error getting upload: %v", err)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 	info, err := upload.GetInfo(r.Context())
 	if err != nil {
 		s.logger.Errorf("Error getting upload info: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
